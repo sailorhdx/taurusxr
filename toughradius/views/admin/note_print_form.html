@@ -1,0 +1,127 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<script src="/static/js/ypfunc.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<script language="javascript" type="text/javascript">
+var LODOP;
+function print_after(result){
+    if(result==0){
+        return false;
+    }
+    param = {'_xsrf': '${handler.xsrf_token}','order_id': '${note.order_id}'};
+    $.post("/admin/customer/note/print", param, function (ev) {
+        console.log(ev);
+        window.location.reload();
+    }, "json");
+}
+
+function doPrint(){
+    param = {
+        '_xsrf': '${handler.xsrf_token}',
+        'order_id': '${note.order_id}',
+        'tpl_id': $("#tpl_id").val()
+    }
+    $.post("/admin/customer/note/getprint", param, function (ev) {
+        console.log(ev);
+        LODOP=getLodop();
+        LODOP.PRINT_INITA("");
+        LODOP.SET_PRINT_PAGESIZE(0, "9.5in","5.5in","")
+        new Function(ev.func)()
+        print_after(LODOP.PREVIEW());
+    }, "json");
+}
+
+</script>
+
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-file-text-o"></i>
+            <h3 class="box-title">票据凭证</h3>
+            <div class="bar pull-right">
+            <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('note_print');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+        <table class="table">
+                <thead>
+                    <tr>
+                        <th colspan="6"> 票据信息</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th>票据凭证号</th>
+                        <td>${note.note_id}</td>
+                        <th>交易流水号</th>
+                        <td>${note.order_id}</td>
+                        <th>客户姓名</th>
+                        <td>${note.customer_cname|h}</td>                 
+                    </tr>
+                    <tr>
+                        <th>宽带账号</th>
+                        <td>${note.account_number}</td>
+                        <th>手机号码</th>
+                        <td>${note.mobile|h}</td>
+                        <th>安装地址</th>
+                        <td>${note.install_address|h}</td>
+                    </tr>      
+                    <tr>
+                        <th>支付类型</th>
+                        <td>${note.pay_type}</td>
+                        <th>缴费时间</th>
+                        <td>${note.pay_date}</td>
+                        <th>账号过期时间</th>
+                        <td>${note.expire_date}</td>                        
+                    </tr>     
+                    <tr>
+                        <th>套餐名</th>
+                        <td>${note.product_name|h}</td>
+                        <th>订购数量</th>
+                        <td>${note.order_num}</td>
+                        <th>套餐单价</th>
+                        <td>${utils.fen2yuan(note.fee_price)} 元</td>                        
+                    </tr>           
+                    <tr>  
+                        <th>收费项</th>
+                        <td>${note.charge_values} </td> 
+                        <th>缴费总额</th>
+                        <td>${utils.fen2yuan(note.fee_total)} 元</td>
+                        <th>收款人</th>
+                        <td>${note.operator_name|h}</td>                     
+                    </tr>                        
+                     <tr>  
+                        <th>打印次数</th>
+                        <td>${note.print_times}</td>                        
+                    </tr>                                                                       
+            </tbody>
+        </table>
+
+        <form id="query_form" class="form-horizontal form-well" role="form"  method="post">
+            <div class="form-group">
+
+                <div class="col-md-4">
+                    <select id="tpl_id" name="tpl_id" class="form-control">
+                        % for _tpl_id, tpl_name in tpls:
+                          <option value="${_tpl_id}" ${tpl_id==_tpl_id and "selected" or ""}>${tpl_name|h}</option>
+                        % endfor
+                    </select>
+                </div>           
+                <div class="col-md-4">
+                    % if permit.match(current_user.username,'/admin/customer/note/print'):
+                    <button type="button" onclick="doPrint();" class="btn btn-sm bg-navy">打印预览</button>
+                    % endif
+                </div>
+
+            </div>   
+        </form>
+    </div>
+</div>
+</div>
+    </section>
+</%def>

@@ -1,0 +1,31 @@
+@charset "utf-8";
+/* CSS Document */
+
+body {margin:0;padding:0;font: normal 12px "微软雅黑","宋体",Helvetica, Arial;color:#fff; background:url(images/bg02.jpg) center 0 #92909d no-repeat;}
+a img, ul, form, p{border:0;margin:0;padding:0;}
+.input01, button:focus{outline:none;}
+
+.input01{width:88px;height:43px;line-height:43px;padding:0 0 0 55px;margin: 0; display:inline-block;border:1px solid #bbb;font: normal 16px "微软雅黑"; color:#FFF; background:none;}
+.input01:active, .input01:hover{ border:1px solid #b2cfff;}
+.btn01{width:300px;height:48px;line-height:48px;margin:10px 0; display:inline-block;border:1px solid #b2cfff;font: normal 16px "微软雅黑"; color:#FFF; background:#6395ec;cursor:pointer;}
+.btn01:active, .btn01:hover{background:#5681cc;}
+.btn02{float:left;width:145px;height:40px;line-height:40px;margin:5px 0; display:inline-block;border-radius:20px; border:none;font: normal 16px "微软雅黑"; color:#FFF; background:#2ee62e;cursor:pointer;}
+.btn02:active, .btn02:hover{background:#29cc29;}
+.btn03{float:left;width:145px;height:40px;line-height:40px;margin:5px 0; display:inline-block;border-radius:20px; border:none;font: normal 16px "微软雅黑"; color:#FFF; background:#ffbb33;cursor:pointer;}
+.btn03:active, .btn03:hover{background:#e5a82e;}
+
+.container{ margin: 0 auto;width:300px; position:relative;}
+.top{ float:left;width:300px;display:block;padding:20px 0 10px 0;}
+.logo{ width:20px;height:20px;}
+.company{width:280px;height:30px; line-height:30px; font-size:16px; color:#FFF;}
+.ad03{float:left;width:300px;display:block;padding:5px 0;}
+.ad04{float:left;width:300px;display:block;padding:5px 0;}
+.form{float:left;width:300px;display:block;margin-top:20px;}
+.form_a{float:left;width:145px;display:block; position:relative;}
+.form .tl_01{ position:absolute;left:10px;top:12px; font-size:14px; color:#FFF;}
+.qita{float:left;width:300px;height:30px;display:block;margin:0 0 10px 0;border-bottom:1px solid #fff;}
+.title{padding:0 10px 0 0;height:30px;line-height:30px; border-bottom:1px solid #FFF; display:inline-block; font-size:14px;}
+.btn-area{float:left;width:300px;display:block;}
+.msg{float:left;width:300px;height:30px;display:block; text-align:center; font-size:18px; margin-top:10px;}
+.txt-area{float:left;width:278px;display:block; font-size:16px; line-height:40px; border:1px solid #bbb;padding:10px;margin:20px 0 5px 0;display:inline-block;}
+.txt-area .tl{float:left;width:80px; color:#CCC;}

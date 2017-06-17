@@ -1,0 +1,68 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteRule(rule_id) {
+        if (confirm("确认删除吗？")) {
+            window.location.href = "/admin/account_rule/delete?rule_id=" + rule_id;
+        }
+    }
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user"></i>
+            <h3 class="box-title">账号生成规则管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('node');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/account_rule/add'):
+            <a href="/admin/account_rule/add" class="btn btn-sm bg-navy"><i class="fa fa-plus-circle"></i> 创建规则</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>规则名称</th>
+                <th>账号前缀</th>
+                <th>账号后缀长度</th>
+                <th>当前序号</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for rule in rules:
+            <tr>
+                <td>${rule.rule_name|h}</td>
+                <td>${rule.user_prefix}</td>
+                <td>${rule.user_suffix_len}</td>
+                <td>${rule.user_sn}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/account_rule/update'):
+                    <a class="btn btn-xs" href="/admin/account_rule/update?rule_id=${rule.id}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/account_rule/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteRule('${rule.id}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

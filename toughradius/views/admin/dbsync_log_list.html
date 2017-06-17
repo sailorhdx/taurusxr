@@ -1,0 +1,109 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+   <script>
+    function syncall()
+    {
+        if (!confirm("该操作将会强制同步本机所有数据(不包括上网日志)至远程同步主机，确认操作吗？")) {
+            return;
+        }
+        params = {'_xsrf': '${handler.xsrf_token}'};
+        $.post("/admin/dbsync/syncall", params, function (data) {
+            toastr.info(data.msg);
+            setTimeout("window.location.reload()",2000);
+        },"json");
+    }   
+
+    $(document).ready(function(){
+        $("#query_begin_time").datepicker();
+        $("#query_end_time").datepicker();
+    });
+   </script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+        <i class="fa fa-hdd-o"></i>
+         <h3 class="box-title">数据同步管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+            </div>           
+        </div>
+        <div class="box-body">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/dbsync/log" method="post">
+                ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="action" class="col-md-2 control-label">同步类型</label>
+                <div class="col-md-3">
+                <select id="action" name="action" class="form-control">
+                      <option value=""></option>
+                      <option value="add" ${action==u'add' and "selected" or ""}>新增</option>
+                      <option value="update" ${action==u'update' and "selected" or ""}>修改</option>
+                      <option value="delete" ${action==u'delete' and "selected" or ""}>删除</option>
+                </select>
+                </div>
+                <label for="sync_status" class="col-md-2 control-label">同步状态</label>
+                <div class="col-md-3">
+                <select id="sync_status" name="sync_status" class="form-control">
+                    <option value=""></option>
+                      <option value="0" ${sync_status=='0' and "selected" or ""}>未同步</option>
+                      <option value="1" ${sync_status=='1' and "selected" or ""}>同步成功</option>
+                      <option value="2" ${sync_status=='2' and "selected" or ""}>同步错误</option>
+                </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="query_begin_time" class="col-md-2 control-label">开始时间</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="query_begin_time" name="query_begin_time" value="${query_begin_time or ''}" class="form-control form_datetime"  >
+                </div>
+                 <label for="query_end_time" class="col-md-2 control-label">结束时间</label>
+                <div class="col-md-3">
+                    <input type="text" id="query_end_time" name="query_end_time" value="${query_end_time or ''}"  class="form-control form_datetime">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-5 col-md-7">
+                    <button type="submit" class="btn btn-sm bg-navy">查询同步日志</button>
+                    <button type="button" class="btn btn-sm bg-navy" onclick="syncall();">同步所有数据</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th width="10%">同步表</th>
+                <th width="10%">同步类型</th>
+                <th width="10%">同步次数</th>
+                <th width="20%">创建时间</th>
+                <th width="50%">错误描述</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for item in page_data.result:
+            <tr>
+                <td>${item.table_name}</td>
+                <td>${item.action}</td>
+                <td>${item.sync_times}</td>
+                <td>${item.create_time}</td>
+                <td>${item.error and item.error[:1024] or ''}</td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+        </div>
+</section>
+
+</%def>

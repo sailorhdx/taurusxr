@@ -1,0 +1,47 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script>
+
+$(document).ready(function(){
+    $('[data-toggle="popover"]').popover();
+    $("#paypost").click(function(){
+        $("#payform").submit();
+    });
+});
+
+</script>
+</%def>
+<%def name="body()">
+<nav class="navbar navbar-default" role="navigation">
+   <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav nav-pills">
+      <li><a href="#">在线订购</a></li>
+    </ul>      
+  </div>
+</nav>
+<div class="container-fluid">
+    <div class="panel panel-default">
+        <div class="panel-heading">交易确认</div>
+        <div class="panel-body">
+            <div class="row itlist">
+                <div class="col-md-6 itbox">订单号: ${formdata.order_id}</div>
+                <div class="col-md-6 itbox">用户姓名: ${formdata.realname|h}</div>
+                <div class="col-md-6 itbox">用户邮件: ${formdata.email|h}</div>              
+                <div class="col-md-6 itbox">用户账号: ${formdata.account_number}</div>
+                <div class="col-md-6 itbox">商品名称: ${formdata.product_name|h}</div>
+                <div class="col-md-6 itbox">交易金额: ${formdata.fee_value}</div>
+                <div class="col-md-12 itbox text-info">提示：请记住您的账号和密码，必须完成支付才能正常登陆使用服务。</div>
+            </div>
+            <form class="form-horizontal form-well" id="payform" role="form" 
+                    action="/ssportal/product/order/alipay" method="post">
+                ${xsrf_form_html()|n}
+                <input type="hidden" name="order_id" value="${formdata.order_id}">
+                <button name="button" placeholder="button" id="paypost" type="button" class="btn btn-primary"><b> 支付宝支付</b></button>
+            </form>
+        </div>
+        </div>
+    </div>
+
+         
+</div>
+</%def>

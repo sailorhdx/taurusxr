@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>资费套餐</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">套餐列表</h1>
+    </div>    
+    <div class="weui_cells weui_cells_access">
+        % for product in products:
+        <a class="weui_cell" href="/mps/product/${product.id}">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p> ‣ ${product.product_name}</p>
+            </div>
+            <div class="weui_cell_ft">
+            </div>
+        </a>
+        % endfor
+    </div>
+</div>
+</div>
+</body>
+</html>

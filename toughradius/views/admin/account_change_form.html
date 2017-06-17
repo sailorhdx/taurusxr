@@ -1,0 +1,105 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<script>
+
+function update_ui(){
+    var product_id = $("#product_id").val();
+    $.get("/admin/account/change/get_policy?product_id="+product_id, {}, function (ev) {
+        console.log(ev);
+        if(ev.code==0){
+            console.log(ev.data);
+        }
+        if(ev.data.policy == 0 || ev.data.policy == 2||ev.data.policy == 9||ev.data.policy == 10){
+            $("#expire_date").parent().parent().show();
+            $("#balance").parent().parent().hide();
+            $("#time_length").parent().parent().hide();
+            $("#flow_length").parent().parent().hide();
+        }else if(ev.data.policy == 1||ev.data.policy == 4){
+            $("#expire_date").parent().parent().hide();
+            $("#balance").parent().parent().show();
+            $("#time_length").parent().parent().hide();
+            $("#flow_length").parent().parent().hide();
+        }else if(ev.data.policy == 3){
+            $("#expire_date").parent().parent().hide();
+            $("#balance").parent().parent().hide();
+            $("#time_length").parent().parent().show();
+            $("#flow_length").parent().parent().hide();
+        }else if(ev.data.policy == 5){
+            $("#expire_date").parent().parent().hide();
+            $("#balance").parent().parent().hide();
+            $("#time_length").parent().parent().hide();
+            $("#flow_length").parent().parent().show();
+        }
+    }, "json");
+}
+
+$(function () {
+    update_ui();
+    $("#expire_date").datepicker();
+    $('#product_id').change(function() {
+        update_ui();
+    });
+});
+</script>
+
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user"></i>
+            <h3 class="box-title">${form.title}</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a></div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+
+            % if msg:
+            <div class="alert alert-warning">${msg|h}</div>
+            % endif
+        <table class="table">
+                <thead>
+                    <tr>
+                        <th colspan="6"> 用户账号信息</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>用户账号</td>
+                        <td>${user.account_number}</td>
+                        <td>资费名称</td>
+                        <td>${user.product_name|h}</td>
+                        <td>用户状态</td>
+                        <td>${{1:u"正常",2:u"停机",3:u"销户",4:u"到期",0:u"未激活"}[user.status]}</td>                 
+                    </tr>
+                    <tr>
+                        <td>过期时间</td>
+                        <td>${user.expire_date}</td>
+                        <td>账号余额</td>
+                        <td>${utils.fen2yuan(user.balance)} 元</td>
+                        <td>剩余时长</td>
+                        <td>${utils.sec2hour(user.time_length)} 小时</td>
+                    </tr>      
+                    <tr>
+                        <td>剩余流量</td>
+                        <td>${utils.kb2gb(user.flow_length)} G</td>
+                        <td>开通时间</td>
+                        <td>${user.create_time}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>                                                                      
+            </tbody>
+
+        </table>
+          <hr/>            
+            <form class="form-horizontal form-well" role="form" action="${form.action}" method="post">
+            ${xsrf_form_html()|n}
+            ${form.render_css()|n}
+        </form>
+    </div>
+</div>
+</div>
+    </section>
+</%def>

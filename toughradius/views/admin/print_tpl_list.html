@@ -1,0 +1,89 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/js/ypfunc.js"></script>
+<script>
+    function deleteTpl(tpl_id) {
+        if (confirm("确认删除吗？")) {
+            window.location.href = "/admin/printtpl/delete?tpl_id=" + tpl_id;
+        }
+    }
+    var LODOP;
+    function design_tpl(){
+        LODOP=getLodop();
+        LODOP.PRINT_INITA("");
+        LODOP.PRINT_DESIGN();
+    }
+
+    function design_tpl_one(tpl_id){
+        param = {
+        '_xsrf': '${handler.xsrf_token}',
+        'tpl_id': tpl_id
+        }
+        $.post("/admin/printtpl/design", param, function (ev) {
+            console.log(ev);
+            LODOP=getLodop();
+            LODOP.PRINT_INITA("");
+            new Function(ev.func)();
+            LODOP.PRINT_DESIGN();
+        }, "json");
+        
+    }
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-file-text-o"></i>
+            <h3 class="box-title">票据模板管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('note_print');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>              
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/printtpl/add'):
+             <a href="javascript:design_tpl();" class="btn btn-sm bg-navy"><i class="fa fa-pencil"></i> 设计新模板</a>
+            <a href="/admin/printtpl/add" class="btn btn-sm bg-navy"><i class="fa fa-plus-circle"></i>  创建模板</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>模板名</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for tpl in tpls:
+            <tr>
+                <td>${tpl.tpl_name|h}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/printtpl/design'):
+                    <a class="btn btn-xs" href="javascript:design_tpl_one('${tpl.id}')">
+                    <i class="fa fa-pencil"></i> 设计</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/printtpl/update'):
+                    <a class="btn btn-xs" href="/admin/printtpl/update?tpl_id=${tpl.id}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/printtpl/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteTpl('${tpl.id}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

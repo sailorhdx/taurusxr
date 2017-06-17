@@ -1,0 +1,255 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+$(document).ready(function(){
+
+    $("#query_begin_time").datepicker();
+    $("#query_end_time").datepicker();
+    $("#chkall").click(function(){    
+        if(this.checked){    
+            $("input[name='vcardbox']:checkbox").prop("checked", true);   
+        }else{    
+            $("input[name='vcardbox']:checkbox").prop("checked", false); 
+        }    
+     });   
+});
+
+function getvalues(){
+    var valArr = new Array; 
+    $("input[name='vcardbox']:checkbox").each(function(i){ 
+        if($(this).is(':checked'))
+        {
+            valArr[i] = $(this).val(); 
+        }    
+    }); 
+    var vals = valArr.join(','); 
+    return vals;
+}
+
+function activeCards()
+{
+    if(!confirm("确认激活吗？只有初始化状态的卡会被激活"))
+    {
+        return false;
+    }
+    param = {
+        'vcardcodes': getvalues(),
+        '_xsrf': '${handler.xsrf_token}'
+    }
+    $.post("/admin/vcard/active", param, function (ev) {
+        if(ev.code==0)
+        {
+            toastr.info(ev.msg);
+            setTimeout("window.location.reload()",1500);
+        }
+        else
+        {
+            toastr.error(ev.msg);
+        }
+    }, "json");
+}
+
+function deactiveCards()
+{
+    if(!confirm("确认取消激活吗？只有激活状态的卡会被取消激活"))
+    {
+        return false;
+    }
+    param = {
+        'vcardcodes': getvalues(),
+        '_xsrf': '${handler.xsrf_token}'
+    }
+    $.post("/admin/vcard/deactive", param, function (ev) {
+        if(ev.code==0)
+        {
+            toastr.info(ev.msg);
+            setTimeout("window.location.reload()",1500);
+        }
+        else
+        {
+            toastr.error(ev.msg);
+        }
+    }, "json");
+}
+
+function deleteCards()
+{
+    if(!confirm("确认删除吗？已经激活或使用的卡将不会被删除"))
+    {
+        return false;
+    }    
+    param = {
+        'vcardcodes': getvalues(),
+        '_xsrf': '${handler.xsrf_token}'
+    }
+    $.post("/admin/vcard/delete", param, function (ev) {
+        if(ev.code==0)
+        {
+            toastr.info(ev.msg);
+            setTimeout("window.location.reload()",1500);
+        }
+        else
+        {
+            toastr.error(ev.msg);
+        }
+    }, "json");
+}  
+
+function do_submit(){
+    $("#query_form").attr("action", "/admin/vcard");
+    $("#query_form").submit();
+}
+
+function do_export(){
+    $("#query_form").attr("action", "/admin/vcard/export");
+    $("#query_form").submit();
+    setTimeout(function(){$("#query_form").attr("action", "/admin/vcard");}, 0);
+}
+
+</script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+        <i class="fa fa-hdd-o"></i>
+         <h3 class="box-title">充值卡管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('vcard');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>           
+        </div>
+        <div class="box-body table-responsive no-padding">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/vcard" method="post">
+                ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="card_code" class="col-md-2 control-label">充值卡号</label>
+                <div class="col-md-3">
+                    <input type="text" id="card_code" name="card_code" class="form-control" value="${card_code or ''}">
+                </div>
+                <label for="card_type" class="col-md-2 control-label">卡类型</label>
+                <div class="col-md-3">
+                    <select id="card_type" name="card_type" class="form-control">
+                        <option value=""></option>
+                        % for k,v in {'banalace':u"余额卡", 'product':u"资费卡",'timelen':u"时长卡",'flowlen':u"流量卡"}.items():
+                        <option value="${k}"  ${str(k)==card_type and "selected" or ""} >${v}</option>
+                        % endfor
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="product_tag" class="col-md-2 control-label">资费关联标签</label>
+                <div class="col-md-3">
+                    <input type="text" id="product_tag" name="product_tag" class="form-control" value="${product_tag or ''}">
+                </div>
+                <label for="status" class="col-md-2 control-label">卡状态</label>
+                <div class="col-md-3">
+                    <select id="status" name="status" class="form-control">
+                       <option value=""></option>
+                        % for k,v in {'0':u"初始化", '1':u"已激活", '2':u'已使用','expire':u"已过期"}.items():
+                        <option value="${k}"  ${str(k)==status and "selected" or ""} >${v}</option>
+                        % endfor
+                    </select>
+                </div>
+            </div>            
+            <div class="form-group">
+                <label for="query_begin_time" class="col-md-2 control-label">发行开始时间</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="query_begin_time" name="query_begin_time" value="${query_begin_time or ''}" class="form-control form_datetime"  >
+                </div>
+                 <label for="query_end_time" class="col-md-2 control-label">发行截止时间</label>
+                <div class="col-md-3">
+                    <input type="text" id="query_end_time" name="query_end_time" value="${query_end_time or ''}"  class="form-control form_datetime">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-5 col-md-7">
+                    <button type="button" onclick="do_submit();" class="btn btn-sm bg-navy">查询</button>
+                    % if permit.match(current_user.username,'/admin/vcard/export'):
+                    <a href="javascript:do_export();" class="btn btn-sm bg-navy">
+                    <i class="fa fa-sign-out"></i> 导出数据</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/vcard/batchadd'):
+                         <a href="/admin/vcard/batchadd" class="btn btn-sm bg-navy">
+                         <i class="fa fa-plus-circle"></i> 批量发行</a>
+                    % endif                    
+                </div>
+            </div>
+        </form>
+
+        <div class="pull-left bottom10">
+        % if permit.match(current_user.username,'/admin/vcard/active'):
+             <a href="javascript:activeCards();" class="btn btn-sm bg-navy">
+             <i class="fa fa-arrow-up"></i> 激活</a>
+        % endif
+        % if permit.match(current_user.username,'/admin/vcard/deactive'):
+             <a href="javascript:deactiveCards();" class="btn btn-sm bg-navy">
+             <i class="fa fa-arrow-up"></i> 取消激活</a>
+        % endif
+        % if permit.match(current_user.username,'/admin/vcard/delete'):
+             <a href="javascript:deleteCards();" class="btn btn-sm btn-danger">
+             <i class="fa fa-times-circle"></i> 删除</a>
+        % endif
+        </div>        
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th><input type="checkbox" id="chkall"></th>
+                <th>卡号</th>
+                <th>密码</th>
+                <th>资费标签</th>
+                <th>储值余额(元)</th>
+                <th>储值流量(G)</th>
+                <th>储值时长(小时)</th>
+                <th>零售价格</th>
+                <th>状态</th>
+                <th>过期时间</th>
+                <th>激活时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for vcard in page_data.result:
+            <tr>
+                <td><input name="vcardbox" type="checkbox" value="${vcard.card_code}"></td>
+                <td>${vcard.card_code}</td>
+                <td><span id="cpwd_${vcard.card_code}"  style="display:none;">${handler.showpwd(vcard.card_pwd)}</span>
+                        <a href='javascript:$("#cpwd_${vcard.card_code}").show();'>显示</a> | 
+                        <a href='javascript:$("#cpwd_${vcard.card_code}").hide();'>隐藏</a>
+                </td>
+                <td>${vcard.product_tag}</td>
+                <td>${vcard.credit}</td>
+                <td>${vcard.flowlen}</td>
+                <td>${vcard.timelen}</td>
+                <td>${vcard.fee_price}</td>
+                <td>
+                    % if utils.is_expire(vcard.expire_date):
+                        <span class="label label-warning">到期</span>
+                    % elif vcard.status == 0:
+                        <span class="label label-info">未激活</span>
+                    % elif vcard.status == 1:
+                        <span class="label label-success">已激活</span>
+                    % elif vcard.status == 2:
+                        <span class="label label-default">已使用</span>
+                    % endif
+                </td>
+                <td>${vcard.expire_date}</td>
+                <td>${vcard.active_time or ''}</td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

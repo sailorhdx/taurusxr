@@ -1,0 +1,133 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/jquery.upload.min.js" type="text/javascript"></script>
+<link href="/static/js/jquery.upload.css" rel="stylesheet" type="text/css" />
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+    % if not permit.match(current_user.username, '/admin/param/update'):
+        $(document).ready(function (){
+            $("input").each(function() {
+                $(this).attr("readonly", 'readonly');
+            })
+            $("textarea").each(function() {
+                $(this).attr("readonly", 'readonly');
+            })
+            $("#submit").hide();
+        });
+    % endif
+    $(function () {
+        $('[data-toggle="popover"]').popover()
+    })
+
+$(function () {
+    $('[data-toggle="popover"]').popover()
+    $('#mps_dnsv_upload').uploadifive({
+        'buttonText': '上传域名验证文件',
+        'buttonClass': 'btn btn-sm bg-navy',
+        'width': 120,
+        'lightheight': 18,
+        'height':30,
+        'formData': {'_xsrf': '${handler.xsrf_token}'},
+        'fileSizeLimit': '1MB',
+        'uploadScript': '/admin/param/dnsv/upload',
+        'onUploadComplete': function (file, data, response) {
+              toastr.info(data)
+        }
+    });    
+})
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-cog"></i>
+            <h3 class="box-title">系统参数管理</h3>
+            <div class="bar pull-right">
+            <a href="javascript:showhelp('sysparams');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>             
+        </div>
+        <div class="box-body">
+          <!-- Custom Tabs -->
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                <li role="presentation" class="${active=='syscfg' and 'active' or '' }">
+                    <a href="#syscfg" aria-controls="syscfg" role="tab" data-toggle="tab">管理界面设置</a>
+                </li>
+                <li role="presentation" class="${active=='alipaycfg' and 'active' or '' }">
+                    <a href="#alipaycfg" aria-controls="alipaycfg" role="tab" data-toggle="tab">支付宝设置</a>
+                </li>
+                % if handler.license.type != 'community':
+                <li role="presentation" class="${active=='mpscfg' and 'active' or '' }">
+                    <a href="#mpscfg" aria-controls="mpscfg" role="tab" data-toggle="tab">微信公众号设置</a>
+                </li>
+                % endif
+                <li role="presentation" class="${active=='mailcfg' and 'active' or '' }">
+                    <a href="#mailcfg" aria-controls="mailcfg" role="tab" data-toggle="tab">邮件设置</a>
+                </li>
+                <li role="presentation" class="${active=='smscfg' and 'active' or '' }">
+                    <a href="#smscfg" aria-controls="smscfg" role="tab" data-toggle="tab">短信设置</a>
+                </li>
+                <li role="presentation" class="${active=='radcfg' and 'active' or '' }">
+                    <a href="#radcfg" aria-controls="radcfg" role="tab" data-toggle="tab">Radius设置</a>
+                </li>
+                <li role="presentation" class="${active=='adconfig' and 'active' or '' }">
+                    <a href="#adconfig" aria-controls="adconfig" role="tab" data-toggle="tab">高级设置</a>
+                </li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane ${active=='syscfg' and 'active' or '' }" id="syscfg">
+                    <form class="form-horizontal form-well" role="form" action="${sys_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${sys_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='mailcfg' and 'active' or '' }" id="mailcfg">
+                    <form class="form-horizontal form-well" role="form" action="${mail_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${mail_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='alipaycfg' and 'active' or '' }" id="alipaycfg">
+                    <form class="form-horizontal form-well" role="form" action="${alipay_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${alipay_form.render_css()|n}
+                    </form>
+                </div>
+                % if handler.license.type != 'community':
+                <div role="tabpanel" class="tab-pane ${active=='mpscfg' and 'active' or '' }" id="mpscfg">
+                    <form class="form-horizontal form-well" role="form" action="${mps_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${mps_form.render_css()|n}
+                    </form>
+                </div>
+                % endif
+                <div role="tabpanel" class="tab-pane ${active=='smscfg' and 'active' or '' }" id="smscfg">
+                    <form class="form-horizontal form-well" role="form" action="${sms_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${sms_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='radcfg' and 'active' or '' }" id="radcfg">
+                    <form class="form-horizontal form-well" role="form" action="${rad_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${rad_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='adconfig' and 'active' or '' }" id="adconfig">
+                    <form class="form-horizontal form-well" role="form" action="${adconfig_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${adconfig_form.render_css()|n}
+                    </form>
+                </div>
+            </div>
+
+          </div>
+        </div>
+    </div>
+</section>
+</%def>

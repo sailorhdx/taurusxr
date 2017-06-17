@@ -1,0 +1,44 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-hdd-o"></i>
+            <h3 class="box-title">日志查询</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a></div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+                <form class="form-horizontal form-well" role="form" action="/admin/logger" method="post" >
+                    ${xsrf_form_html()|n}
+                    <label class="col-sm-3 control-label" id="lab_log_name_name" for="log_name">日志类型</label>
+                    <div class="col-sm-4">
+                    <select required="required" class="form-control" id="log_name" placeholder="日志类型" name="log_name">
+                     <option value="manage" ${"selected" if log_name=='manage' else ''}>管理系统日志</option>
+                     <option value="worker" ${"selected" if log_name=='worker' else ''}>认证计费日志</option>
+                     <option value="task" ${"selected" if log_name=='task' else ''}>任务执行日志</option>
+                     <option value="ssportal" ${"selected" if log_name=='ssportal' else ''}>自助服务日志</option>
+                     <option value="dbsync" ${"selected" if log_name=='dbsync' else ''}>数据同步日志</option>
+                    </select>
+                    </div>
+                    <div class="col-sm-3">
+                    <button type="submit" class="btn btn-sm bg-navy" id="submit" placeholder="submit" name="submit"><b>查询</b></button>
+                     % if current_user.opr_type == 0:
+                         <a class="btn btn-sm bg-navy" href="/admin/logger/download?log_name=${log_name}">
+                         <i class="fa fa-download"></i> 下载当前日志</a>
+                    % endif
+                    </div>
+                </form>
+                <br>
+                <br>
+                % if msg:
+                <div class="well">
+                ${msg}</div>
+                % endif
+            </div>
+        </div>
+    </div>
+</section>
+</%def>

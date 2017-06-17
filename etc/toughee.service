@@ -1,0 +1,13 @@
+[Unit]  
+Description=taurusxr
+After=network.target
+
+[Service]  
+Type=forking  
+ExecStart=/opt/taurusxr/radiusctl daemon -s startup
+ExecReload=/opt/taurusxr/radiusctl daemon -s reload
+ExecStop=/opt/taurusxr/radiusctl daemon -s shutdown
+PrivateTmp=true  
+   
+[Install]  
+WantedBy=multi-user.target  

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>用户在线订购</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">        
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">在线充值</h1>
+    </div>   
+    <div class="bd">
+        <form class="weui_cells weui_cells_form" action="/mps/wxorder/recharge" method="post">
+          ${xsrf_form_html()|n}
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">用户账号</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="username" value="${account.account_number}" readonly="readonly"/>
+            </div>
+        </div>      
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">套餐名称</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="product_name" value="${product.product_name}" readonly="readonly"/>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">充值金额(元)</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="fee_value" value="${fee_value or ''}" />
+            </div>
+        </div>  
+        <div class="weui_btn_area">
+           <button name="submit"  type="submit" class="weui_btn  weui_btn_primary"><b>提 交</b></button>
+        </div>
+        </form>
+        % if msg:
+        <div class="weui_cells_tips">${msg}</div>
+        % endif
+    </div>
+</div>
+</body>
+</html>

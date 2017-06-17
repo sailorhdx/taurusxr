@@ -1,0 +1,71 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script>
+$(function () {
+        $('[data-toggle="popover"]').popover()
+    })
+
+function updateArea() {
+    var node_id = $("#node_id").val();
+    if (node_id.length==0){
+        $("#area_id").empty();
+    }
+    else{
+        $.get("/admin/customer/area/update", {'node_id':node_id}, function (data) {
+            $("#area_id").empty();
+            $.each(data, function (index, area) {
+                var is_sel = '${customer.area_id or ""}' == area.area_id ? "selected" : "";
+                $("#area_id").append(
+                    "<option value='" 
+                    + area.area_id 
+                    + "'"+ is_sel +">" 
+                    + area.area_name 
+                    + "</option>");
+            });
+            //updateAddress();
+        }, "json");
+    }
+}
+
+function updateAddress() {
+    var node_id = $("#node_id").val();
+    var area_id = $("#area_id").val();
+    $.get("/admin/customer/address/build", {'node_id':node_id,'area_id':area_id}, function (data) {
+        $("#address").val(data.addr_prefix);
+    }, "json");
+}
+
+$(document).ready(function (){
+    $('#node_id').change(function() {
+        updateArea();
+    });
+    $('#area_id').change(function() {;
+        updateAddress();
+    });
+    updateArea();
+});
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-edit"></i>
+            <h3 class="box-title">${form.title}</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a></div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+            % if msg:
+            <div class="alert alert-warning">${msg}</div>
+            % endif
+        <form class="form-horizontal form-well" role="form" action="${form.action}" method="post">
+                ${xsrf_form_html()|n}
+                ${form.render_css()|n}
+        </form>
+                </div>
+    </div>
+</div>
+</section>
+</%def>

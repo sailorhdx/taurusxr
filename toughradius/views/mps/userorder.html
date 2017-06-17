@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>交易记录</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">用户交易记录</h1>
+    </div>
+    <div class="bd">
+        <div class="weui_panel_bd">
+             % for order in orders:
+            <div class="weui_media_box weui_media_text">
+                <h4 class="weui_media_title">￥ ${utils.fen2yuan(order.actual_fee)}</h4>
+                <p class="weui_media_desc">${order.order_desc}</p>
+                <ul class="weui_media_info">
+                    <li class="weui_media_info_meta">账号：${order.account_number}</li>
+                    <li class="weui_media_info_meta">时间：${order.create_time}</li>
+                    <li class="weui_media_info_meta">状态：${{0:u"未支付",1:u"已支付",2:u"已取消"}[order.pay_status]}</li>
+                </ul>
+            </div>
+            % endfor
+        </div>
+    </div>   
+</div>   
+</div>   
+
+</body>
+</html>

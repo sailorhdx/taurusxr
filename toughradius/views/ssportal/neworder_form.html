@@ -1,0 +1,31 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+
+$(function () {
+    $('[data-toggle="popover"]').popover()   
+})
+</script>
+</%def>
+<%def name="body()">
+<nav class="navbar navbar-default" role="navigation">
+   <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav nav-pills">
+      <li><a href="#">套餐订购</a></li>
+    </ul>      
+  </div>
+</nav>
+<div class="container-fluid">
+    % if msg:
+    <div class="alert alert-warning">${msg}</div>
+    % endif
+    <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
+        <div class="alert alert-info">提示：如果使用充值卡，请确定该充值卡适用于该资费，如果不确定，请咨询您的销售服务商。</div>
+          ${xsrf_form_html()|n}
+          ${form.render_css()|n}
+    </form>
+
+</div>
+</%def>

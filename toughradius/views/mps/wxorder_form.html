@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>用户在线订购</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">        
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">在线订购</h1>
+    </div>   
+    <div class="bd">
+        <form class="weui_cells weui_cells_form" action="/mps/wxorder/new/${product.id}" method="post">
+          ${xsrf_form_html()|n}
+        <input type="hidden" name="node_id" value="${node_id}">
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">用户姓名</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="realname" value="${realname or ''}" placeholder="请输入用户姓名" required="required"/>
+            </div>
+        </div>
+        % if vmobile:
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">手机号码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="mobile" value="${vmobile}" readonly="readonly"/>
+            </div>
+        </div>        
+        % else:
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">手机号码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="mobile" value="${mobile or ''}" placeholder="请输入手机号码"/>
+            </div>
+        </div> 
+        % endif
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">套餐名称</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="product_name" value="${product.product_name}" readonly="readonly"/>
+            </div>
+        </div>
+        % if product.product_policy in (0,7):
+        <div class="weui_cell weui_cell_select weui_select_after">
+            <div class="weui_cell_hd"><label class="weui_label">订购月数</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <select class="weui_select" name="months" id="months">
+                     <option value="1">一个月</option>
+                     <option value="2">二个月</option>
+                     <option value="3">三个月</option>
+                     <option value="6">半年</option>
+                     <option value="12">一年</option>
+                     <option value="24">两年</option>
+                </select>
+            </div>
+        </div>
+        % endif
+        <div class="weui_cell weui_cell_select weui_select_after">
+            <div class="weui_cell_hd"><label class="weui_label">绑定微信号</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <select class="weui_select" name="wechat_bind" id="wechat_bind">
+                     <option value="0">否</option>
+                     <option value="1">是</option>
+                </select>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">用户账号</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="username" value="${username}" readonly="readonly"/>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">账号密码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="password" type="password" placeholder="请输入账号密码" required="required"/>
+            </div>
+        </div>
+        % if is_address:  
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">用户地址</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="address" placeholder="用户地址" required="required"/>
+            </div>
+        </div>  
+        % endif  
+        % if is_idcard:  
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">身份证号码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="idcard" placeholder="身份证号码" required="required"/>
+            </div>
+        </div>  
+        % endif   
+        <div class="weui_btn_area">
+           <button name="submit"  type="submit" class="weui_btn  weui_btn_primary"><b>提 交</b></button>
+        </div>
+        </form>
+        % if msg:
+        <div class="weui_cells_tips">${msg}</div>
+        % endif
+    </div>
+</div>
+</body>
+</html>

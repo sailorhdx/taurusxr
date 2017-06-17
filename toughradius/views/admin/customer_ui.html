@@ -1,0 +1,35 @@
+
+<%def name="accept_none(name,href,menu_path='',icon='edit')">
+    % if permit.match(current_user.username,(menu_path or href)):
+        <li><a href="${href}"><i class="fa fa-${icon}"></i> ${name}</a></li>
+        <li class="divider"></li>
+    % endif
+</%def>
+
+<%def name="accept_normal(name,ustatus,href,menu_path='',icon='edit')">
+    % if permit.match(current_user.username,(menu_path or href)) and ustatus in (0,1):
+        <li><a href="${href}"><i class="fa fa-${icon}"></i> ${name}</a></li>
+        <li class="divider"></li>
+    % endif
+</%def>
+
+<%def name="accept_pause(name,ustatus,href,menu_path='',icon='edit')">
+    % if permit.match(current_user.username,(menu_path or href)) and ustatus == 2:
+        <li><a href="${href}"><i class="fa fa-${icon}"></i> ${name}</a></li>
+        <li class="divider"></li>
+    % endif
+</%def>
+
+<%def name="accept_expire(name,ustatus,href,menu_path='',icon='edit')">
+    % if permit.match(current_user.username,(menu_path or href)) and ustatus == 4:
+        <li><a href="${href}"><i class="fa fa-${icon}"></i> ${name}</a></li>
+        <li class="divider"></li>
+    % endif
+</%def>
+
+<%def name="accept_warn(name,href,menu_path='',icon='edit')">
+    % if permit.match(current_user.username,(menu_path or href)):
+        <a class="btn btn-sm btn-danger" href="${href}"><i class="fa fa-${icon}"></i> ${name}</a>
+    % endif
+</%def>
+

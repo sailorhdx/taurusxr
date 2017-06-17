@@ -1,0 +1,85 @@
+#!/bin/sh
+
+############################################################################
+# taurusxr upgrade script
+############################################################################
+
+install_release()
+{
+    echo "rm old temp file"
+    test -d /tmp/taurusxr && rm -fr /tmp/taurusxr
+    cd /tmp && tar Jxf taurusxr-linux-x64.tar.xz
+    echo "start upgrade ..."
+    test -d /opt/taurusxr/toughradius && mv /opt/taurusxr/toughradius /var/taurusxr/taurusxr_`date +%Y%m%d%H%M%S`
+    \cp -r /tmp/taurusxr/toughradius /opt/taurusxr/toughradius
+    install /tmp/taurusxr/Makefile /opt/taurusxr/Makefile
+    install -m 0755  /tmp/taurusxr/radiusctl /opt/taurusxr/radiusctl
+    install -m 0755 /opt/taurusxr/radiusctl  /usr/local/bin/radiusctl
+    echo "upgrade done, please restart radius service"
+}
+
+up_stable()
+{
+    echo "fetch stable release"
+    curl http://softwares.taurusxr.net/taurusxr-stable-linux-x64.tar.xz -o /tmp/taurusxr-linux-x64.tar.xz
+    install_release
+}
+
+up_dev()
+{
+    echo "fetch dev release"
+    curl http://softwares.taurusxr.net/taurusxr-dev-linux-x64.tar.xz -o /tmp/taurusxr-linux-x64.tar.xz
+    install_release
+}
+
+upfree_stable()
+{
+    echo "fetch free stable release"
+    curl http://softwares.taurusxr.net/taurusxr-community-stable-linux-x64.tar.xz -o /tmp/taurusxr-linux-x64.tar.xz
+    install_release
+}
+
+upfree_dev()
+{
+    echo "fetch free dev release"
+    curl http://softwares.taurusxr.net/taurusxr-community-dev-linux-x64.tar.xz -o /tmp/taurusxr-linux-x64.tar.xz
+    install_release
+}
+
+usage ()
+{
+    cat <<EOF
+    Usage: $0 [OPTIONS] 
+    
+    stable                upgrade taurusxr stable release
+    dev                   upgrade taurusxr dev release
+    free_stable           upgrade taurusxr free stable release
+    free_dev              upgrade taurusxr free dev release
+
+    All other options are passed to the upgrade program.
+EOF
+        exit 1
+}
+
+case "$1" in
+
+  stable)
+    up_stable
+  ;;
+
+  dev)
+    up_dev
+  ;;
+
+  free_stable)
+    upfree_stable
+  ;;
+
+  free_dev)
+    upfree_dev
+  ;;
+
+  *)
+   usage
+  ;;
+esac

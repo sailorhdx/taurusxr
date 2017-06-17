@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+# coding=utf-8
+from toughradius.toughlib import btforms
+from toughradius.toughlib.btforms import dataform
+from toughradius.toughlib.btforms import rules
+from toughradius.toughlib.btforms.rules import button_style, input_style
+from toughradius.modules.settings import *
+button_style = {'class': 'btn btn-sm'}
+boolean = {0: u'否',
+ 1: u'是'}
+product_status_dict = {0: u'正常',
+ 1: u'停用'}
+
+def ppmflow_product_add_form():
+    return btforms.Form(btforms.Textbox('product_name', rules.len_of(4, 64), description=u'资费名称', required='required', **input_style), btforms.Dropdown('ispub', args=boolean.items(), description=u'是否发布到自助订购套餐', **input_style), btforms.Textbox('fee_flows', rules.is_number3, description=u'授权流量(G)', value=0, **input_style), btforms.Textbox('fee_price', rules.is_rmb, description=u'资费价格(元)', required='required', **input_style), btforms.Textbox('flow_price', rules.is_rmb, description=u'流量充值单价(元/G)', required='required', **input_style), btforms.Textbox('max_giftflows', rules.is_number3, description=u'最大赠送流量值(G)', required='required', **input_style), btforms.Textbox('concur_number', rules.is_numberOboveZore, description=u'并发数控制(0表示不限制)', value='0', **input_style), btforms.Dropdown('bind_mac', args=boolean.items(), description=u'是否绑定MAC ', **input_style), btforms.Dropdown('bind_vlan', args=boolean.items(), description=u'是否绑定VLAN ', **input_style), btforms.Textbox('input_max_limit', rules.is_number3, description=u'最大上行速率(Mbps)', required='required', **input_style), btforms.Textbox('output_max_limit', rules.is_number3, description=u'最大下行速率(Mbps)', required='required', **input_style), btforms.Dropdown('free_auth', args=boolean.items(), description=u'支持到期免费授权 ', **input_style), btforms.Textbox('free_auth_uprate', rules.is_number3, description=u'免费授权最大上行速率(Mbps)', **input_style), btforms.Textbox('free_auth_downrate', rules.is_number3, description=u'免费授权最大下行速率(Mbps)', **input_style), btforms.Button('submit', type='submit', id='submit', html=u'<b>提交</b>', **button_style), title=u'创建预付费包月流量套餐', action='/admin/product/ppmf/add')
+
+
+def ppmflow_product_update_form():
+    return btforms.Form(btforms.Hidden('id', description=u'编号'), btforms.Textbox('product_name', rules.len_of(4, 64), description=u'资费名称', required='required', **input_style), btforms.Dropdown('ispub', args=boolean.items(), description=u'是否发布到自助订购套餐', **input_style), btforms.Textbox('fee_flows', rules.is_number3, description=u'授权流量(G)', value=0, **input_style), btforms.Textbox('fee_price', rules.is_rmb, description=u'资费价格(元)', required='required', **input_style), btforms.Textbox('flow_price', rules.is_rmb, description=u'流量充值单价(元/G)', required='required', **input_style), btforms.Textbox('max_giftflows', rules.is_number3, description=u'最大赠送流量值(G)', required='required', **input_style), btforms.Dropdown('product_status', args=product_status_dict.items(), description=u'资费状态', required='required', **input_style), btforms.Textbox('concur_number', rules.is_numberOboveZore, description=u'并发数控制(0表示不限制)', value='0', **input_style), btforms.Dropdown('bind_mac', args=boolean.items(), description=u'是否绑定MAC ', **input_style), btforms.Dropdown('bind_vlan', args=boolean.items(), description=u'是否绑定VLAN ', **input_style), btforms.Textbox('input_max_limit', rules.is_number3, description=u'最大上行速率(Mbps)', required='required', **input_style), btforms.Textbox('output_max_limit', rules.is_number3, description=u'最大下行速率(Mbps)', required='required', **input_style), btforms.Dropdown('free_auth', args=boolean.items(), description=u'支持到期免费授权', **input_style), btforms.Textbox('free_auth_uprate', rules.is_number3, description=u' 免费授权最大上行速率(Mbps)', **input_style), btforms.Textbox('free_auth_downrate', rules.is_number3, description=u'免费授权最大下行速率(Mbps)', **input_style), btforms.Button('submit', type='submit', id='submit', html=u'<b>提交</b>', **button_style), title=u'创建预付费包月流量套餐', action='/admin/product/ppmf/update')

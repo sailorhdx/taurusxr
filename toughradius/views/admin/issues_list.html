@@ -1,0 +1,119 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteIssues(issues_id) {
+        if (confirm("确认删除吗？")) {
+            window.location.href = "/admin/issues/delete?issues_id=" + issues_id;
+        }
+    }
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-ticket"></i>
+            <h3 class="box-title">用户工单列表</h3>
+            <div class="bar pull-right">
+             <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('issues');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <form class="form-horizontal form-well" id="query_form" role="form" action="/admin/issues/list" method="post">
+            ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="account_number" class="col-md-2 control-label">用户账号</label>
+                <div class="col-md-3">
+                    <input type="text" id="account_number" name="account_number" value="${account_number or ''}" class="form-control">
+                </div>
+                <label for="issues_type" class="col-md-2 control-label">工单类型</label>
+                <div class="col-md-3">
+                    <select id="issues_type" name="issues_type" class="form-control" >
+                        <option value="" ></option>
+                        <option value=0  ${issues_type=='0' and "selected" or ""}>新装</option>
+                        <option value=1  ${issues_type=='1' and "selected" or ""}>故障</option>
+                        <option value=2  ${issues_type=='2' and "selected" or ""}>投诉</option>
+                        <option value=3  ${issues_type=='3' and "selected" or ""}>其他</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="form-group">
+                <label for="status" class="col-md-2 control-label">处理状态</label>
+                <div class="col-md-3">
+                    <select id="status" name="status" class="form-control" >
+                        <option value="" ></option>
+                        <option value=0  ${status=='0' and "selected" or ""}>未处理</option>
+                        <option value=1  ${status=='1' and "selected" or ""}>处理中</option>
+                        <option value=2  ${status=='2' and "selected" or ""}>挂起中</option>
+                        <option value=3  ${status=='3' and "selected" or ""}>已取消</option>
+                        <option value=4  ${status=='4' and "selected" or ""}>已完成</option>
+                    </select>
+                </div>
+                <label for="builder_name" class="col-md-2 control-label">服务人员</label>
+                <div class="col-md-3">
+                    <select class="form-control" name="builder_name" id="builder_name">
+                        % for bname,bnamephone in builders:
+                        <option value="${bname}" ${builder_name==bname and 'selected' or ''}>${bnamephone}</option>
+                        % endfor
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-5 col-md-7">
+                    <button type="submit" class="btn btn-sm bg-navy">查询</button>
+                </div>
+            </div>
+        </form>
+
+
+        <div class="clearfix"></div>
+
+
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>用户账号</th>
+                    <th>工单类型</th>
+                    <th>处理状态</th>
+                    <th>服务人员</th>
+                    <th>操作时间</th>
+                    <th>工单描述</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+            % for issues in  page_data.result :
+                <tr>
+                    <td><a href="/admin/customer/detail?account_number=${issues.account_number}">${issues.account_number}</a></td>
+                    <td>${{0:u"新装",1:u'故障',2:u'投诉',3:u"其他"}[issues.issues_type]}</td>
+                    <td>${{0:u"未处理",1:u'处理中',2:u'挂起',3:u"取消",4:u"完成"}[issues.status]}</td>
+                    <td>${issues.builder_name}</td>
+                    <td>${issues.date_time}</td>
+                    <td>${issues.content[:32] or ""}...</td>
+                    <td>
+                        % if permit.match(current_user.username,'/admin/issues/detail'):
+                        <a href="/admin/issues/detail?issues_id=${issues.id}" class="btn btn-xs">
+                        <i class="fa fa-file-o"></i> 工单详情</a>
+                        % endif
+                        % if permit.match(current_user.username,'/admin/issues/delete'):
+                        <a href="javascript:deleteIssues('${issues.id}')" class="btn btn-xs">
+                        <i class="fa fa-times"></i> 删除</a>
+                        % endif
+                    </td>
+                </tr>
+            % endfor
+            </tbody>
+        </table>
+
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+</div>
+    </section>
+</%def>

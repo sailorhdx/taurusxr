@@ -1,0 +1,117 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/jquery.upload.min.js" type="text/javascript"></script>
+<link href="/static/js/jquery.upload.css" rel="stylesheet" type="text/css" />
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+
+<script>
+% if not permit.match(current_user.username, '/admin/config'):
+    $(document).ready(function (){
+        $("input").each(function() {
+            $(this).attr("readonly", 'readonly');
+        })
+        $("textarea").each(function() {
+            $(this).attr("readonly", 'readonly');
+        })
+        $("#submit").hide();
+    });
+% endif
+
+
+$(function () {
+    $('[data-toggle="popover"]').popover()
+    $('#license_upload').uploadifive({
+        'buttonText': '上传授权文件',
+        'buttonClass': 'btn btn-sm bg-navy',
+        'width': 120,
+        'lightheight': 18,
+        'height':30,
+        'formData': {'_xsrf': '${handler.xsrf_token}'},
+        'fileSizeLimit': '1MB',
+        'uploadScript': '/admin/license/upload',
+        'onUploadComplete': function (file, data, response) {
+              toastr.info(data)
+        }
+    });    
+})
+
+
+function update_secret()
+{
+    $.post("/admin/config/secret/update", {'_xsrf': '${handler.xsrf_token}'}, function (data) {
+        window.location.reload();
+    },"json");
+}
+
+function go_request_license()
+{
+    showhelp('fetch_license');
+}
+
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-cog"></i>
+            <h3 class="box-title">系统配置管理</h3>
+            <div class="bar pull-right">
+            <a href="javascript:showhelp('sysconfig');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+        <div class="box-body">
+          <!-- Custom Tabs -->
+          <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                <li role="presentation" class="${active=='system' and 'active' or '' }">
+                    <a href="#system" aria-controls="system" role="tab" data-toggle="tab">系统配置</a>
+                </li>
+                <li role="presentation" class="${active=='database' and 'active' or '' }">
+                    <a href="#database" aria-controls="database" role="tab" data-toggle="tab">数据库配置</a>
+                </li>
+                <li role="presentation" class="${active=='syslog' and 'active' or '' }">
+                    <a href="#syslog" aria-controls="syslog" role="tab" data-toggle="tab">syslog 配置</a>
+                </li>
+                % if handler.license.type != 'community':
+                <li role="presentation" class="${active=='hacfg' and 'active' or '' }">
+                    <a href="#hacfg" aria-controls="hacfg" role="tab" data-toggle="tab"> 高可用配置</a>
+                </li>
+                % endif
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane ${active=='system' and 'active' or '' }" id="system">
+                    <form class="form-horizontal form-well" role="form" action="${system_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${system_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='database' and 'active' or '' }"  id="database">
+                    <form class="form-horizontal form-well" role="form" action="${database_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${database_form.render_css()|n}
+                    </form>
+                </div>
+                <div role="tabpanel" class="tab-pane ${active=='syslog' and 'active' or '' }" id="syslog">
+                    <form class="form-horizontal form-well" role="form" action="${syslog_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${syslog_form.render_css()|n}
+                    </form>
+                </div>
+                % if handler.license.type != 'community':
+                <div role="tabpanel" class="tab-pane ${active=='hacfg' and 'active' or '' }" id="hacfg">
+                    <form class="form-horizontal form-well" role="form" action="${hacfg_form.action}" method="post">
+                        ${xsrf_form_html()|n}
+                        ${hacfg_form.render_css()|n}
+                    </form>
+                </div>
+                % endif
+            </div>
+            <!-- /.tab-content -->
+          </div>
+        </div>
+    </div>
+</section>
+</%def>

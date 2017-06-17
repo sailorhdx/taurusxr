@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>账号信息</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">用户账号信息</h1>
+    </div>   
+    <div class="bd">
+    <div class="weui_cells">
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>用户姓名</p>
+            </div>
+            <div class="weui_cell_ft">${user.realname}</div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>用户账号</p>
+            </div>
+            <div class="weui_cell_ft">${user.account_number}</div>
+        </div>
+        <!--
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>用户手机</p>
+            </div>
+            <div class="weui_cell_ft">${user.mobile or ''}</div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>电子邮箱</p>
+            </div>
+            <div class="weui_cell_ft">${user.email or ''}</div>
+        </div>-->
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>当前资费</p>
+            </div>
+            <div class="weui_cell_ft">${user.product_name}</div>
+        </div>  
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>到期时间</p>
+            </div>
+            <div class="weui_cell_ft">${user.expire_date}</div>
+        </div>   
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>账号余额</p>
+            </div>
+            <div class="weui_cell_ft">${utils.fen2yuan(user.balance)} 元</div>
+        </div>     
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>剩余时长</p>
+            </div>
+            <div class="weui_cell_ft">${utils.sec2hour(user.time_length)} 小时</div>
+        </div>     
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>剩余流量</p>
+            </div>
+            <div class="weui_cell_ft">${utils.kb2gb(user.flow_length)} G</div>
+        </div>       
+        <div class="weui_cell">
+            <div class="weui_cell_bd weui_cell_primary">
+                <p>当前状态</p>
+            </div>
+            <div class="weui_cell_ft">
+                % if utils.is_expire(user.expire_date) or user.status == 4:
+                    到期
+                % elif user.status == 0:
+                    预定
+                % elif user.status == 1:
+                    正常
+                % elif user.status == 2:
+                    停机
+                % elif user.status == 3:
+                    销户
+                % endif
+            </div>
+        </div>
+          <div class="weui_btn_area">
+          % if handler.wxpay_enable:   
+            % if user.product_policy not in (1,4):
+            <a href="/mps/wxorder/renew" class="weui_btn  weui_btn_primary"><b>续 费</b></a>
+            % else:
+            <a href="/mps/wxorder/recharge" class="weui_btn  weui_btn_primary"><b>充 值</b></a>
+            % endif
+          % endif       
+             <a href="/mps/userunbind" class="weui_btn  weui_btn_warn"><b>解 绑</b></button>
+          </div> 
+    </div>     
+</div>     
+</div>     
+</div>     
+</body>
+</html>

@@ -1,0 +1,73 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteAgency(agency_id)
+    {
+        if(confirm("确认删除吗？"))
+        {
+            window.location.href = "/admin/agency/delete?agency_id="+agency_id;
+        }
+    }
+</script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-users"></i>
+            <h3 class="box-title">代理商信息列表</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+                % if current_user.opr_type == 0:
+                <div class="pull-left bottom10">
+                     <a href="/admin/agency/add" class="btn btn-sm bg-navy"><i class="fa fa-plus-circle"></i> 代理商开户</a>
+                </div>
+                % endif
+
+                <table class="table table-hover table-box">
+                    <thead >
+                        <tr>
+                            <th>名称</th>
+                            <th>联系人</th>
+                            <th>联系手机</th>
+                            <th>余额</th>
+                            <th>分成比例</th>
+                            <th>描述</th>
+                             % if current_user.opr_type == 0:
+                            <th>操作</th>
+                             % endif
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % for agency in agency_list:
+                            <tr>
+                                <td>${agency.agency_name}</td>
+                                <td>${agency.contact}</td>
+                                <td>${agency.mobile}</td>
+                                <td>${utils.fen2yuan(agency.amount)}</td>
+                                <td>${agency.share_rate}</td>
+                                <td>${agency.agency_desc or ''}</td>
+                                <td>
+                                <a class="btn btn-xs" href="/admin/agency/update?agency_id=${agency.id}"><i class="fa fa-edit"></i>  修改</a>
+
+                                <a class="btn btn-xs" href="/admin/agency/recharge?agency_id=${agency.id}">
+                                <i class="fa fa-cny"></i> 充值</a>
+
+                                <a class="btn btn-xs" href="javascript:deleteAgency('${agency.id}')"><i class="fa fa-times"></i>  删除</a>
+                               
+                                </td>
+                            </tr>
+                        % endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</%def>

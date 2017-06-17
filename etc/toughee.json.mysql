@@ -1,0 +1,80 @@
+{
+    "admin": {
+        "host": "0.0.0.0", 
+        "port": 1816
+    }, 
+    "conf_file": "etc/toughee.json", 
+    "database": {
+        "backup_path": "/var/taurusxr/data",
+        "dbtype": "mysql", 
+        "dburl": "mysql://raduser:radpwd@127.0.0.1:3306/taurusxr?charset=utf8",
+        "echo": 0, 
+        "pool_recycle": 300, 
+        "pool_size": 120
+    },     
+    "mqproxy": {
+        "acct_message": "ipc:///tmp/taurusxr-acct-message",
+        "acct_result": "ipc:///tmp/taurusxr-acct-result",
+        "auth_message": "ipc:///tmp/taurusxr-auth-message",
+        "auth_result": "ipc:///tmp/taurusxr-auth-result",
+        "task_bind": "tcp://127.0.0.1:18000", 
+        "task_connect": "tcp://127.0.0.1:18000"
+    }, 
+    "radiusd": {
+        "acct_port": 1813, 
+        "auth_port": 1812, 
+        "host": "0.0.0.0"
+    }, 
+    "portal": {
+        "chap": 1, 
+        "debug": 1, 
+        "host": "0.0.0.0", 
+        "listen": 50100, 
+        "ntf_heart": 120, 
+        "port": 1820, 
+        "user_ntf_heart": 120
+    },   
+    "acsim": {
+        "portal_host": "127.0.0.1",
+        "portal_listen": 50100,
+        "port": 2000,
+        "secret": "secret",
+        "vendor": "huaweiv2",
+        "debug": 1
+    },          
+    "redis": {
+        "host": "127.0.0.1", 
+        "passwd": "", 
+        "port": 16370
+    }, 
+    "ssportal": {
+        "host": "0.0.0.0", 
+        "port": 1819
+    }, 
+    "mps": {
+        "host": "0.0.0.0", 
+        "port": 1817
+    },     
+    "syslog": {
+        "enable": 0, 
+        "level": "INFO", 
+        "port": 514, 
+        "server": "127.0.0.1", 
+        "shost": "toughee_admin"
+    }, 
+    "ha":{
+        "enable" : 0,
+        "interval":5,
+        "master": "tcp://127.0.0.1:19000",
+        "slave": "tcp://127.0.0.1:29000"        
+    },
+    "system": {
+        "debug": 1, 
+        "license": "", 
+        "release": "standard", 
+        "upgrade_url": "http://www.taurusx.net",
+        "superrpc": "http://ctlman:ctlroot@127.0.0.1:9001/RPC2", 
+        "secret": "0pNxtSi4kFaK2MEZTLYIATnQIdrCPtLq", 
+        "tz": "CST-8"
+    }
+}

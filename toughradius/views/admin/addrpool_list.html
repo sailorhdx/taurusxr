@@ -1,0 +1,71 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deletePool(pool_id)
+    {
+        if(confirm("确认删除吗？"))
+        {
+            window.location.href = "/admin/addrpool/delete?pool_id="+pool_id;
+        }
+    }
+
+</script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-sitemap"></i>
+            <h3 class="box-title">地址池列表</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('addrpool');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+        <div class="box-body">
+            <div class="container">
+                <div class="pull-left bottom10">
+                % if permit.match(current_user.username,'/admin/addrpool/add'):
+                     <a href="/admin/addrpool/add" class="btn btn-sm bg-navy">
+                     <i class="fa fa-plus-circle"></i> 创建地址池</a>
+                % endif
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>地址池名称</th>
+                            <th>开始IP地址</th>
+                            <th>结束IP地址</th>
+                            <th>下一个地址池</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        % for pool in pool_list:
+                            <tr>
+                                <td>${pool.pool_name}</td>
+                                <td>${pool.start_ip}</td>
+                                <td>${pool.end_ip}</td>
+                                <td>${pool.next_pool}</td>
+                                <td>
+                                    % if permit.match(current_user.username,'/admin/addrpool/update'):
+                                    <a class="btn btn-xs" href="/admin/addrpool/update?pool_id=${pool.id}">
+                                    <i class="fa fa-edit"></i> 修改</a>
+                                    % endif
+                                    % if permit.match(current_user.username,'/admin/addrpool/delete'):
+                                    <a class="btn btn-xs" href="javascript:deletePool('${pool.id}')">
+                                    <i class="fa fa-times"></i> 删除</a>
+                                    % endif
+                                </td>
+                            </tr>
+                        % endfor
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</%def>

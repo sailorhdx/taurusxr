@@ -1,0 +1,45 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<style type="text/css">
+    .break-all {
+        word-break: break-all; 
+    }
+</style>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+        <i class="fa fa-hdd-o"></i> <h3 class="box-title">用户认证日志查询</h3></div>
+        <div class="box-body">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/user/trace" method="post">
+                ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="keyword" class="col-sm-2 control-label">用户账号</label>
+                <div class="col-sm-3">
+                    <input type="text" id="keyword" name="keyword" class="form-control" value="${keyword or ''}">
+                </div>
+                <div class="col-sm-2">
+                    <button type="submit" class="btn btn-sm bg-navy">查询</button>
+                </div>
+            </div>
+        </form>        
+        <hr>
+
+            % for msg in messages:
+                % if '[RADIUSD]' not in msg:
+                <div class="msg-box break-all">
+                    ${msg.replace('\n','<br>').replace('\t',u'&nbsp&nbsp&nbsp&nbsp')}
+                </div>
+                % endif
+            % endfor
+
+    </div>
+</div>
+        </div>
+</section>
+
+</%def>

@@ -1,0 +1,174 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+<link href="/static/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/js/bootstrap-datetimepicker.css"> 
+<script src="/static/js/moment-with-locales.js"></script>
+<script src="/static/js/bootstrap-datetimepicker.js"></script>
+   <script>
+    $(document).ready(function(){
+        $("#query_begin_time").datetimepicker({
+            viewMode: 'years',
+            format: "YYYY",
+            locale: 'zh-cn'
+        });
+        $("#query_end_time").datetimepicker({
+            viewMode: 'years',
+            format: "YYYY",
+            locale: 'zh-cn'
+        });
+        $('#maintable').dataTable({
+          "bPaginate": true,
+          "bLengthChange": false,
+          "bFilter": false,
+          "bSort": true,
+          "bInfo": false,
+          "bAutoWidth": false,
+          "pagingType":   "full_numbers",
+          "oLanguage": {
+                "sZeroRecords": "没有找到符合条件的数据",
+                "oPaginate": {
+                "sFirst": "首页",
+                "sPrevious": "前一页",
+                "sNext": "后一页",
+                "sLast": "尾页"
+                }
+            }
+        });
+    });
+    function do_submit(){
+        $("#query_form").attr("action", "/admin/stat/income/year");
+        $("#query_form").submit();
+    }
+    function do_export(){
+        $("#query_form").attr("action", "/admin/stat/income/year/export");
+        $("#query_form").submit();
+        setTimeout(function(){$("#query_form").attr("action", "/admin/stat/income/year");}, 0);
+    }
+   </script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-rmb"></i>
+            <h3 class="box-title">收入年统计</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+            </div>              
+        </div>
+            <div class="box-body">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/stat/income/year" method="post">
+        ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="node_id" class="col-md-2 control-label">区域</label>
+                <div class="col-md-3">
+                    <select id="node_id" name="node_id" class="form-control input-sm" >
+                    <option value=""></option>
+                        % for node in node_list:
+                          <option value="${node.id}"  ${str(node.id)==node_id and "selected" or ""}>${node.node_desc}</option>
+                        % endfor
+                    </select>
+                </div>  
+                <label for="product_id" class="col-md-2 control-label">资费</label>
+                <div class="col-md-3">
+                    <select id="product_id" name="product_id" class="form-control input-sm" >
+                    <option value=""></option>
+                        % for product in products:
+                          <option value="${product.id}"  ${str(product.id)==product_id and "selected" or ""}>${product.product_name}</option>
+                        % endfor
+                    </select>
+                </div> 
+            </div>               
+            <div class="form-group">
+                <label for="query_begin_time" class="col-md-2 control-label">开始年份</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="query_begin_time" name="query_begin_time" value="${query_begin_time or ''}" class="form-control input-sm form_datetime"  >
+                </div>
+                 <label for="query_end_time" class="col-md-2 control-label">结束年份</label>
+                <div class="col-md-3">
+                    <input type="text" id="query_end_time" name="query_end_time" value="${query_end_time or ''}"  class="form-control input-sm form_datetime">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="pay_status" class="col-md-2 control-label">交易状态</label>
+                <div class="col-md-3">
+                    <select id="pay_status" name="pay_status" class="form-control input-sm" >
+                    <option value=""></option>
+                    <option value="0"  ${"0"==pay_status and "selected" or ""}>未支付</option>
+                    <option value="1"  ${"1"==pay_status and "selected" or ""}>已支付</option>
+                    <option value="2"  ${"2"==pay_status and "selected" or ""}>已对账</option>
+                    </select>
+                </div> 
+                <label for="accept_type" class="col-md-2 control-label">交易类型</label>
+                <div class="col-md-3">
+                    <select id="accept_type" name="accept_type" class="form-control input-sm" >
+                        <option value="">所有</option>
+                        <option value="open"  ${"open"==accept_type and "selected" or ""}>开户</option>
+                        <option value="next"  ${"next"==accept_type and "selected" or ""}>续费</option>
+                        <option value="charge"  ${"charge"==accept_type and "selected" or ""}>充值</option>
+                        <option value="cancel"  ${"cancel"==accept_type and "selected" or ""}>销户</option>
+                        <option value="change"  ${"change"==accept_type and "selected" or ""}>变更</option>
+                        <option value="auto_renew"  ${"auto_renew"==accept_type and "selected" or ""}>自动续费</option>
+                        <option value="apm_bill"  ${"apm_bill"==accept_type and "selected" or ""}>后付费账单</option>
+                    </select>
+                </div>                   
+            </div>  
+            <div class="form-group">       
+                <label for="operator_name" class="col-md-2 control-label">操作员</label>
+                <div class="col-md-3">
+                    <input type="text" id="operator_name" name="operator_name" value="${operator_name or ''}"  class="form-control input-sm">
+                </div>                          
+                <div class="col-md-7">
+                    <button type="button" onclick="do_submit();" class="btn btn-sm bg-navy">查询</button>
+                    <button type="button" onclick="$('input').val('');" class="btn btn-sm bg-navy">重置</button>
+                    % if permit.match(current_user.username,'/admin/stat/income/day/export'):
+                    <a href="javascript:do_export();" class="btn btn-sm bg-navy">
+                    <i class="fa fa-sign-out"></i> 导出数据</a>
+                    % endif
+                </div>
+            </div>
+        </form>
+
+        <table class="table" id="maintable">
+            <thead>
+            <tr>
+                <th>年份</th>
+                <th>区域</th>
+                <th>资费</th>
+                <th>操作员</th>
+                <th>受理用户数</th>
+                <th>总金额</th>
+            </tr>   
+        </thead>
+        <tbody>         
+            % for item in statitems:
+            <tr>
+                <td>${item.stat_year}</td>
+                <td>${item.node_name}</td>
+                <td>${item.product_name}</td>
+                <td>${item.operator_name}</td>
+                <td>${item.dev_count}</td>
+                <td>${utils.fen2yuan(item.actual_fee)}</td>
+            </tr>
+            % endfor
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4">合计</th>
+                    <th>${dev_total}</th>
+                    <th>${utils.fen2yuan(fee_total)}</th>
+                </tr>
+            </tfoot>
+        </table>  
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

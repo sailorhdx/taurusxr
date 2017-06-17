@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>修改账号密码</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">        
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">修改账号密码</h1>
+    </div>   
+    <div class="bd">
+        <form class="weui_cells weui_cells_form" action="/mps/modpwd" method="post">
+                ${xsrf_form_html()|n}
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">旧密码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="oldpass" type="password" placeholder="请输入旧密码"/>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">新密码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="newpass" type="password" placeholder="请输入新密码"/>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">确认新密码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="newpass1" type="password" placeholder="请确认新密码"/>
+            </div>
+        </div>
+        <div class="weui_btn_area">
+           <button name="submit"  type="submit" class="weui_btn  weui_btn_primary"><b>修改密码</b></button>
+        </div>
+        </form>
+        % if msg:
+        <div class="weui_cells_tips">${msg}</div>
+        % endif
+</div>
+</div>
+</body>
+</html>

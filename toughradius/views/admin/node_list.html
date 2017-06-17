@@ -1,0 +1,67 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteNode(node_id) {
+        if (confirm("删除区域节点会删除下属社区，确认删除吗？")) {
+            window.location.href = "/admin/node/delete?node_id=" + node_id;
+        }
+    }
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-map-marker"></i>
+            <h3 class="box-title">区域管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('node');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>              
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/node/add'):
+             <a href="/admin/node/add" class="btn btn-sm bg-navy">
+                  <i class="fa fa-plus-circle"></i> 创建区域</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>区域名称</th>
+                <th>区域类型</th>
+                <th>区域描述</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for node in nodes:
+            <tr>
+                <td>${node.node_name|h}</td>
+                <td>${node.node_type or ''|h}</td>
+                <td>${node.node_desc|h}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/node/update'):
+                    <a class="btn btn-xs" href="/admin/node/update?node_id=${node.id}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/node/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteNode('${node.id}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

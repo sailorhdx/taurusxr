@@ -1,0 +1,322 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link href="/static/css/bootstrap-multiselect.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/bootstrap-multiselect.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<script>
+
+function productCalc(){
+    param = {
+        'months': $("#months").val() || 0,
+        'days': $("#days").val() || 0,
+        'product_id':$("#product_id").val(),
+        'charge_code':$("#charge_code").val(),
+        'giftdays':$("#giftdays").val(),
+        '_xsrf': '${handler.xsrf_token}'
+    }
+
+    $.post("/admin/account/opencalc", param, function (ev) {
+        console.log(ev);
+        if(ev.code==0){
+            console.log(ev.data);
+            $("#fee_value").val(ev.data.fee_value);
+            $("#expire_date").val(ev.data.expire_date);
+
+            //预付费包月
+            if(ev.data.policy == 0){
+               $("#days").val(0);             
+               $("#months").parent().parent().show();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().show();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().show();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+
+            //预付费包日
+            if(ev.data.policy == 9){
+               $("#month").val(0);              
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().show();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().show();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+          
+            //预付费时长
+            if(ev.data.policy == 1){
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().hide();
+               $("#charge_code").parent().parent().show();
+               return;
+            } 
+
+            //买断包月
+            if(ev.data.policy == 2){
+               $("#days").val(0);
+               $("#month").val(0);              
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().show();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().show();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+
+            //买断包日
+            if(ev.data.policy == 10){
+               $("#days").val(0);
+               $("#month").val(0);
+               $("#days").parent().parent().hide();
+               $("#months").parent().parent().hide();
+               $("#giftdays").parent().parent().show();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().show();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+          
+            //买断时长
+            if(ev.data.policy == 3){
+               $("#days").val(0);
+               $("#month").val(0);
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().hide();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+            
+            //预付费流量
+            if(ev.data.policy == 4){
+               $("#days").val(0);
+               $("#month").val(0);              
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().hide();
+               $("#billing_type").parent().parent().hide();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+          
+            //买断流量
+            if(ev.data.policy == 5){
+               $("#days").val(0);
+               $("#month").val(0);              
+               $("#months").parent().parent().hide();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().show();
+               $("#billing_type").parent().parent().hide();
+               $("#charge_code").parent().parent().show();
+               return;
+            }    
+
+            //包月流量
+            if(ev.data.policy == 7){
+               $("#days").val(0);          
+               $("#months").parent().parent().show();
+               $("#days").parent().parent().hide();
+               $("#giftdays").parent().parent().hide();
+               $("#giftflows").parent().parent().show();
+               $("#billing_type").parent().parent().hide();
+               $("#charge_code").parent().parent().show();
+               return;
+            }
+          
+
+            //后付费包月
+            if(ev.data.policy == 8){
+               $("#days").val(0);
+               $("#month").val(0);              
+                $("#giftdays").parent().parent().hide();
+                $("#giftflows").parent().parent().hide();
+                $("#charge_code").parent().parent().show();
+                $("#months").parent().parent().hide();
+                $("#days").parent().parent().hide();
+                $("#billing_type").parent().parent().hide();
+            }
+        }
+    }, "json");
+}
+
+function reBuildAccount(){
+    $.get("/admin/customer/account/build?rule_id="+$("#account_rule").val(), function (ev) {
+        console.log(ev);
+        if(ev.code==0){
+            console.log(ev);
+            $("#account_number").val(ev.account);
+            $("#password").val(ev.passwd);
+        }
+    }, "json");
+}
+
+function updateBuilder() {
+    var area_id = $("#area_id").val();
+    if (node_id.length==0){
+        $("#builder_name").empty();
+        $("#builder_name").append("<option></option>");
+    }
+    else{
+        $.get("/admin/customer/account/builders", {'area_id':area_id}, function (data) {
+            $("#builder_name").empty();
+            $("#builder_name").append("<option></option>");
+            $.each(data, function (index, builder) {
+                var is_sel = '${builder_name or ""}' == builder.builder_name ? "selected" : "";
+                $("#builder_name").append(
+                    "<option value='" 
+                    + builder.builder_name 
+                    + "'"+ is_sel +">" 
+                    + builder.builder_name 
+                    + "</option>");
+            });
+        }, "json");
+    }
+}
+
+function updateCharges() {
+    var product_id = $("#product_id").val();
+    if (product_id.length==0){
+        $("#charge_code").empty();
+        $("#charge_code").append("<option></option>");
+    }
+    else{
+        $.get("/admin/customer/charges/update", {'product_id':product_id}, function (data) {
+            $("#charge_code").empty();
+            $("#charge_code").append("<option></option>");
+            $.each(data, function (index, charge) {
+                var is_sel = '${charge_code or ""}' == charge.charge_code ? "selected" : "";
+                $("#charge_code").append(
+                    "<option value='" 
+                    + charge.charge_code 
+                    + "'"+ is_sel +">" 
+                    + charge.charge_name 
+                    + "</option>");
+            });
+        }, "json");
+    }
+}
+
+function updateArea() {
+    var node_id = $("#node_id").val();
+    if (node_id.length==0){
+        $("#area_id").empty();
+    }
+    else{
+        $.get("/admin/customer/area/update", {'node_id':node_id}, function (data) {
+            $("#area_id").empty();
+            $.each(data, function (index, area) {
+                var is_sel = '${area_id or ""}' == area.area_id ? "selected" : "";
+                $("#area_id").append(
+                    "<option value='" 
+                    + area.area_id 
+                    + "'"+ is_sel +">" 
+                    + area.area_name 
+                    + "</option>");
+            });
+            updateAddress();
+            updateBuilder();
+        }, "json");
+    }
+}
+
+
+function updateAddress() {
+    var node_id = $("#node_id").val();
+    var area_id = $("#area_id").val();
+    $.get("/admin/customer/address/build", {'node_id':node_id,'area_id':area_id}, function (data) {
+        $("#address").val(data.addr_prefix);
+    }, "json");
+}
+
+function updateRule() {
+    var node_id = $("#node_id").val();
+    $.get("/admin/customer/rule/update", {'node_id':node_id}, function (data) {
+        $("#account_rule").val(data.account_rule);
+    }, "json");
+}
+
+
+
+//页面初始化
+$(document).ready(function (){
+    $('[data-toggle="popover"]').popover()
+    $("#node_id,#product_id").multiselect({
+      buttonWidth: "100%",
+      enableCaseInsensitiveFiltering: true,
+      maxHeight: 270
+    });    
+    % if int(current_user.opr_type) == 0:
+    $("#expire_date").datepicker();
+    % endif
+    $('#product_id').change(function() {
+        productCalc();
+        updateCharges();
+    });
+    $('#charge_code').change(function() {
+        productCalc();
+    });
+    $('#node_id').change(function() {
+        updateRule();
+        updateBuilder();
+        updateArea();
+        $("#account_number").val("");
+        $("#password").val("");
+    });
+    $('#area_id').change(function() {;
+        updateAddress();
+        updateBuilder();
+    });
+    $('#months').blur(function() {
+        productCalc();
+    }); 
+    $('#days').blur(function() {
+        productCalc();
+    }); 
+    $('#giftdays').blur(function() {
+        productCalc();
+    }); 
+    updateRule();
+    updateArea();
+    updateCharges();
+    productCalc();
+});
+</script>
+
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user-plus"></i>
+            <h3 class="box-title">${form.title}</h3>
+            <div class="bar pull-right">
+            <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('account_open');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+            % if msg:
+            <div class="alert alert-warning">${msg}</div>
+            % endif
+            <form id="customer_form" class="form-horizontal form-well" role="form" action="${form.action}" method="post" novalidate>
+            ${xsrf_form_html()|n}
+            ${form.render_css()|n}
+        </form>
+    </div>
+</div>
+</div>
+    </section>
+</%def>

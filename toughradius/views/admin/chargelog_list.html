@@ -1,0 +1,114 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+   <script>
+    $(document).ready(function(){
+        $("#query_begin_time").datepicker();
+        $("#query_end_time").datepicker();
+    });
+    function do_submit(){
+        $("#query_form").attr("action", "/admin/customer/chargelog");
+        $("#query_form").submit();
+    }
+   </script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user"></i>
+            <h3 class="box-title">用户收费项查询</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+            </div>            
+        </div>
+        <div class="box-body">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" method="post" action="/admin/customer/chargelog">
+            ${xsrf_form_html()|n}
+            <div class="form-group">
+
+                <label for="node_id" class="col-md-2 control-label">区域</label>
+
+                <div class="col-md-3">
+                    <select id="node_id" name="node_id" class="form-control">
+                        <option></option>
+                        % for node in node_list:
+                          <option value="${node.id}" ${str(node.id)==node_id and "selected" or ""}>${node.node_desc}</option>
+                        % endfor
+                    </select>
+                </div>
+                <label for="account_number" class="col-md-2 control-label">用户账号</label>
+                <div class="col-md-3">
+                    <input type="text" id="account_number" name="account_number" value="${account_number or ''}" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="charge_code" class="col-md-2 control-label">收费项</label>
+
+                <div class="col-md-3">
+                    <select id="charge_code" name="charge_code" class="form-control">
+                        <option></option>
+                        % for value,name in charges:
+                          <option value="${value}" ${value==charge_code and "selected" or ""}>${name}</option>
+                        % endfor
+                    </select>
+                </div>            
+                <label for="operator_name" class="col-md-2 control-label">操作员</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="operator_name" name="operator_name" value="${operator_name or ''|h}" class="form-control" placeholder="">
+                </div>
+            </div>    
+            <div class="form-group">
+                <label for="query_begin_time" class="col-md-2 control-label">开始时间</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="query_begin_time" name="query_begin_time" value="${query_begin_time or ''|h}" class="form-control form_datetime"  >
+                </div>
+                 <label for="query_end_time" class="col-md-2 control-label">结束时间</label>
+                <div class="col-md-3">
+                    <input type="text" id="query_end_time" name="query_end_time" value="${query_end_time or ''|h}"  class="form-control form_datetime">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-5 col-md-7">
+                    <button type="button" onclick="do_submit();" class="btn btn-sm bg-navy">查询</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table">
+            <thead>
+            <tr>
+                <th>用户账号</th>
+                <th>收费项名称</th>
+                <th>收费项金额</th>
+                <th>订单号</th>
+                <th>操作员</th>
+                <th>操作时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for clog in page_data.result:
+            <tr>
+                <td><a href="/admin/customer/detail?account_number=${clog.account_number}">${clog.account_number}</a></td>
+                <td>${clog.charge_name|h}</td>
+                <td>${utils.fen2yuan(clog.charge_value)}</td>
+                <td>${clog.order_id}</td>
+                <td>${clog.operator_name|h}</td>
+                <td>${clog.operate_time}</td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

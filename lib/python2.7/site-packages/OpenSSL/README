@@ -1,0 +1,156 @@
+=============================================================================
+eGenix pyOpenSSL Distribution for Python
+-----------------------------------------------------------------------------
+
+This distribution includes an easy to install version of the pyOpenSSL
+package, together with the needed OpenSSL DLLs on Windows and most
+Unix platforms.
+
+Note that the included OpenSSL DLLs and shared libs do not include the
+code for the patented IDEA, MDC2 and RC5 algorithms. They do have zlib
+compression enabled on both Windows and Unix.
+
+
+DISCLAIMER
+----------
+
+To simplify the installation of this edition, some components link
+directly against third party tools which are also included in the
+package.
+
+These third party tools are available separately from their respective
+vendors and only provided for your convenience. eGenix.com Software,
+Skills and Services GmbH Langenfeld provides the third party software
+AS-IS WITHOUT WARRANTY OR SUPPORT of any kind.  USE AT YOUR OWN RISK.
+
+
+Source Installation
+-------------------
+
+In order to build and install the distribution, run 
+
+    python setup.py install
+
+Then change to some other directory and try to import the packages:
+
+$ cd ~
+$ python
+>>> import OpenSSL
+>>>                            
+
+Note that trying this from the installation directory will cause
+Python to pick up the source tree packages which do not contain the
+compiled binaries.  This will likely fail with strange error messages.
+
+
+Prebuilt Installation
+---------------------
+
+If you have downloaded a prebuilt distribution archive, the
+installation is the same, except that setup.py will skip the build
+automatically and use the pre-built files that come with the
+installation archive. You have to run
+
+    python setup.py install
+
+Then follow the same instructions as for the source installation.
+
+
+Distribution Copyrights & Licenses
+----------------------------------
+
+The software in this distribution is copyrighted and protected by
+international, EU and German copyright law. Please see the COPYRIGHT
+file for details.
+
+The distribution is licensed to you under the eGenix.com Public
+License as stated in the LICENSE file of the distribution directory.
+Some subpackages may contain third-party software which is licensed
+under different conditions. Please see the documentation and/or
+LICENSE files of the subpackages for details.
+
+If in doubt, please check the web-site at http://www.egenix.com/ or
+contact sales@egenix.com for more information on copyright, licensing
+conditions and authorized use.
+
+
+pyOpenSSL Copyright & Licenses
+------------------------------
+
+The files under OpenSSL/ (except for the the OpenSSL DLLs included on
+Windows) are:
+
+Copyright (C) AB Strakt 2001, All rights reserved
+Copyright (C) Jean-Paul Calderone 2008, All rights reserved
+(and possibly others)
+
+
+and licensed under the LGPL version 2.1 or later. Please see the
+LICENSE.pyOpenSSL file for details.
+
+The full source archive for pyOpenSSL is available on SourceForge
+at http://pyopenssl.sourceforge.net/
+
+This distribution only contains the files necessary to build the
+Python packages. The documentation is not included in the
+distribution, but available separately at the above Internet address
+and also from eGenix.com on request.
+
+Patches applied to pyOpenSSL:
+
+ * Maxim Sobolev: Module crashes "Fatal Python error: ceval: tstate mix-up"
+ http://sourceforge.net/tracker/index.php?func=detail&aid=2543118&group_id=31249&atid=401760
+
+
+OpenSSL Copyright & Licenses
+----------------------------
+
+On Windows, we ship precompiled OpenSSL DLLs together with the binary
+packages to simplify installation. The DLLs are libeay32.dll and
+ssleay32.dll. They are included in the OpenSSL/ package directory.
+
+On Unix, we ship precompiled OpenSSL shared libs together with the binary
+packages to simplify installation. The libs are libcrypto.so.<version> and
+libssl.so.<version>. They are included in the OpenSSL/ package directory.
+
+The source distribution also includes the header files from the
+project and precompiled DLLs for VC6, VC7.1 and VC9 in the openssl-win32/
+directory.
+
+These files are:
+
+Copyright (c) 1998-2008 The OpenSSL Project.  All rights reserved.
+Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com). All rights reserved.
+Copyright 2002 Sun Microsystems, Inc. ALL RIGHTS RESERVED.
+(and possibly others)
+
+and licensed under the BSD-style OpenSSL license. Please see the
+LICENSE.OpenSSL file for details.
+
+This product includes cryptographic software written by Eric Young
+(eay@cryptsoft.com).  This product includes software written by Tim Hudson
+(tjh@cryptsoft.com). This product includes software developed by the OpenSSL
+Project for use in the OpenSSL Toolkit. (http://www.openssl.org/)
+
+
+zlib Copyright & License
+------------------------
+
+The precompiled OpenSSL DLLs or shared libraries may be statically
+linked against the zlib compression library and thus include the
+necessary zlib executable code.
+
+The zlib code is:
+
+Copyright (C) 1995-2005 Jean-loup Gailly and Mark Adler
+
+and licensed under the BSD-style zlib license.  Please see the
+LICENSE.zlib file for details.
+
+
+-----------------------------------------------------------------------------
+eGenix.com GmbH
+Pastor-Loeh-Str. 48
+D-40764 Langenfeld
+Germany
+info@egenix.com

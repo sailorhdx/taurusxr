@@ -1,0 +1,448 @@
+<%inherit file="base.html"/>
+<%namespace name="cus_ui" file="customer_ui.html"/>
+<%def name="head()">
+<script src="/static/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+<link href="/static/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css" />
+<style type="text/css">.break-all {word-break: break-all; }</style>
+<script>
+
+function do_pause(account_number)
+{
+    if (!confirm("确认操作吗？")) {
+        return;
+    }
+    params = {account_number:account_number,'_xsrf': '${handler.xsrf_token}'};
+    $.post("/admin/account/pause", params, function (data) {
+        alert(data.msg)
+        window.location.reload();
+    },"json");
+}
+
+function do_resume(account_number)
+{
+    if (!confirm("确认操作吗？")) {
+        return;
+    }
+    params = {account_number:account_number,'_xsrf': '${handler.xsrf_token}'};
+    $.post("/admin/account/resume", params, function (data) {
+        alert(data.msg)
+        window.location.reload();
+    },"json");
+}    
+
+function release(account_number)
+{
+    params = {account_number:account_number,'_xsrf': '${handler.xsrf_token}'};
+    $.post("/admin/account/release", params, function (data) {
+        alert(data.msg)
+        location.href.reload();
+    },"json");
+}
+
+function do_delete(customer_id)
+{
+    if(confirm("删除账号将删除账号所有相关数据，包括账号，日志，订单等，不可恢复，确认操作吗？")) {
+        window.location.href = "/admin/customer/delete?customer_id="+customer_id;
+    }
+    
+}
+
+
+
+$(document).ready(function(){
+    $('#userorders-tab').dataTable({
+      "bPaginate": false,
+      "bLengthChange": false,
+      "bFilter": false,
+      "bSort": true,
+      "bInfo": false,
+      "bAutoWidth": true
+    });
+    $('#userapt-tab').dataTable({
+      "bPaginate": false,
+      "bLengthChange": false,
+      "bFilter": false,
+      "bSort": true,
+      "bInfo": false,
+      "bAutoWidth": true
+    });
+});
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user"></i>
+            <h3 class="box-title">用户受理</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('userinfo');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>
+        </div>
+        <div class="box-body">
+            <div class="container">
+        <div class="pull-left bottom10">
+
+            <div class="btn-group">
+              <button type="button" class="btn btn-sm bg-navy dropdown-toggle" style="width:160px;"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-info-circle"></i> 用户账号修改 <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                ${cus_ui.accept_normal(u"修改基本资料",user.status,
+            "/admin/customer/update?customer_id=%s&account_number=%s"%(customer.customer_id,user.account_number),icon='info-circle')}
+                ${cus_ui.accept_normal(u"修改计费策略",user.status,"/admin/account/update?account_number=%s"%(user.account_number),icon='gears')}
+                ${cus_ui.accept_normal(u"修改认证密码",user.status,"/admin/account/password?account_number=%s"%(user.account_number),icon='key')}
+                ${cus_ui.accept_normal(u"解除MAC绑定",user.status,"javascript:release('%s');"%user.account_number,"/admin/account/release",icon='unlock')}
+              </ul>
+            </div>
+            <!-- 受理按钮组 -->
+            <div class="btn-group">
+              <button type="button" class="btn btn-sm bg-navy dropdown-toggle" style="width:160px;"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fa fa-smile-o"></i> 用户业务受理 <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">  
+                ${cus_ui.accept_normal(u"用户资费变更",user.status,"/admin/account/change?account_number=%s"%user.account_number,icon='suitcase')}  
+                ${cus_ui.accept_normal(u"用户账号停机",user.status,"javascript:do_pause('%s');"%user.account_number,"/admin/account/pause",icon='pause')} 
+                ${cus_ui.accept_pause(u"用户账号复机",user.status,"javascript:do_resume('%s');"%user.account_number,"/admin/account/resume",icon='mail-forward')}  
+                % if user.product_policy in (0,2,3,5,9,10):
+                    ${cus_ui.accept_normal(u"用户账号续费",user.status,"/admin/account/next?account_number=%s"%user.account_number,icon='cny')}    
+                % elif user.product_policy in (1,4,7): 
+                   ${cus_ui.accept_normal(u"用户账号充值",user.status,"/admin/account/charge?account_number=%s"%user.account_number,icon='cny')}  
+                % endif 
+                ${cus_ui.accept_expire(u"用户账号续费",user.status,"/admin/account/next?account_number=%s"%user.account_number,icon='cny')}
+                % if int(user.status) != 3: 
+                ${cus_ui.accept_none(u"创建用户工单","/admin/issues/add?account_number=%s"%user.account_number,icon='ticket')}  
+                ${cus_ui.accept_none(u"用户账号销户","/admin/account/cancel?account_number=%s"%user.account_number,icon='ban')}  
+                % endif                  
+              </ul>
+            </div>
+
+    
+        ${cus_ui.accept_warn(u"删除","javascript:do_delete('%s');"%user.customer_id,"/admin/customer/delete",icon='times-circle')}
+        </div>   
+        <div class="clearfix"></div>
+        <div role="tabpanel">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#userinfo" aria-controls="userinfo" role="tab" data-toggle="tab">用户信息</a>
+                </li>
+                <li role="presentation">
+                    <a href="#uattrs" aria-controls="uattrs" role="tab" data-toggle="tab">用户属性</a>
+                </li>                
+                <li role="presentation">
+                    <a href="#userorders" aria-controls="userorders" role="tab" data-toggle="tab">交易记录</a>
+                </li>
+                <li role="presentation">
+                    <a href="#userapt" aria-controls="userapt" role="tab" data-toggle="tab">受理记录</a>
+                </li>
+                <li role="presentation">
+                    <a href="#issues_list" aria-controls="issues_list" role="tab" data-toggle="tab">用户工单</a>
+                </li>
+                <li role="presentation">
+                    <a href="#userlogs" aria-controls="userlogs" role="tab" data-toggle="tab">用户日志</a>
+                </li>
+                 % if handler.license.type != 'community':
+                <li role="presentation">
+                    <a href="#vcards" aria-controls="vcards" role="tab" data-toggle="tab">充值卡记录</a>
+                </li>
+                % endif
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="userinfo">
+                <table class="table">
+                        <thead>
+                            <tr>
+                                <th colspan="6"> 基本信息</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>用户姓名</td>
+                                <td>${customer.realname|h}</td>
+                                <td>证件号码</td>
+                                <td>${customer.idcard or ''}</td>              
+                                <td>联系电话</td>
+                                <td>${customer.mobile or ''}</td>
+                            </tr>
+                            <tr>
+                                <td>区域</td>
+                                <td>${user.node_name|h}</td>
+                                <td>社区</td>
+                                <td>${user.area_name|h}</td>
+                                <td>地址</td>
+                                <td>${customer.address or ''|h}</td>                        
+                            </tr>        
+                            <tr>
+                                <td>电子邮箱</td>
+                                <td>${customer.email or ''|h}
+                                % if customer.email:
+                                (${customer.email_active == 1 and u'已绑定' or u'未绑定'})
+                                % endif
+                                </td>                    
+                                <td>代理商</td>
+                                <td>${user.agency_name or ''|h}</td>
+                                <td>创建时间</td>
+                                <td>${customer.create_time}</td>
+                            </tr>          
+                            <tr>
+                                <td>微信 Openid</td>
+                                <td colspan=5>${customer.wechat_oid or ''}
+                            </tr>                                                                       
+                    </tbody>
+                </table>
+               
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th colspan="6"> 认证信息</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>用户账号</td>
+                            <td>${user.account_number} (${repr(showpwd(user.password))})
+                            </td>
+                            <td>资费名称</td>
+                            <td>${user.product_name|h}</td>
+                            <td>用户状态</td>
+                            <td>
+                            % if user.status == 0:
+                                <span class="label label-info">未激活</span>
+                            % elif user.status == 1:
+                                % if utils.is_expire(user.expire_date):
+                                <span class="label label-warning">到期</span>
+                                % else:
+                                <span class="label label-success">正常</span>
+                                % endif
+                            % elif user.status == 2:
+                                <span class="label label-default">停机</span>
+                            % elif user.status == 3:
+                                <span class="label label-danger">销户</span>
+                            % elif utils.is_expire(user.expire_date) or user.status == 4:
+                                <span class="label label-warning">到期</span>
+                            % endif
+                            </td>                 
+                        </tr>
+                        <tr>
+                            <td>过期时间</td>
+                            <td>${user.expire_date}</td>
+                            <td>剩余时长</td>
+                            <td>${utils.sec2hour(user.time_length)}小时</td>
+                            <td>剩余流量</td>
+                            <td>${utils.kb2gb(user.flow_length)} G </td>
+                        </tr>      
+                        <tr>
+                            <td>并发数</td>
+                            <td>${user.user_concur_number}</td>
+                            <td>绑定MAC</td>
+                            <td>${{0:u"否", 1:u"是"}[user.bind_mac]}</td>                        
+                            <td>MAC地址</td>
+                            <td>${user.mac_addr}</td>                        
+                        </tr>   
+                        <tr>
+                            <td>绑定VLAN</td>
+                            <td>${{0:u"否", 1:u"是"}[user.bind_vlan]}</td>
+                            <td>VLANID1/VLANID2</td>
+                            <td>${user.vlan_id1}/${user.vlan_id2}</td>
+                            <td>IP地址</td>
+                            <td>${user.ip_address or ''|h}</td>
+                        </tr>   
+                        <tr>
+                            <td>最近停机时间</td>
+                            <td>${user.last_pause or ''}</td>
+                            <td>创建时间</td>
+                            <td>${user.create_time}</td>     
+                            <td>更新时间</td>
+                            <td>${user.update_time}</td>                        
+                        </tr>                                                                      
+                </tbody>
+            </table>
+            </div>
+
+
+        <div role="tabpanel" class="tab-pane" id="uattrs">
+        <table class="table table-hover ">
+         <thead>
+            <tr>
+                <th>属性名称</th>
+                <th>属性值</th>
+                <th>属性描述</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            % for attr in attrs:
+            <tr>
+                <td>${attr.attr_name|h}</td>
+                <td>
+                % if attr.attr_name in ('IDCARD1','IDCARD2'):
+                <a href="/admin/customer/attrfile/${user.account_number}/${attr.attr_name}" target="_blank">查看文件</a>
+                % else:
+                ${attr.attr_value|h}
+                % endif
+                </td>
+                <td>${attr.attr_desc|h}</td>
+                <td>
+                % if permit.match(current_user.username,'/admin/customer/attr/update'):
+                <a class="btn btn-xs" href="/admin/customer/attr/update?attr_id=${attr.id}">
+                <i class="fa fa-edit"></i> 修改</a>
+                % endif
+                % if permit.match(current_user.username,'/admin/customer/attr/delete'):
+                <a class="btn btn-xs" href="javascript:deleteAttr('${attr.id}');">
+                <i class="fa fa-times"></i> 删除</a>
+                % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>       
+        </div>
+
+
+            <div role="tabpanel" class="tab-pane" id="userorders">
+            <table class="table " id="userorders-tab">
+                <thead>
+                    <tr>
+                        <th>资费</th>
+                        <th>收费项</th>
+                        <th>金额(元)</th>
+                        <th>交易状态</th>
+                        <th>交易时间</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                % for order in orders:
+                <tr>
+                    <td><a href="/admin/product/detail?product_id=${order.product_id}">${order.product_name|h}</a></td>
+                    <td>${citem or ''} ${utils.fen2yuan(cvalue)}</td>
+                    <td>${utils.fen2yuan(order.actual_fee)}</td>
+                    <td>${{0:u"未支付",1:u"已支付",2:u"已对账"}[order.pay_status]}</td>
+                    <td>${order.create_time}</td>
+                    <td>
+                        % if order.pay_status <> 2 and permit.match(current_user.username,'/admin/customer/order/check'): 
+                        <a class="btn btn-xs" href="/admin/customer/order/check?order_id=${order.order_id}"><i class="fa fa-check-circle"></i> 对账</a>
+                        % endif                    
+                        <a class="btn btn-xs" href="javascript:void(0);" data-container="body" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="${order.order_desc|h}">
+                        <i class="fa fa-info-circle"></i></a> 
+                        % if permit.match(current_user.username,'/admin/customer/note/print'):
+                        <a class="btn btn-xs" href="/admin/customer/note/print?order_id=${order.order_id}">
+                            <i class="fa fa-print"></i> 打印</a>
+                        % endif
+                    </td>
+                </tr>
+                % endfor
+                </tbody>
+            </table>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="userapt">
+            <table class="table" id="userapt-tab">
+                <thead>
+                    <tr>
+                        <th width=10%>账号</th>
+                        <th width=10%>类型</th>
+                        <th width=10%>操作员</th>
+                        <th width=15%>时间</th>
+                        <th width=40%>受理描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                % for alog in accepts:
+                <tr>
+                    <td>${alog.account_number}</td>
+                    <td>${type_map[alog.accept_type]}</td>
+                    <td>${alog.operator_name|h}</td>
+                    <td>${alog.accept_time}</td>
+                    <td>${alog.accept_desc or ''|h}</td>
+                </tr>
+                % endfor
+                </tbody>
+            </table>
+            </div>
+
+            <div role="tabpanel" class="tab-pane" id="issues_list">
+            <table class="table" id="issues_list-tab">
+                <thead>
+                    <tr>
+                    <th>工单ID</th>
+                    <th>工单类型</th>
+                    <th>处理状态</th>
+                    <th>当前服务人员</th>
+                    <th width="40%">工单描述</th>
+                    <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                % for issues in  issues_list:
+                <tr>
+                    <td>${issues.id}</td>
+                    <td>${{0:u"新装",1:u'故障',2:u'投诉',3:u"其他"}[issues.issues_type]}</td>
+                    <td>${{0:u"未处理",1:u'处理中',2:u'挂起',3:u"取消",4:u"完成"}[issues.status]}</td>
+                    <td>${issues.builder_name}</td>
+                    <td>${issues.content[:140] or ""}...</td>
+                    <td>
+                        % if permit.match(current_user.username,'/admin/issues/detail'):
+                        <a href="/admin/issues/detail?issues_id=${issues.id}" class="btn btn-xs">
+                        <i class="fa fa-file-o"></i> 工单详情</a>
+                        % endif
+                    </td>                    
+                </tr>
+                % endfor
+                </tbody>
+            </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="userlogs" style="height:420px;overflow:auto;margin-top:1px;">
+            % for msg in userlogs:
+            % if '[RADIUSD]' not in msg:                
+                <div class="msg-box break-all">
+                    ${msg.replace('\n','<br>').replace('\t',u'&nbsp&nbsp&nbsp&nbsp')|n}
+                </div>
+            % endif
+            % endfor
+            </div>
+             % if handler.license.type != 'community':
+            <div role="tabpanel" class="tab-pane" id="vcards">
+            <table class="table" id="vcards-tab">
+                <thead>
+                    <tr>
+                    <th>充值卡</th>
+                    <th>类型</th>
+                    <th>储值余额(元)</th>
+                    <th>储值流量(G)</th>
+                    <th>储值时长(小时)</th>
+                    <th>零售价格</th>
+                    <th>激活时间</th>
+                    <th>使用时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                % for vcard in  vcards:
+                <tr>
+                <td>${vcard.card_code}</td>
+                <td>${vcard.card_type}</td>
+                <td>${vcard.credit}</td>
+                <td>${vcard.flowlen}</td>
+                <td>${vcard.timelen}</td>
+                <td>${vcard.fee_price}</td>
+                <td>${vcard.active_time}</td>
+                <td>${vcard.expire_date}</td>
+                </tr>
+                % endfor
+                </tbody>
+            </table>
+            </div>
+            % endif
+
+        </div>
+    </div>
+</div>
+</div>
+</div>
+    </section>
+</%def>

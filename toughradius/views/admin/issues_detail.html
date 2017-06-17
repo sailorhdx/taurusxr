@@ -1,0 +1,109 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-ticket"></i>
+            <h3 class="box-title">用户工单详情</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('issues');"><i class="fa fa-question-circle"></i> 帮助</a></div>
+        </div>
+    <div class="box-body">
+     <div class="container">
+
+        <h5>工单基本信息</h5>
+        <table class="table table-bordered">
+                <tbody>
+                    <tr>
+                        <th>ID</th>
+                        <td>${issues.id}</td>
+                        <th>状态</th>
+                        <td>
+                            <span ${colors[issues.status]}>${{0:u"未处理",1: u'处理中', 2: u'挂起', 3: u'取消',4:u'处理完成'}[issues.status]}</span>
+                        </td>
+                        <th>用户</th>
+                        <td><a href="/admin/customer/detail?account_number=${issues.account_number}">${issues.account_number}</a></td>
+                    </tr>
+                    <tr >
+                        <th>类型</th>
+                        <td>${{0:u'新装',1:u'故障',2:u'投诉',3:u'其他'}[issues.issues_type]}</td>
+                        <th>服务人员</th>
+                        <td>${issues.builder_name|h}</td>
+                        <th>操作时间</th>
+                        <td>${issues.date_time}</td>
+                    </tr>
+                    <tr >
+                        <th>工单内容</th>
+                        <td colspan="10">${issues.content|h}</td>
+                    </tr>
+                    % if issues.status in (0,1,2) and (current_user.opr_type == 0 or issues.operator_name == current_user.username):
+                    <tr>
+                        <td colspan="9">
+                            <form class="form-inline" action="/admin/issues/assign" method="post">
+                                ${xsrf_form_html()|n}
+                                <div class="form-group">
+                                    <input type="hidden" name="issues_id" value="${issues.id}"/>
+                                    <label class="sr-only" for="builder_name">操作员</label>
+                                    <select class="form-control" name="builder_name" id="builder_name">
+                                        % for bname,bnamephone in builders:
+                                        <option value="${bname}">${bnamephone|h}</option>
+                                        % endfor
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-default">工单转派</button>
+                            </form>
+                            % if msg:
+                            <span class="alert alert-warning">${msg|h}</span>
+                            % endif
+                        </td>
+                    </tr>
+                % endif
+            </tbody>
+
+        </table>
+
+        <h5>工单处理信息</h5>
+
+        % for iflow in issues_flows:
+        <table class="table table-bordered">
+
+            <tbody>
+
+            <tr class="active">
+                <td width="5%">状态</td>
+                <td>
+                    <span ${colors[iflow.accept_status]}>${{1: u'处理中', 2: u'挂起', 3: u'取消',4:u'处理完成'}[iflow.accept_status]}</span>
+                </td>
+                <td>操作员</td>
+                <td>${iflow.operator_name|h}</td>
+                <td>处理时间</td>
+                <td>${iflow.accept_time}</td>
+            </tr>
+            <tr>
+                <td colspan="2">处理描述</td>
+                <td colspan="4">${iflow.accept_result|h}</td>
+            </tr>
+
+            </tbody>
+        </table>
+        % endfor
+
+        % if issues.status in (0,1,2) and (current_user.opr_type == 0 or issues.operator_name == current_user.username):
+        % if msg:
+        <div class="alert alert-warning">${msg|h}</div>
+        % endif
+        <form class="form-horizontal form-well" role="form" action="${form.action}" method="post">
+            ${xsrf_form_html()|n}
+            ${form.render_css()|n}
+        </form>
+        % endif
+        </div>
+    </div>
+</div>
+</div>
+</div>
+    </section>
+</%def>

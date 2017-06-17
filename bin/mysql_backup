@@ -1,0 +1,20 @@
+#!/bin/bash
+# toughee database backup script
+# crontab -e   01 1 * * *  sh /opt/taurusxr/bin/mysql_backup
+
+USER="root"
+PASSWORD=
+OUTPUT="/backup"
+DATABASES=("mysql" "taurusxr")
+
+test -d $OUTPUT || mkdir -p $OUTPUT
+
+find $OUTPUT -name "*.sql.xz" -type f -mtime +14 -exec rm -f {} \; > /dev/null 2>&1
+
+for db in ${DATABASES[@]}; do
+    echo "backup database: $db"
+    mysqldump --force --opt --user=$USER \
+        --password=$PASSWORD --databases $db \
+        --ignore-table=taurusxr.tr_ticket > $OUTPUT/`date +%Y%m%d`.$db.sql
+    xz -f $OUTPUT/`date +%Y%m%d`.$db.sql
+done

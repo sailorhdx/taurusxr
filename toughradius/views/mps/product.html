@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>资费套餐</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+<body> 
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">套餐信息</h1>
+    </div>
+    <div class="bd">
+        <div class="weui_cells">
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <p>资费名称</p>
+                </div>
+                <div class="weui_cell_ft">${product.product_name}</div>
+            </div>
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <p>资费价格</p>
+                </div>
+                <div class="weui_cell_ft">${utils.fen2yuan(product.fee_price)}</div>
+            </div>
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <p>上传速率</p>
+                </div>
+                <div class="weui_cell_ft">${utils.bps2mbps(product.input_max_limit)} Mbps</div>
+            </div>
+            <div class="weui_cell">
+                <div class="weui_cell_bd weui_cell_primary">
+                    <p>下载速率</p>
+                </div>
+                <div class="weui_cell_ft">${utils.bps2mbps(product.output_max_limit)} Mbps</div>
+            </div>
+          % if handler.wxpay_enable:
+          <div class="weui_btn_area">
+             <a href="/mps/wxorder/new/${product.id}" class="weui_btn  weui_btn_primary"><b>订 购</b></button>
+          </div>     
+          % endif 
+        </div>     
+    </div>     
+</div>     
+</div>     
+</body>
+</html>

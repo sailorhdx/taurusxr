@@ -1,0 +1,68 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteCharge(charge_code) {
+        if (confirm("确认删除吗？")) {
+            window.location.href = "/admin/charge/delete?charge_code=" + charge_code;
+        }
+    }
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-cny"></i>
+            <h3 class="box-title">收费项管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('product');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/charge/add'):
+            <a href="/admin/charge/add" class="btn btn-sm bg-navy"><i class="fa fa-plus-circle"></i> 创建收费项</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>收费项编码</th>
+                <th>收费项名称</th>
+                <th>收费项金额</th>
+                <th>收费项描述</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for charge in charges:
+            <tr>
+                <td>${charge.charge_code}</td>
+                <td>${charge.charge_name|h}</td>
+                <td>${utils.fen2yuan(charge.charge_value)}</td>
+                <td>${charge.charge_desc|h}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/charge/update'):
+                    <a class="btn btn-xs" href="/admin/charge/update?charge_code=${charge.charge_code}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/charge/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteCharge('${charge.charge_code}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

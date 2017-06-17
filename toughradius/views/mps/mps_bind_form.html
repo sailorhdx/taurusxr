@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>用户微信绑定</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">        
+    <link rel="shortcut icon" href="/static/favicon.ico"/>
+    <link href="/static/css/weui.min.css" rel="stylesheet" type="text/css"/>
+    <link href="/static/css/mps.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div class="container" id="container">
+<div class="panel">
+    <div class="hd">
+        <h1 class="page_title">账号绑定</h1>
+    </div>   
+    <div class="bd">
+        <form class="weui_cells weui_cells_form" action="/mps/userbind" method="post">
+                ${xsrf_form_html()|n}
+              <input type="hidden" placeholder="" id="openid" name="openid" value="${openid or ''}"/>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">用户账号</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="username" placeholder="请输入用户账号"/>
+            </div>
+        </div>
+        <div class="weui_cell">
+            <div class="weui_cell_hd"><label class="weui_label">账号密码</label></div>
+            <div class="weui_cell_bd weui_cell_primary">
+                <input class="weui_input" name="password" type="password" placeholder="请输入账号密码"/>
+            </div>
+        </div>
+        <div class="weui_btn_area">
+           <button name="submit"  type="submit" class="weui_btn  weui_btn_primary"><b>绑定微信</b></button>
+        </div>
+        </form>
+        % if msg:
+        <div class="weui_cells_tips">${msg}</div>
+        % endif
+    </div>
+</div>
+</body>
+</html>

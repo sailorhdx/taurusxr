@@ -1,0 +1,188 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+
+function busy(flag) {
+    if (flag) {
+        $("#sync_addrpool").attr("disabled", "disabled"); 
+        $("#sync_profile").attr("disabled", "disabled");    
+        $("#sync_user").attr("disabled", "disabled");    
+    } else {
+        $("#sync_addrpool").removeAttr("disabled");
+        $("#sync_profile").removeAttr("disabled");
+        $("#sync_user").removeAttr("disabled");
+    }
+}
+
+function deleteAttr(attr_id) {
+    if (confirm("确认删除吗？")) {
+        window.location.href = "/admin/bas/attr/delete?attr_id=" +attr_id;
+    }
+}
+
+function doResync(bas_id,stype)
+{
+    busy(true);
+    params = {stype : stype, bas_id: bas_id}
+    $.get("/admin/bas/rossync", params, function (ev) {
+        busy(false);
+        if(ev.code==0){
+          toastr.success(ev.msg);
+          //setTimeout("window.location.reload()",1000);
+        }else{
+          toastr.error(ev.msg);
+        }
+    }, "json");
+}
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-archive"></i>
+            <h3 class="box-title">接入设备信息</h3>
+            <div class="bar pull-right"><a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('bas');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+
+            % if permit.match(current_user.username,'/admin/bas/update'):
+            <a href="/admin/bas/update?bas_id=${bas.id}" class="btn btn-sm bg-navy">
+            <i class="fa fa-edit"></i> 修改接入设备</a>
+            % endif
+
+            % if permit.match(current_user.username,'/admin/bas/attr/add'):
+            <a href="/admin/bas/attr/add?bas_id=${bas.id}" class="btn btn-sm bg-navy">
+            <i class="fa fa-plus-circle"></i> 创建设备属性</a>
+            % endif
+
+            % if sysenv.get("LICENSE_TYPE",'') in ['taurusxee','routeros-oem']:
+                % if permit.match(current_user.username,'/admin/rossync/addrpool'):
+                     <a id="sync_addrpool" href="javascript:doResync('${bas.id}','addrpool');" class="btn btn-sm bg-navy">
+                     <i class="fa fa-refresh"></i> 同步地址池</a>
+                % endif
+                % if permit.match(current_user.username,'/admin/rossync/profile'):
+                     <a id="sync_profile" href="javascript:doResync('${bas.id}','profile')" class="btn btn-sm bg-navy">
+                     <i class="fa fa-refresh"></i> 同步配置数据</a>
+                % endif
+                % if permit.match(current_user.username,'/admin/rossync/user'):
+                     <a id="sync_user" href="javascript:doResync('${bas.id}','user');" class="btn btn-sm bg-navy">
+                     <i class="fa fa-refresh"></i> 同步用户数据</a>
+                % endif
+            % endif            
+
+        </div>   
+
+
+        <div class="clearfix"></div>
+        <div role="tabpanel">
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#basinfo" aria-controls="basinfo" role="tab" data-toggle="tab">基本信息</a>
+                </li>
+                <li role="presentation">
+                    <a href="#pattrs" aria-controls="pattrs" role="tab" data-toggle="tab">扩展属性</a>
+                </li>
+                % if sysenv.get("LICENSE_TYPE",'') in ['taurusxee','routeros-oem']:
+                <li role="presentation">
+                    <a href="#synclogs" aria-controls="synclogs" role="tab" data-toggle="tab">同步日志</a>
+                </li>     
+                % endif           
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+            <div role="tabpanel" class="tab-pane active" id="basinfo">
+             <table class="table">
+                <tbody>
+                    <tr>
+                        <td>接入设备名称</td>
+                        <td>${bas.bas_name|h}</td>
+                        <td>接入设备地址</td>
+                        <td>${bas.ip_addr}</td>
+                        <td>接入设备ID</td>
+                        <td>${bas.nas_id}</td>                 
+                    </tr> 
+                    <tr>
+                        <td>厂商类型</td>
+                        <td>${bastype.get(str(bas.vendor_id))}</td>    
+                        <td>AC 端口</td>
+                        <td>${bas.ac_port}</td>                        
+                        <td>强制下线端口</td>
+                        <td>${bas.coa_port}</td>
+                    </tr>   
+                    <tr>
+                        <td>Wlan Portal 协议</td>
+                        <td>${bas.portal_vendor}</td>                     
+                        <td>共享密钥</td>
+                        <td>${bas.bas_secret} Mbps</td>
+                        <td>时区类型</td>
+                        <td>${{0:u"标准时区，北京时间",1:u"时间与时区相同"}[bas.time_type]}</td>
+                    </tr>                                                                                
+            </tbody>
+        </table>
+        </div>
+
+        <div role="tabpanel" class="tab-pane" id="pattrs">
+
+        <table class="table table-hover ">
+         <thead>
+            <tr>
+                <th>属性名称</th>
+                <th>属性值</th>
+                <th>属性描述</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            % for attr in bas_attrs:
+            <tr>
+                <td>${attr.attr_name}</td>
+                % if attr.attr_name in ['ros_api_pwd']:
+                <td>******</td>
+                % else:
+                <td>${attr.attr_value}</td>
+                %endif
+                <td>${attr.attr_desc}</td>
+                <td>
+                % if permit.match(current_user.username,'/admin/bas/attr/update'):
+                <a class="btn btn-xs" href="/admin/bas/attr/update?attr_id=${attr.id}">
+                <i class="fa fa-edit"></i> 修改</a>
+                % endif
+                % if permit.match(current_user.username,'/admin/bas/attr/delete'):
+                <a class="btn btn-xs" href="javascript:deleteAttr('${attr.id}');">
+                <i class="fa fa-times"></i> 删除</a>
+                % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>       
+        </div>
+        % if sysenv.get("LICENSE_TYPE",'') in ['taurusxee','routeros-oem']:
+        <div role="tabpanel" class="tab-pane" id="synclogs" style="height:420px;overflow:auto;margin-top:1px;">
+        % if synclogs:
+        % for msg in synclogs:
+            % if bas.ip_addr in msg: 
+            <div class="msg-box break-all">
+                ${msg.replace('\n','<br>').replace('\t',u'&nbsp&nbsp&nbsp&nbsp')|n}
+            </div>
+            % endif
+        % endfor
+        % endif
+        </div>
+        % endif
+    </div>   
+
+    </div>
+</div>
+</div>
+</div>
+    </section>
+</%def>

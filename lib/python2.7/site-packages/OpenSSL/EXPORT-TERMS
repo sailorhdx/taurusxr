@@ -1,0 +1,51 @@
+Cryptography Download Request
+=============================
+
+The file you are about to download from the eGenix.com server in
+Germany (the "Software") contains or links to code using cryptography
+and can be classified as 5D002a under the German Ausfuhrliste. Due to
+export restrictions imposed on such code, we have to ask you to read,
+approve and confirm the following terms and conditions. Please note
+that all downloads will be logged to comply with export regulations.
+
+File URL:
+%(url)s
+
+Export Control Restrictions
+---------------------------
+
+You acknowledge that the Software is subject to the export control
+laws and regulations of Germany and the European Union ("EU") and may
+include technical algorithms and information that is subject to export
+restrictions imposed by German or EU law.
+
+You hereby confirm that you will not download, export, re-export or
+make available the Software, directly or indirectly, either to:
+
+ * any countries that are subject to German and/or EU export
+   restrictions, or
+
+ * any end user (including yourself) who you know or have reason to
+   believe will utilize them in the design, development or production
+   of nuclear, chemical or biological weapons, or utilize them in a
+   military, paramilitary, police or intelligence context, or
+
+ * any end user (including yourself) who has been prohibited from
+   participating in German and/or EU export transactions by the German
+   and/or EU export control authorities.
+
+For more information on export control, please refer to the German
+BAFA [1] and EU Common Foreign & Security Policy [2]. Please also
+consult your national authorities on any legal restrictions that may
+apply to download and use of software containing cryptography.
+
+[1] http://www.ausfuhrkontrolle.info/bafa/en/export_control/index.html
+[2] http://eeas.europa.eu/cfsp/index_en.htm
+
+Confirmation
+------------
+
+Please confirm that you have read, understood and agree to comply to
+the above terms and conditions.
+
+Thank you.

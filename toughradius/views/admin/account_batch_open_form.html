@@ -1,0 +1,80 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link href="/static/css/bootstrap-multiselect.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/bootstrap-multiselect.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<script>
+
+
+function updateArea() {
+    var node_id = $("#node_id").val();
+    if (node_id.length==0){
+        $("#area_id").empty();
+    }
+    else{
+        $.get("/admin/customer/area/update", {'node_id':node_id}, function (data) {
+            $("#area_id").empty();
+            $.each(data, function (index, area) {
+                var is_sel = '${area_id or ""}' == area.area_id ? "selected" : "";
+                $("#area_id").append(
+                    "<option value='" 
+                    + area.area_id 
+                    + "'"+ is_sel +">" 
+                    + area.area_name 
+                    + "</option>");
+            });
+        }, "json");
+    }
+}
+
+
+//页面初始化
+$(document).ready(function (){
+    $('[data-toggle="popover"]').popover()
+    $("#node_id,#product_id").multiselect({
+      buttonWidth: "100%",
+      enableCaseInsensitiveFiltering: true,
+      maxHeight: 270
+    });    
+    $("#expire_date").datepicker();
+    $('#node_id').change(function() {
+        updateArea();
+    });
+    updateArea();
+});
+
+function dosubmit()
+{
+     $("#submit").attr("disabled", "disabled"); 
+     return true;
+}
+</script>
+
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-user-plus"></i>
+            <h3 class="box-title">${form.title}</h3>
+            <div class="bar pull-right">
+            <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
+            <a href="javascript:showhelp('batchopen');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>
+        </div>
+        <div class="box-body">
+        <div class="container">
+        % if msg:
+        <div class="alert alert-warning">${msg}</div>
+        % endif
+        <form id="customer_form" class="form-horizontal form-well" 
+            role="form" action="${form.action}" method="post" onsubmit="return dosubmit();">
+            ${xsrf_form_html()|n}
+            ${form.render_css()|n}
+        </form>
+    </div>
+</div>
+</div>
+    </section>
+</%def>

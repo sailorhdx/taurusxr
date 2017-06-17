@@ -1,0 +1,270 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
+<script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link href="/static/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css" />
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+var bar_opts =  {
+  "closeButton": true,
+  "debug": false,
+  "newestOnTop": false,
+  "progressBar": true,
+  "positionClass": "toast-top-right",
+  "preventDuplicates": false,
+  "onclick": null,
+  "showDuration": "300",
+  "hideDuration": "500",
+  "timeOut": "300000",
+  "extendedTimeOut": "300000",
+  "showEasing": "swing",
+  "hideEasing": "linear",
+  "showMethod": "fadeIn",
+  "hideMethod": "fadeOut"
+}
+
+var is_busy = false;
+function busy(isbusy){
+    is_busy = isbusy;
+    if(isbusy){
+        $("#query_btn").attr("disabled", "disabled");
+        $("#reset_btn").attr("disabled", "disabled");
+        $("#export_btn").attr("disabled", "disabled");
+        $("#check_btn").attr("disabled", "disabled");
+    }else{
+        $("#query_btn").removeAttr("disabled");
+        $("#reset_btn").removeAttr("disabled");
+        $("#export_btn").removeAttr("disabled");
+        $("#check_btn").removeAttr("disabled");
+    }
+}
+
+$(document).ready(function(){
+    $("#query_begin_time").datepicker();
+    $("#query_end_time").datepicker();
+    $('#ordertable').dataTable({
+      "bPaginate": false,
+      "bLengthChange": false,
+      "bFilter": false,
+      "bSort": true,
+      "bInfo": false,
+      "bAutoWidth": false
+    });
+    $("#chkall").click(function(){    
+        if(this.checked){    
+            $("input[name='orderbox']:checkbox").prop("checked", true);   
+        }else{    
+            $("input[name='orderbox']:checkbox").prop("checked", false); 
+        }    
+     });       
+});
+
+function getvalues(){
+    var valArr = new Array; 
+    $("input[name='orderbox']:checkbox").each(function(i){ 
+        if($(this).is(':checked'))
+        {
+            valArr[i] = $(this).val(); 
+        }    
+    }); 
+    var vals = valArr.join(','); 
+    return vals;
+}
+
+function do_submit(){
+    $("#query_form").attr("action", "/admin/customer/order");
+    $("#query_form").submit();
+}
+function do_export(){
+    $("#query_form").attr("action", "/admin/customer/order/export");
+    $("#query_form").submit();
+    setTimeout(function(){$("#query_form").attr("action", "/admin/customer/order");}, 0);
+}
+
+function do_bcheck(){
+    if(is_busy){
+        toastr.error("还有未完成的操作，请等待！");
+        return;
+    }
+    if (!confirm("确认批量对账操作吗？")) {
+        return;
+    }    
+    busy(true);
+    toastr.info("正在执行对账，请等待...",'',bar_opts);
+    params = {
+        '_xsrf': '${handler.xsrf_token}',
+        'order_ids': getvalues(),
+    }
+    $.post("/admin/customer/order/bcheck", params, function (ev) {
+        busy(false);
+        if(ev.code==0){
+          toastr.success(ev.msg);
+          setTimeout("window.location.reload()",1000);
+        }else{
+          toastr.error(ev.msg);
+        }
+    }, "json");
+}
+</script>
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-rmb"></i>
+            <h3 class="box-title">用户订购查询</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+            </div>              
+        </div>
+            <div class="box-body">
+            <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/customer/order" method="post">
+        ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="node_id" class="col-md-2 control-label">区域</label>
+                <div class="col-md-3">
+                    <select id="node_id" name="node_id" class="form-control input-sm" >
+                    <option value=""></option>
+                        % for node in node_list:
+                          <option value="${node.id}"  ${str(node.id)==node_id and "selected" or ""}>${node.node_desc}</option>
+                        % endfor
+                    </select>
+                </div>  
+                <label for="account_number" class="col-md-2 control-label">用户账号</label>
+                <div class="col-md-3">
+                    <input type="text" id="account_number" name="account_number" value="${account_number or ''}" class="form-control input-sm">
+                </div>
+            </div>   
+            <div class="form-group">
+                <label for="product_id" class="col-md-2 control-label">资费</label>
+                <div class="col-md-3">
+                    <select id="product_id" name="product_id" class="form-control input-sm" >
+                    <option value=""></option>
+                        % for product in products:
+                          <option value="${product.id}"  ${str(product.id)==product_id and "selected" or ""}>${product.product_name}</option>
+                        % endfor
+                    </select>
+                </div>  
+                <label for="pay_status" class="col-md-2 control-label">交易状态</label>
+                <div class="col-md-3">
+                    <select id="pay_status" name="pay_status" class="form-control input-sm" >
+                    <option value=""></option>
+                    <option value="0"  ${"0"==pay_status and "selected" or ""}>未支付</option>
+                    <option value="1"  ${"1"==pay_status and "selected" or ""}>已支付</option>
+                    <option value="2"  ${"2"==pay_status and "selected" or ""}>已对账</option>
+                    </select>
+                </div>  
+            </div>              
+            <div class="form-group">
+                <label for="query_begin_time" class="col-md-2 control-label">开始时间</label>
+
+                <div class="col-md-3">
+                    <input type="text" id="query_begin_time" name="query_begin_time" value="${query_begin_time or ''}" class="form-control input-sm form_datetime"  >
+                </div>
+                 <label for="query_end_time" class="col-md-2 control-label">结束时间</label>
+                <div class="col-md-3">
+                    <input type="text" id="query_end_time" name="query_end_time" value="${query_end_time or ''}"  class="form-control input-sm form_datetime">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="agency_id" class="col-md-2 control-label">代理商</label>
+                <div class="col-md-3">
+                    <select id="agency_id" name="agency_id" class="form-control input-sm" >
+                        % if current_user.agency_id is None:
+                            <option value=""></option>
+                        % endif
+                        % for agency in opr_agencies:
+                          <option value="${agency.id}" ${str(agency.id)==agency_id and "selected" or ""}>${agency.agency_name}</option>
+                        % endfor
+                    </select>
+                </div>  
+                <label for="page_size" class="col-md-2 control-label">每页记录</label>
+                <div class="col-md-3">
+                    <select id="page_size" name="page_size" class="form-control input-sm" >
+                    <option value="10"  ${"10"==page_size and "selected" or ""}>10条记录</option>
+                    <option value="20"  ${"20"==page_size and "selected" or ""}>20条记录</option>
+                    <option value="50"  ${"50"==page_size and "selected" or ""}>50条记录</option>
+                    <option value="100"  ${"100"==page_size and "selected" or ""}>100条记录</option>
+                    </select>
+                </div>  
+            </div>  
+            <div class="form-group">                
+                <div class="col-md-offset-5 col-md-7">
+                    <button id="query_btn" type="button" onclick="do_submit();" class="btn btn-sm bg-navy">查询</button>
+                    <button id="reset_btn" type="button" onclick="$('input').val('');" class="btn btn-sm bg-navy">重置</button>
+                    % if permit.match(current_user.username,'/admin/customer/order/export'):
+                    <a id="export_btn" href="javascript:do_export();" class="btn btn-sm bg-navy">
+                    <i class="fa fa-sign-out"></i> 导出数据</a>
+                    % endif
+                </div>
+            </div>
+        </form>
+
+        <div class="pull-left bottom10">
+       % if permit.match(current_user.username,'/admin/customer/order/bcheck'):
+             <a href="javascript:do_bcheck();" class="btn btn-sm bg-navy">
+             <i class="fa fa-arrow-up"></i> 批量对账</a>
+        % endif
+        </div>           
+
+        <table class="table " id="ordertable">
+            <thead>
+            <tr>
+                <th width="6%"><input type="checkbox" id="chkall"></th>
+                <th>姓名</th>
+                <th>账号</th>
+                <th>资费</th>
+                <th>交易时间</th>
+                <th>状态</th>
+                <th>订单金额</th>
+                <th>实缴金额</th>
+                <th ></th>
+            </tr>   
+        </thead>
+        <tbody>         
+            % for order in page_data.result:
+            <tr>
+                <td><input name="orderbox" type="checkbox" value="${order.order_id}"></td>
+                <td>${order.realname|h}</td>
+                <td><a href="/admin/customer/detail?account_number=${order.account_number}">${order.account_number}</a></td>
+                <td>${order.product_name|h}</td>
+                <td>${order.create_time}</td>
+                <td>${{0:u"未支付",1:u"已支付",2:u"已对账"}[order.pay_status]}</td>
+                <td>${utils.fen2yuan(order.order_fee)}</td>
+                <td>${utils.fen2yuan(order.actual_fee)}</td>
+                <td>
+                % if order.pay_status <> 2 and permit.match(current_user.username,'/admin/customer/order/check'): 
+                <a class="btn btn-xs" href="/admin/customer/order/check?order_id=${order.order_id}"><i class="fa fa-check-circle"></i> 对账</a>
+                % endif
+                <a class="btn btn-xs" href="javascript:void(0);" data-container="body" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="${order.order_desc}"><i class="fa fa-info-circle"></i></a>
+                % if permit.match(current_user.username,'/admin/customer/note/print'): 
+                <a href="/admin/customer/note/print?order_id=${order.order_id}">
+                <i class="fa fa-print"></i> 打印</a>
+                % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+            <tfoot >
+                <tr>
+                <th colspan="6">合计</th>
+                <th>${utils.fen2yuan(fee_totals[0])}</th>
+                <th>${utils.fen2yuan(fee_totals[1])}</th>
+                 <th colspan="1"></th>
+                </tr>
+            </tfoot>
+        </table>  
+
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

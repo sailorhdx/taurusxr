@@ -1,0 +1,109 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+function deleteBuilder(builder_id) {
+    if (confirm("确认删除吗？")) {
+        window.location.href = "/admin/builder/delete?builder_id=" + builder_id;
+    }
+}
+
+function create_qrcode(builder_id,tag)
+{
+    params = {builder_id:builder_id,tag:tag,_xsrf: '${handler.xsrf_token}'};
+    $.post("/admin/builder/qrcode/new", params, function (data) {
+        if(data.code==0){
+            window.location.reload();
+        }
+        else{
+            alert(data.msg);
+        }
+    }, "json");
+}
+
+function unbind(builder_id)
+{
+    params = {builder_id:builder_id,_xsrf: '${handler.xsrf_token}'};
+    $.post("/admin/builder/unbind", params, function (data) {
+        if(data.code==0){
+            window.location.reload();
+        }
+        else{
+            alert(data.msg);
+        }
+    }, "json");
+}
+
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-users"></i>
+            <h3 class="box-title">服务人员管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('builder');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/builder/add'):
+             <a href="/admin/builder/add" class="btn btn-sm bg-navy">
+                  <i class="fa fa-plus-circle"></i> 创建服务人员</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>服务人员姓名</th>
+                <th>服务人员电话</th>
+                <th>是否绑定微信</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for builder in builders:
+            <tr>
+                <td>${builder.builder_name|h}</td>
+                <td>${builder.builder_phone|h}</td>
+                <td>${builder.wechat_oid and u'已绑定' or '未绑定'}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/builder/update'):
+                    <a class="btn btn-xs" href="/admin/builder/update?builder_id=${builder.id}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    
+                    % if permit.match(current_user.username,'/admin/builder/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteBuilder('${builder.id}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+
+                    % if builder.wechat_oid:
+                        <a class="btn btn-xs" href="javascript:unbind('${builder.id}');">
+                        <i class="fa fa-unlock"></i> 解除绑定</a>
+                    % endif
+
+                    % if builder.mp_qrcode:
+                        <a class="btn btn-xs" href="${builder.mp_qrcode}"><i class="fa fa-qrcode"></i> 二维码</a>
+                    % else:
+                        % if permit.match(current_user.username,'/admin/builder/qrcode/new'):
+                        <a class="btn btn-xs" href="javascript:create_qrcode('${builder.id}','std');">
+                        <i class="fa fa-qrcode"></i> 生成二维码</a>
+                        % endif
+                    % endif                    
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

@@ -1,0 +1,40 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script src="/static/js/bootstrap-datepicker.js"></script>
+<link rel="stylesheet" href="/static/js/datepicker.css"> 
+   <script>
+    $(document).ready(function(){
+        $("#query_begin_time").datepicker();
+        $("#query_end_time").datepicker();
+    });
+       </script>
+</%def>
+
+<%def name="body()">
+<nav class="navbar navbar-default" role="navigation">
+   <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav nav-pills">
+      <li><a href="#">消费记录</a></li>
+    </ul>      
+  </div>
+</nav>
+<div class="container-fluid"> 
+    <div class="list-group">
+    % for order,_,_realname,_product_name,_,citem,cvalue in page_data.result:
+        <div href="#" class="list-group-item">
+            <div class="col-md-11 ">
+                <h4 class="list-group-item-heading">▸ ${order.account_number} - ${_product_name|h} - ￥${utils.fen2yuan(order.actual_fee)} : ${{0:u"未支付",1:u"已支付",2:u"已对账"}[order.pay_status]} </h4>
+                <p class="list-group-item-text">${order.order_desc or ''|h} - ${order.create_time}</p>
+            </div>
+            <div class="col-md-1 pull-right">
+            % if order.pay_status == 0:
+                <a class="btn btn-info" href="/ssportal/product/order/alipay?order_id=${order.order_id}">付款</a>
+            % endif
+            </div>
+            <div class="clearfix"></div>
+      </div>
+    % endfor
+    </div>   
+  </div>
+</%def>

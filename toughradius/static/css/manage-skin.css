@@ -1,0 +1,35 @@
+html,
+body {
+    font-family: "Helvetica Neue",Helvetica,"微软雅黑", Arial,sans-serif;
+}
+
+.logo-lg {
+    font-family: "Helvetica Neue",Helvetica,"微软雅黑", Arial,sans-serif;
+}
+
+.box-title {
+    font-family: "Helvetica Neue",Helvetica,"微软雅黑", Arial,sans-serif;
+}
+
+.container{
+    width: auto;
+}
+
+.content{
+    font-size: 12px;
+}
+
+.box-header > .fa, .box-header > .glyphicon, .box-header > .ion, .box-header .box-title {
+    font-size: 14px;
+}
+
+.picbox{
+    margin-top: 20px;
+}
+
+.picbox .thumbnail{
+    height: 240px;
+}
+.picbox img{
+    max-width: 180px;
+}

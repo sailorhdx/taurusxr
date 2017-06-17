@@ -1,0 +1,55 @@
+<%def name="model_form(form)">
+<div class="modal fade" id="form_${form.id}" tabindex="-1" role="dialog" aria-labelledby="form-${form.id}-ml">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="form-${form.id}-ml">${form.title}</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal form-well" role="form" action="${form.action}" method="post">
+              ${xsrf_form_html()|n}
+              ${form.render_css()|n}
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" id="submit_btn_${form.id}" class="btn btn-primary">提交</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+$("#submit_btn_${form.id}").click(function(
+    $("#form_${form.id}").submit();
+));
+$('#form_${form.id}').submit(function() {
+    jQuery.ajax({
+        url: '${form.title}',
+        data: $('#form_${form.id}').serialize(),
+        type: "POST",
+        beforeSend: function(){  
+            $("#submit_btn_${form.id}").attr("disabled", "disabled"); 
+        },
+        success: function(){
+            $("#submit_btn_${form.id}").removeAttr("disabled");
+            window.location.reload();
+        }
+    });
+    return false;
+});
+</script>
+</%def>
+
+<%def name="alert_info()">
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target=".info-dialog">${msg_title or u"信息提示"}</button>
+<div class="modal fade info-dialog" tabindex="-1" role="dialog" aria-labelledby="info-dialog">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+        <p>${msg or ''}</p>
+    </div>
+  </div>
+</div>
+</%def>
+
+

@@ -1,0 +1,84 @@
+<%inherit file="base.html"/>
+
+<%def name="head()">
+<script>
+    function deleteArea(area_id) {
+        if (confirm("确认删除吗？")) {
+            window.location.href = "/admin/area/delete?area_id=" + area_id;
+        }
+    }
+</script>
+
+</%def>
+
+<%def name="body()">
+<section class="content">
+    <div class="box box-default">
+        <div class="box-header">
+            <i class="fa fa-map-marker"></i>
+            <h3 class="box-title"> 社区管理</h3>
+            <div class="bar pull-right">
+             <a href="javascript:window.location.reload();"><i class="fa fa-refresh"></i> 刷新</a>
+             <a href="javascript:showhelp('node');"><i class="fa fa-question-circle"></i> 帮助</a>
+            </div>            
+        </div>
+    <div class="box-body">
+     <div class="container">
+        <form id="query_form" class="form-horizontal form-well" role="form" action="/admin/area" method="post">
+        ${xsrf_form_html()|n}
+            <div class="form-group">
+                <label for="node_id" class="col-md-1 control-label">区域</label>
+                <div class="col-md-3">
+                    <select id="node_id" name="node_id" class="form-control input-sm">
+                        % for node in node_list:
+                          <option value="${node.id}" ${str(node.id)==node_id and "selected" or ""}>${node.node_name}</option>
+                        % endfor
+                    </select>
+                </div>
+                <div "col-md-3">
+                    <button type="submit" id="query_action" class="btn btn-sm bg-navy">查询</button>
+                </div>
+            </div>
+        </form>
+
+
+        <div class="pull-left bottom10">
+            % if permit.match(current_user.username,'/admin/area/add'):
+             <a href="/admin/area/add" class="btn btn-sm bg-navy">
+                  <i class="fa fa-plus-circle"></i> 创建社区</a>
+            % endif
+        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>社区名称</th>
+                <th>社区地址描述</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            % for area in page_data.result:
+            <tr>
+                <td>${area.area_name}</td>
+                <td>${area.addr_desc}</td>
+                <td>
+                    % if permit.match(current_user.username,'/admin/area/update'):
+                    <a class="btn btn-xs" href="/admin/area/update?area_id=${area.id}">
+                    <i class="fa fa-edit"></i> 修改</a>
+                    % endif
+                    % if permit.match(current_user.username,'/admin/area/delete'):
+                    <a class="btn btn-xs" href="javascript:deleteArea('${area.id}')">
+                    <i class="fa fa-times"></i> 删除</a>
+                    % endif
+                </td>
+            </tr>
+            % endfor
+            </tbody>
+        </table>
+        ${page_data.render(form_id="query_form")|n}
+    </div>
+</div>
+</div>
+</section>
+
+</%def>

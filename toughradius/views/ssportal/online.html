@@ -1,0 +1,55 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+function doUnlock(nas_addr,session_id){
+    params = {
+        _xsrf: '${handler.xsrf_token}',
+        nas_addr:nas_addr,
+        session_id:session_id
+    }
+    $.get("/ssportal/online/unlock", params, function (ev) {
+        if(ev.code==0){
+          toastr.success(ev.msg);
+          setTimeout("window.location.reload()",1000);
+        }else{
+          toastr.error(ev.msg);
+        }
+    }, "json");
+}
+</script>
+</%def>
+<%def name="body()">
+
+<nav class="navbar navbar-default" role="navigation">
+   <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav nav-pills">
+      <li><a href="#">在线状态</a></li>
+    </ul>      
+  </div>
+</nav>
+
+ <div class="container-fluid">       
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            % if onlines and onlines.count() > 0:            
+            <div class="row itlist">
+                % for online in onlines:
+                    <div class="col-md-6 itbox">IP地址 ${online.framed_ipaddr} 上线时间 ${online.acct_start_time}
+                    % if handler.get_param_value('ssportal_allow_online_unlock','0') == '1':  
+                    <a href="javascript:doUnlock('${online.nas_addr}','${online.acct_session_id}');">下线</a> 
+                    % endif
+                    </div>
+                % endfor
+            </div>
+            % else:
+                用户当前没有在线
+            % endif
+        </div>
+    </div>
+
+    
+</div>
+</%def>

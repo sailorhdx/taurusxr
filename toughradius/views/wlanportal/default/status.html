@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<link rel="shortcut icon" href="/static/favicon.ico"/>
+<title>${page_title}</title>
+<link href="/static/css/bootstrap.min.css" rel="stylesheet" media="all">
+<link href="/static/wlan/${wlan_tpl.get('tpl_name','default')}/css/plogin.css" rel="stylesheet" media="all">
+<!--[if lt IE 9]>
+<script src="/static/js/ie8-responsive-file-warning.js"></script><![endif]-->
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+<script src="/static/js/html5shiv.min.js"></script>
+<script src="/static/js/respond.min.js"></script>
+<![endif]-->
+<style>
+body{
+    background-color: #92909d;
+    background:url(${wlan_tpl.get('wlan_bgimg','/static/wlan/default/img/bg.jpg')}) 0 #000 no-repeat;
+}
+#reload-status {list-style-type: none;}
+#reload-status a{color: #bfc4d4;text-decoration: none;}
+#reload-status a:hover{color: #fff;}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 col-sm-offset-3 col-md-4 col-md-offset-4  main-box">
+            <div class="account-wall">
+                <h1 class="text-center login-title">${page_title}</h1>
+                <form class="form-signin" action="/logout" method="post">
+                <ul class="userinfo">
+                    <li>用户账号：${current_user.username}</li>
+                    <li>用户 IP：${current_user.ipaddr}</li>
+                    % if online:
+                    <li>在线时间：${utils.fmt_online_time(online.acct_start_time)}</li>
+                    <li>上传流量: ${utils.kb2gb(online.input_total)}</li>
+                    <li>下载流量: ${utils.kb2gb(online.output_total)}</li>
+                    % endif
+                </ul>
+                <a class="btn btn-lg btn-default btn-block" href="${wlan_params.get('wlanuserfirsturl','/navigate')}">继续访问网络</a>
+                <a class="btn btn-lg btn-danger btn-block" href="/logout">断开网络</a>
+                <a class="btn btn-lg btn-info btn-block" href="${wlan_tpl.get('ssportal_url','/')}">自助服务中心</a>
+                </form>
+                <img class="ads-img" src="${wlan_tpl.get('ad3_img_url','/static/wlan/ads/ad002.jpg')}" alt="">
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+<script src="/static/js/bootstrap.min.js"></script>
+</body>
+</html>
