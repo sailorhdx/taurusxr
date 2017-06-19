@@ -22,7 +22,7 @@ class EllipticCurve(object):
     @abc.abstractproperty
     def key_size(self):
         """
-        The bit length of the base point of the curve.
+        Bit size of a secret scalar for the curve.
         """
 
 
@@ -62,6 +62,18 @@ class EllipticCurvePrivateKey(object):
         The EllipticCurve that this key is on.
         """
 
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        Bit size of a secret scalar for the curve.
+        """
+
+    @abc.abstractproperty
+    def sign(self, data, signature_algorithm):
+        """
+        Signs the data
+        """
+
 
 @six.add_metaclass(abc.ABCMeta)
 class EllipticCurvePrivateKeyWithSerialization(EllipticCurvePrivateKey):
@@ -92,6 +104,12 @@ class EllipticCurvePublicKey(object):
         The EllipticCurve that this key is on.
         """
 
+    @abc.abstractproperty
+    def key_size(self):
+        """
+        Bit size of a secret scalar for the curve.
+        """
+
     @abc.abstractmethod
     def public_numbers(self):
         """
@@ -102,6 +120,12 @@ class EllipticCurvePublicKey(object):
     def public_bytes(self, encoding, format):
         """
         Returns the key serialized as bytes.
+        """
+
+    @abc.abstractmethod
+    def verify(self, signature, data, signature_algorithm):
+        """
+        Verifies the signature of the data.
         """
 
 
@@ -239,6 +263,19 @@ class ECDSA(object):
 
 def generate_private_key(curve, backend):
     return backend.generate_elliptic_curve_private_key(curve)
+
+
+def derive_private_key(private_value, curve, backend):
+    if not isinstance(private_value, six.integer_types):
+        raise TypeError("private_value must be an integer type.")
+
+    if private_value <= 0:
+        raise ValueError("private_value must be a positive integer.")
+
+    if not isinstance(curve, EllipticCurve):
+        raise TypeError("curve must provide the EllipticCurve interface.")
+
+    return backend.derive_elliptic_curve_private_key(private_value, curve)
 
 
 class EllipticCurvePublicNumbers(object):
