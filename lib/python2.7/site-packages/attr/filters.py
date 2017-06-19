@@ -13,8 +13,8 @@ def _split_what(what):
     Returns a tuple of `frozenset`s of classes and attributes.
     """
     return (
-        frozenset(cl for cl in what if isclass(cl)),
-        frozenset(cl for cl in what if isinstance(cl, Attribute)),
+        frozenset(cls for cls in what if isclass(cls)),
+        frozenset(cls for cls in what if isinstance(cls, Attribute)),
     )
 
 
@@ -23,7 +23,7 @@ def include(*what):
     Whitelist *what*.
 
     :param what: What to whitelist.
-    :type what: :class:`list` of :class:`type` or :class:`attr.Attribute` s.
+    :type what: :class:`list` of :class:`type` or :class:`attr.Attribute`\ s
 
     :rtype: :class:`callable`
     """
@@ -40,7 +40,7 @@ def exclude(*what):
     Blacklist *what*.
 
     :param what: What to blacklist.
-    :type what: :class:`list` of classes or :class:`attr.Attribute` s.
+    :type what: :class:`list` of classes or :class:`attr.Attribute`\ s.
 
     :rtype: :class:`callable`
     """

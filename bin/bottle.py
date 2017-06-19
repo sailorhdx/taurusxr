@@ -1,4 +1,4 @@
-#!/opt/taurusxr/bin/pyrun
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
 Bottle is a fast and simple micro-framework for small web applications. It
@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.11'
+__version__ = '0.12.13'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -1405,7 +1405,7 @@ def _hkey(key):
 
 
 def _hval(value):
-    value = value if isinstance(value, unicode) else str(value)
+    value = tonat(value)
     if '\n' in value or '\r' in value or '\0' in value:
         raise ValueError("Header value must not contain control characters: %r" % value)
     return value
@@ -2354,6 +2354,10 @@ class FileUpload(object):
 
     content_type = HeaderProperty('Content-Type')
     content_length = HeaderProperty('Content-Length', reader=int, default=-1)
+
+    def get_header(self, name, default=None):
+        """ Return the value of a header within the mulripart part. """
+        return self.headers.get(name, default)
 
     @cached_property
     def filename(self):

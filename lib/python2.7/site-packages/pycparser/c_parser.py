@@ -20,6 +20,7 @@ class CParser(PLYParser):
     def __init__(
             self,
             lex_optimize=True,
+            lexer=CLexer,
             lextab='pycparser.lextab',
             yacc_optimize=True,
             yacctab='pycparser.yacctab',
@@ -41,7 +42,11 @@ class CParser(PLYParser):
                 When releasing with a stable lexer, set to True
                 to save the re-generation of the lexer table on
                 each run.
-
+                
+            lexer:
+                Set this parameter to define the lexer to use if
+                you're not using the default CLexer.
+                
             lextab:
                 Points to the lex table that's used for optimized
                 mode. Only if you're modifying the lexer and want
@@ -70,7 +75,7 @@ class CParser(PLYParser):
                 Set this parameter to control the location of generated
                 lextab and yacctab files.
         """
-        self.clex = CLexer(
+        self.clex = lexer(
             error_func=self._lex_error_func,
             on_lbrace_func=self._lex_on_lbrace_func,
             on_rbrace_func=self._lex_on_rbrace_func,
@@ -537,8 +542,9 @@ class CParser(PLYParser):
 
     def p_external_declaration_3(self, p):
         """ external_declaration    : pp_directive
+                                    | pppragma_directive
         """
-        p[0] = p[1]
+        p[0] = [p[1]]
 
     def p_external_declaration_4(self, p):
         """ external_declaration    : SEMI
@@ -549,7 +555,16 @@ class CParser(PLYParser):
         """ pp_directive  : PPHASH
         """
         self._parse_error('Directives not supported yet',
-            self._coord(p.lineno(1)))
+                          self._coord(p.lineno(1)))
+
+    def p_pppragma_directive(self, p):
+        """ pppragma_directive      : PPPRAGMA
+                                    | PPPRAGMA PPPRAGMASTR
+        """
+        if len(p) == 3:
+            p[0] = c_ast.Pragma(p[2], self._coord(p.lineno(2)))
+        else:
+            p[0] = c_ast.Pragma("", self._coord(p.lineno(1)))
 
     # In function definitions, the declarator can be followed by
     # a declaration list, for old "K&R style" function definitios.
@@ -589,6 +604,7 @@ class CParser(PLYParser):
                         | selection_statement
                         | iteration_statement
                         | jump_statement
+                        | pppragma_directive
         """
         p[0] = p[1]
 
@@ -825,7 +841,10 @@ class CParser(PLYParser):
         """ struct_declaration_list     : struct_declaration
                                         | struct_declaration_list struct_declaration
         """
-        p[0] = p[1] if len(p) == 2 else p[1] + p[2]
+        if len(p) == 2:
+            p[0] = p[1] or []
+        else:
+            p[0] = p[1] + (p[2] or [])
 
     def p_struct_declaration_1(self, p):
         """ struct_declaration : specifier_qualifier_list struct_declarator_list_opt SEMI
@@ -878,6 +897,11 @@ class CParser(PLYParser):
         p[0] = self._build_declarations(
                 spec=p[1],
                 decls=[dict(decl=p[2], init=None)])
+
+    def p_struct_declaration_3(self, p):
+        """ struct_declaration : SEMI
+        """
+        p[0] = None
 
     def p_struct_declarator_list(self, p):
         """ struct_declarator_list  : struct_declarator
@@ -1403,7 +1427,7 @@ class CParser(PLYParser):
     def p_expression_statement(self, p):
         """ expression_statement : expression_opt SEMI """
         if p[1] is None:
-            p[0] = c_ast.EmptyStatement(self._coord(p.lineno(1)))
+            p[0] = c_ast.EmptyStatement(self._coord(p.lineno(2)))
         else:
             p[0] = p[1]
 
@@ -1584,12 +1608,27 @@ class CParser(PLYParser):
         p[0] = p[2]
 
     def p_primary_expression_5(self, p):
-        """ primary_expression  : OFFSETOF LPAREN type_name COMMA identifier RPAREN
+        """ primary_expression  : OFFSETOF LPAREN type_name COMMA offsetof_member_designator RPAREN
         """
         coord = self._coord(p.lineno(1))
         p[0] = c_ast.FuncCall(c_ast.ID(p[1], coord),
                               c_ast.ExprList([p[3], p[5]], coord),
                               coord)
+
+    def p_offsetof_member_designator(self, p):
+        """ offsetof_member_designator : identifier
+                                         | offsetof_member_designator PERIOD identifier
+                                         | offsetof_member_designator LBRACKET expression RBRACKET
+        """
+        if len(p) == 2:
+            p[0] = p[1]
+        elif len(p) == 4:
+            field = c_ast.ID(p[3], self._coord(p.lineno(3)))
+            p[0] = c_ast.StructRef(p[1], p[2], field, p[1].coord)
+        elif len(p) == 5:
+            p[0] = c_ast.ArrayRef(p[1], p[3], p[1].coord)
+        else:
+            raise NotImplementedError("Unexpected parsing state. len(p): %u" % len(p))
 
     def p_argument_expression_list(self, p):
         """ argument_expression_list    : assignment_expression
@@ -1659,11 +1698,13 @@ class CParser(PLYParser):
         """ brace_open  :   LBRACE
         """
         p[0] = p[1]
+        p.set_lineno(0, p.lineno(1))
 
     def p_brace_close(self, p):
         """ brace_close :   RBRACE
         """
         p[0] = p[1]
+        p.set_lineno(0, p.lineno(1))
 
     def p_empty(self, p):
         'empty : '
@@ -1679,7 +1720,7 @@ class CParser(PLYParser):
                 self._coord(lineno=p.lineno,
                             column=self.clex.find_tok_column(p)))
         else:
-            self._parse_error('At end of input', '')
+            self._parse_error('At end of input', self.clex.filename)
 
 
 #------------------------------------------------------------------------------
