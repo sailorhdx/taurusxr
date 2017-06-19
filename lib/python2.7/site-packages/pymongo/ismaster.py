@@ -62,6 +62,14 @@ class IsMaster(object):
             or self._is_writable)
 
     @property
+    def document(self):
+        """The complete ismaster command response document.
+
+        .. versionadded:: 3.4
+        """
+        return self._doc.copy()
+
+    @property
     def server_type(self):
         return self._server_type
 
@@ -132,3 +140,7 @@ class IsMaster(object):
         me = self._doc.get('me')
         if me:
             return common.clean_node(me)
+
+    @property
+    def last_write_date(self):
+        return self._doc.get('lastWrite', {}).get('lastWriteDate')

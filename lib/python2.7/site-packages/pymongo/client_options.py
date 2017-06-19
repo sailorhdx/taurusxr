@@ -29,9 +29,9 @@ from pymongo.write_concern import WriteConcern
 
 def _parse_credentials(username, password, database, options):
     """Parse authentication credentials."""
-    if username is None:
-        return None
     mechanism = options.get('authmechanism', 'DEFAULT')
+    if username is None and mechanism != 'MONGODB-X509':
+        return None
     source = options.get('authsource', database or 'admin')
     return _build_credentials_tuple(
         mechanism, source, username, password, options)
@@ -44,7 +44,8 @@ def _parse_read_preference(options):
 
     mode = options.get('readpreference', 0)
     tags = options.get('readpreferencetags')
-    return make_read_preference(mode, tags)
+    max_staleness = options.get('maxstalenessseconds', -1)
+    return make_read_preference(mode, tags, max_staleness)
 
 
 def _parse_write_concern(options):
@@ -108,6 +109,7 @@ def _parse_pool_options(options):
     wait_queue_timeout = options.get('waitqueuetimeoutms')
     wait_queue_multiple = options.get('waitqueuemultiple')
     event_listeners = options.get('event_listeners')
+    appname = options.get('appname')
     ssl_context, ssl_match_hostname = _parse_ssl_options(options)
     return PoolOptions(max_pool_size,
                        min_pool_size,
@@ -115,7 +117,8 @@ def _parse_pool_options(options):
                        connect_timeout, socket_timeout,
                        wait_queue_timeout, wait_queue_multiple,
                        ssl_context, ssl_match_hostname, socket_keepalive,
-                       _EventListeners(event_listeners))
+                       _EventListeners(event_listeners),
+                       appname)
 
 
 class ClientOptions(object):

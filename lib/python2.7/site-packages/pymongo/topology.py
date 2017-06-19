@@ -1,4 +1,4 @@
-# Copyright 2014-2015 MongoDB, Inc.
+# Copyright 2014-2016 MongoDB, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you
 # may not use this file except in compliance with the License.  You
@@ -36,10 +36,10 @@ from pymongo.errors import ServerSelectionTimeoutError
 from pymongo.monotonic import time as _time
 from pymongo.server import Server
 from pymongo.server_selectors import (any_server_selector,
-                                      apply_local_threshold,
                                       arbiter_server_selector,
                                       secondary_server_selector,
-                                      writable_server_selector)
+                                      writable_server_selector,
+                                      Selection)
 
 
 def process_events_queue(queue_ref):
@@ -84,15 +84,17 @@ class Topology(object):
             topology_settings.get_server_descriptions(),
             topology_settings.replica_set_name,
             None,
-            None)
+            None,
+            topology_settings)
 
         self._description = topology_description
         if self._publish_tp:
+            initial_td = TopologyDescription(TOPOLOGY_TYPE.Unknown, {}, None,
+                                             None, None, self._settings)
             self._events.put((
                 self._listeners.publish_topology_description_changed,
-                (TopologyDescription(
-                    TOPOLOGY_TYPE.Unknown, {}, None, None, None),
-                 self._description, self._topology_id)))
+                (initial_td, self._description, self._topology_id)))
+
         for seed in topology_settings.seeds:
             if self._publish_server:
                 self._events.put((self._listeners.publish_server_opened,
@@ -128,24 +130,24 @@ class Topology(object):
 
         No effect if called multiple times.
 
-        .. warning:: To avoid a deadlock during Python's getaddrinfo call,
-          will generate a warning if open() is called from a different
-          process than the one that initialized the Topology. To prevent this
-          from happening, MongoClient must be created after any forking OR
-          MongoClient must be started with connect=False.
-        """
-        with self._lock:
-            if self._pid is None:
-                self._pid = os.getpid()
-            else:
-                if os.getpid() != self._pid:
-                    warnings.warn(
-                        "MongoClient opened before fork. Create MongoClient "
-                        "with connect=False, or create client after forking. "
-                        "See PyMongo's documentation for details: http://api."
-                        "mongodb.org/python/current/faq.html#using-pymongo-"
-                        "with-multiprocessing>")
+        .. warning:: Topology is shared among multiple threads and is protected
+          by mutual exclusion. Using Topology from a process other than the one
+          that initialized it will emit a warning and may result in deadlock. To
+          prevent this from happening, MongoClient must be created after any
+          forking OR MongoClient must be started with connect=False.
 
+        """
+        if self._pid is None:
+            self._pid = os.getpid()
+        else:
+            if os.getpid() != self._pid:
+                warnings.warn(
+                    "MongoClient opened before fork. Create MongoClient "
+                    "with connect=False, or create client after forking. "
+                    "See PyMongo's documentation for details: http://api."
+                    "mongodb.org/python/current/faq.html#pymongo-fork-safe>")
+
+        with self._lock:
             self._ensure_opened()
 
     def select_servers(self,
@@ -177,7 +179,8 @@ class Topology(object):
 
             now = _time()
             end_time = now + server_timeout
-            server_descriptions = self._apply_selector(selector, address)
+            server_descriptions = self._description.apply_selector(
+                selector, address)
 
             while not server_descriptions:
                 # No suitable servers.
@@ -190,12 +193,13 @@ class Topology(object):
 
                 # Release the lock and wait for the topology description to
                 # change, or for a timeout. We won't miss any changes that
-                # came after our most recent _apply_selector call, since we've
+                # came after our most recent apply_selector call, since we've
                 # held the lock until now.
                 self._condition.wait(common.MIN_HEARTBEAT_INTERVAL)
                 self._description.check_compatible()
                 now = _time()
-                server_descriptions = self._apply_selector(selector, address)
+                server_descriptions = self._description.apply_selector(
+                    selector, address)
 
             return [self.get_server_by_address(sd.address)
                     for sd in server_descriptions]
@@ -284,8 +288,7 @@ class Topology(object):
             if topology_type != TOPOLOGY_TYPE.ReplicaSetWithPrimary:
                 return None
 
-            description = writable_server_selector(self._description)[0]
-            return description.address
+            return writable_server_selector(self._new_selection())[0].address
 
     def _get_replica_set_members(self, selector):
         """Return set of replica set member addresses."""
@@ -296,8 +299,7 @@ class Topology(object):
                                      TOPOLOGY_TYPE.ReplicaSetNoPrimary):
                 return set()
 
-            descriptions = selector(self._description)
-            return set([d.address for d in descriptions])
+            return set([sd.address for sd in selector(self._new_selection())])
 
     def get_secondaries(self):
         """Return set of secondary addresses."""
@@ -359,6 +361,13 @@ class Topology(object):
     def description(self):
         return self._description
 
+    def _new_selection(self):
+        """A Selection object, initially including all known servers.
+
+        Hold the lock when calling this.
+        """
+        return Selection.from_topology_description(self._description)
+
     def _ensure_opened(self):
         """Start monitors, or restart after a fork.
 
@@ -403,21 +412,6 @@ class Topology(object):
         """Wake all monitors. Hold the lock when calling this."""
         for server in self._servers.values():
             server.request_check()
-
-    def _apply_selector(self, selector, address):
-        if self._description.topology_type == TOPOLOGY_TYPE.Single:
-            # Ignore the selector.
-            return self._description.known_servers
-        elif address:
-            sd = self._description.server_descriptions().get(address)
-            return [sd] if sd else []
-        elif self._description.topology_type == TOPOLOGY_TYPE.Sharded:
-            return apply_local_threshold(self._settings.local_threshold_ms,
-                                         self._description.known_servers)
-        else:
-            sds = selector(self._description)
-            return apply_local_threshold(
-                self._settings.local_threshold_ms, sds)
 
     def _update_servers(self):
         """Sync our Servers from TopologyDescription.server_descriptions.
@@ -468,7 +462,8 @@ class Topology(object):
             ssl_context=options.ssl_context,
             ssl_match_hostname=options.ssl_match_hostname,
             socket_keepalive=True,
-            event_listeners=options.event_listeners)
+            event_listeners=options.event_listeners,
+            appname=options.appname)
 
         return self._settings.pool_class(address, monitor_pool_options,
                                          handshake=False)

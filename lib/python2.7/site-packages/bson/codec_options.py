@@ -72,7 +72,7 @@ class CodecOptions(_options_base):
         if not (issubclass(document_class, MutableMapping) or
                 _raw_document_class(document_class)):
             raise TypeError("document_class must be dict, bson.son.SON, "
-                            "bson.raw_bson_document.RawBSONDocument, or a "
+                            "bson.raw_bson.RawBSONDocument, or a "
                             "sublass of collections.MutableMapping")
         if not isinstance(tz_aware, bool):
             raise TypeError("tz_aware must be True or False")
@@ -94,7 +94,8 @@ class CodecOptions(_options_base):
             cls, (document_class, tz_aware, uuid_representation,
                   unicode_decode_error_handler, tzinfo))
 
-    def __repr__(self):
+    def _arguments_repr(self):
+        """Representation of the arguments used to create this object."""
         document_class_repr = (
             'dict' if self.document_class is dict
             else repr(self.document_class))
@@ -102,12 +103,13 @@ class CodecOptions(_options_base):
         uuid_rep_repr = UUID_REPRESENTATION_NAMES.get(self.uuid_representation,
                                                       self.uuid_representation)
 
-        return (
-            'CodecOptions(document_class=%s, tz_aware=%r, uuid_representation='
-            '%s, unicode_decode_error_handler=%r, tzinfo=%r)' %
-            (document_class_repr, self.tz_aware, uuid_rep_repr,
-             self.unicode_decode_error_handler,
-             self.tzinfo))
+        return ('document_class=%s, tz_aware=%r, uuid_representation='
+                '%s, unicode_decode_error_handler=%r, tzinfo=%r' %
+                (document_class_repr, self.tz_aware, uuid_rep_repr,
+                 self.unicode_decode_error_handler, self.tzinfo))
+
+    def __repr__(self):
+        return '%s(%s)' % (self.__class__.__name__, self._arguments_repr())
 
 
 DEFAULT_CODEC_OPTIONS = CodecOptions()

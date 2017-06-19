@@ -590,7 +590,7 @@ class GridFSBucket(object):
         Raises :exc:`~gridfs.errors.NoFile` if no file with file_id exists.
 
         :Parameters:
-          -`file_id`: The _id of the file to be downloaded.
+          - `file_id`: The _id of the file to be downloaded.
         """
         gout = GridOut(self._collection, file_id)
 
@@ -609,15 +609,16 @@ class GridFSBucket(object):
           # Get _id of file to read
           file_id = fs.upload_from_stream("test_file", "data I want to store!")
           # Get file to write to
-          file = open('myfile','rwb')
+          file = open('myfile','wb+')
           fs.download_to_stream(file_id, file)
+          file.seek(0)
           contents = file.read()
 
         Raises :exc:`~gridfs.errors.NoFile` if no file with file_id exists.
 
         :Parameters:
-          -`file_id`: The _id of the file to be downloaded.
-          -`destination`: a file-like object implementing :meth:`write`.
+          - `file_id`: The _id of the file to be downloaded.
+          - `destination`: a file-like object implementing :meth:`write`.
         """
         gout = self.open_download_stream(file_id)
         for chunk in gout:
@@ -632,13 +633,13 @@ class GridFSBucket(object):
           my_db = MongoClient().test
           fs = GridFSBucket(my_db)
           # Get _id of file to delete
-         file_id = fs.upload_from_stream("test_file", "data I want to store!")
+          file_id = fs.upload_from_stream("test_file", "data I want to store!")
           fs.delete(file_id)
 
         Raises :exc:`~gridfs.errors.NoFile` if no file with file_id exists.
 
         :Parameters:
-          -`file_id`: The _id of the file to be deleted.
+          - `file_id`: The _id of the file to be deleted.
         """
         res = self._files.delete_one({"_id": file_id})
         self._chunks.delete_many({"files_id": file_id})
@@ -715,12 +716,13 @@ class GridFSBucket(object):
             Defaults to -1 (the most recent revision).
 
         :Note: Revision numbers are defined as follows:
-          0 = the original stored file
-          1 = the first revision
-          2 = the second revision
-          etc...
-          -2 = the second most recent revision
-          -1 = the most recent revision
+
+          - 0 = the original stored file
+          - 1 = the first revision
+          - 2 = the second revision
+          - etc...
+          - -2 = the second most recent revision
+          - -1 = the most recent revision
         """
         validate_string("filename", filename)
 
@@ -764,12 +766,13 @@ class GridFSBucket(object):
             Defaults to -1 (the most recent revision).
 
         :Note: Revision numbers are defined as follows:
-          0 = the original stored file
-          1 = the first revision
-          2 = the second revision
-          etc...
-          -2 = the second most recent revision
-          -1 = the most recent revision
+
+          - 0 = the original stored file
+          - 1 = the first revision
+          - 2 = the second revision
+          - etc...
+          - -2 = the second most recent revision
+          - -1 = the most recent revision
         """
         gout = self.open_download_stream_by_name(filename, revision)
         for chunk in gout:

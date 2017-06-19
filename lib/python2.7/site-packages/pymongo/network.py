@@ -18,17 +18,21 @@ import datetime
 import errno
 import select
 import struct
+import threading
 
 _HAS_POLL = True
-_poller = None
 _EVENT_MASK = 0
 try:
     from select import poll
-    _poller = poll()
     _EVENT_MASK = (select.POLLIN | select.POLLPRI | select.POLLERR |
                    select.POLLHUP | select.POLLNVAL)
 except ImportError:
     _HAS_POLL = False
+
+try:
+    from select import error as _SELECT_ERROR
+except ImportError:
+    _SELECT_ERROR = OSError
 
 from pymongo import helpers, message
 from pymongo.common import MAX_MESSAGE_SIZE
@@ -45,7 +49,9 @@ def command(sock, dbname, spec, slave_ok, is_mongos,
             read_preference, codec_options, check=True,
             allowable_errors=None, address=None,
             check_keys=False, listeners=None, max_bson_size=None,
-            read_concern=DEFAULT_READ_CONCERN):
+            read_concern=DEFAULT_READ_CONCERN,
+            parse_write_concern_error=False,
+            collation=None):
     """Execute a command over the socket, or raise socket.error.
 
     :Parameters:
@@ -63,6 +69,10 @@ def command(sock, dbname, spec, slave_ok, is_mongos,
       - `listeners`: An instance of :class:`~pymongo.monitoring.EventListeners`
       - `max_bson_size`: The maximum encoded bson size for this server
       - `read_concern`: The read concern for this command.
+      - `parse_write_concern_error`: Whether to parse the ``writeConcernError``
+        field in the command response.
+      - `collation`: The collation for this command.
+
     """
     name = next(iter(spec))
     ns = dbname + '.$cmd'
@@ -73,6 +83,8 @@ def command(sock, dbname, spec, slave_ok, is_mongos,
         spec = message._maybe_add_read_preference(spec, read_preference)
     if read_concern.level:
         spec['readConcern'] = read_concern.document
+    if collation is not None:
+        spec['collation'] = collation
 
     publish = listeners is not None and listeners.enabled_for_commands
     if publish:
@@ -99,7 +111,9 @@ def command(sock, dbname, spec, slave_ok, is_mongos,
 
         response_doc = unpacked['data'][0]
         if check:
-            helpers._check_command_response(response_doc, None, allowable_errors)
+            helpers._check_command_response(
+                response_doc, None, allowable_errors,
+                parse_write_concern_error=parse_write_concern_error)
     except Exception as exc:
         if publish:
             duration = (datetime.datetime.now() - start) + encoding_duration
@@ -149,12 +163,7 @@ def _receive_data_on_socket(sock, length):
         try:
             chunk = sock.recv(length)
         except (IOError, OSError) as exc:
-            err = None
-            if hasattr(exc, 'errno'):
-                err = exc.errno
-            elif exc.args:
-                err = exc.args[0]
-            if err == errno.EINTR:
+            if _errno_from_exception(exc) == errno.EINTR:
                 continue
             raise
         if chunk == b"":
@@ -166,17 +175,56 @@ def _receive_data_on_socket(sock, length):
     return msg
 
 
-def socket_closed(sock):
-    """Return True if we know socket has been closed, False otherwise.
-    """
-    try:
+def _errno_from_exception(exc):
+    if hasattr(exc, 'errno'):
+        return exc.errno
+    elif exc.args:
+        return exc.args[0]
+    else:
+        return None
+
+
+class SocketChecker(object):
+
+    def __init__(self):
         if _HAS_POLL:
-            _poller.register(sock, _EVENT_MASK)
-            rd = _poller.poll(0)
-            _poller.unregister(sock)
+            self._lock = threading.Lock()
+            self._poller = poll()
         else:
-            rd, _, _ = select.select([sock], [], [], 0)
-    # Any exception here is equally bad (select.error, ValueError, etc.).
-    except:
-        return True
-    return len(rd) > 0
+            self._lock = None
+            self._poller = None
+
+    def socket_closed(self, sock):
+        """Return True if we know socket has been closed, False otherwise.
+        """
+        while True:
+            try:
+                if self._poller:
+                    with self._lock:
+                        self._poller.register(sock, _EVENT_MASK)
+                        try:
+                            rd = self._poller.poll(0)
+                        finally:
+                            self._poller.unregister(sock)
+                else:
+                    rd, _, _ = select.select([sock], [], [], 0)
+            except (RuntimeError, KeyError):
+                # RuntimeError is raised during a concurrent poll. KeyError
+                # is raised by unregister if the socket is not in the poller.
+                # These errors should not be possible since we protect the
+                # poller with a mutex.
+                raise
+            except ValueError:
+                # ValueError is raised by register/unregister/select if the
+                # socket file descriptor is negative or outside the range for
+                # select (> 1023).
+                return True
+            except (_SELECT_ERROR, IOError) as exc:
+                if _errno_from_exception(exc) in (errno.EINTR, errno.EAGAIN):
+                    continue
+                return True
+            except:
+                # Any other exceptions should be attributed to a closed
+                # or invalid socket.
+                return True
+            return len(rd) > 0

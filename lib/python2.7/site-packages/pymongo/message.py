@@ -73,13 +73,16 @@ def _maybe_add_read_preference(spec, read_preference):
     """Add $readPreference to spec when appropriate."""
     mode = read_preference.mode
     tag_sets = read_preference.tag_sets
+    max_staleness = read_preference.max_staleness
     # Only add $readPreference if it's something other than primary to avoid
     # problems with mongos versions that don't support read preferences. Also,
     # for maximum backwards compatibility, don't add $readPreference for
-    # secondaryPreferred unless tags are in use (setting the slaveOkay bit
-    # has the same effect).
+    # secondaryPreferred unless tags or maxStalenessSeconds are in use (setting
+    # the slaveOkay bit has the same effect).
     if mode and (
-        mode != ReadPreference.SECONDARY_PREFERRED.mode or tag_sets != [{}]):
+        mode != ReadPreference.SECONDARY_PREFERRED.mode
+        or tag_sets != [{}]
+        or max_staleness != -1):
 
         if "$query" not in spec:
             spec = SON([("$query", spec)])
@@ -167,7 +170,8 @@ def _gen_explain_command(
 
 
 def _gen_find_command(coll, spec, projection, skip, limit, batch_size,
-                      options, read_concern=DEFAULT_READ_CONCERN):
+                      options, read_concern=DEFAULT_READ_CONCERN,
+                      collation=None):
     """Generate a find command document."""
     cmd = SON([('find', coll)])
     if '$query' in spec:
@@ -192,6 +196,8 @@ def _gen_find_command(coll, spec, projection, skip, limit, batch_size,
         cmd['batchSize'] = batch_size
     if read_concern.level:
         cmd['readConcern'] = read_concern.document
+    if collation:
+        cmd['collation'] = collation
 
     if options:
         cmd.update([(opt, True)
@@ -216,11 +222,11 @@ class _Query(object):
 
     __slots__ = ('flags', 'db', 'coll', 'ntoskip', 'spec',
                  'fields', 'codec_options', 'read_preference', 'limit',
-                 'batch_size', 'name', 'read_concern')
+                 'batch_size', 'name', 'read_concern', 'collation')
 
     def __init__(self, flags, db, coll, ntoskip, spec, fields,
                  codec_options, read_preference, limit,
-                 batch_size, read_concern):
+                 batch_size, read_concern, collation):
         self.flags = flags
         self.db = db
         self.coll = coll
@@ -232,6 +238,7 @@ class _Query(object):
         self.read_concern = read_concern
         self.limit = limit
         self.batch_size = batch_size
+        self.collation = collation
         self.name = 'find'
 
     def as_command(self):
@@ -247,7 +254,8 @@ class _Query(object):
                 self.read_concern), self.db
         return _gen_find_command(
             self.coll, self.spec, self.fields, self.ntoskip, self.limit,
-            self.batch_size, self.flags, self.read_concern), self.db
+            self.batch_size, self.flags, self.read_concern,
+            self.collation), self.db
 
     def get_message(self, set_slave_ok, is_mongos, use_cmd=False):
         """Get a query message, possibly setting the slaveOk bit."""

@@ -26,9 +26,9 @@ access:
   >>> from pymongo import MongoClient
   >>> c = MongoClient()
   >>> c.test_database
-  Database(MongoClient('localhost', 27017), u'test_database')
+  Database(MongoClient(host=['localhost:27017'], document_class=dict, tz_aware=False, connect=True), u'test_database')
   >>> c['test-database']
-  Database(MongoClient('localhost', 27017), u'test-database')
+  Database(MongoClient(host=['localhost:27017'], document_class=dict, tz_aware=False, connect=True), u'test-database')
 """
 
 import contextlib
@@ -81,8 +81,8 @@ class MongoClient(common.BaseObject):
             host=None,
             port=None,
             document_class=dict,
-            tz_aware=False,
-            connect=True,
+            tz_aware=None,
+            connect=None,
             **kwargs):
         """Client for a MongoDB instance, a replica set, or a set of mongoses.
 
@@ -101,18 +101,58 @@ class MongoClient(common.BaseObject):
         database or auth information are passed, the last database,
         username, and password present will be used.  For username and
         passwords reserved characters like ':', '/', '+' and '@' must be
-        escaped following RFC 2396.
+        percent encoded following RFC 2396::
+
+            try:
+                # Python 3.x
+                from urllib.parse import quote_plus
+            except ImportError:
+                # Python 2.x
+                from urllib import quote_plus
+
+            uri = "mongodb://%s:%s@%s" % (
+                quote_plus(user), quote_plus(password), host)
+            client = MongoClient(uri)
+
+        Unix domain sockets are also supported. The socket path must be percent
+        encoded in the URI::
+
+            uri = "mongodb://%s:%s@%s" % (
+                quote_plus(user), quote_plus(password), quote_plus(socket_path))
+            client = MongoClient(uri)
+
+        But not when passed as a simple hostname::
+
+            client = MongoClient('/tmp/mongodb-27017.sock')
+
+        .. note:: Starting with version 3.0 the :class:`MongoClient`
+          constructor no longer blocks while connecting to the server or
+          servers, and it no longer raises
+          :class:`~pymongo.errors.ConnectionFailure` if they are
+          unavailable, nor :class:`~pymongo.errors.ConfigurationError`
+          if the user's credentials are wrong. Instead, the constructor
+          returns immediately and launches the connection process on
+          background threads. You can check if the server is available
+          like this::
+
+            from pymongo.errors import ConnectionFailure
+            client = MongoClient()
+            try:
+                # The ismaster command is cheap and does not require auth.
+                client.admin.command('ismaster')
+            except ConnectionFailure:
+                print("Server not available")
 
         .. warning:: When using PyMongo in a multiprocessing context, please
           read :ref:`multiprocessing` first.
 
         :Parameters:
-          - `host` (optional): hostname or IP address of a single mongod or
-            mongos instance to connect to, or a mongodb URI, or a list of
-            hostnames / mongodb URIs. If `host` is an IPv6 literal
-            it must be enclosed in '[' and ']' characters following
-            the RFC2732 URL syntax (e.g. '[::1]' for localhost). Multihomed
-            and round robin DNS addresses are **not** supported.
+          - `host` (optional): hostname or IP address or Unix domain socket
+            path of a single mongod or mongos instance to connect to, or a
+            mongodb URI, or a list of hostnames / mongodb URIs. If `host` is
+            an IPv6 literal it must be enclosed in '[' and ']' characters
+            following the RFC2732 URL syntax (e.g. '[::1]' for localhost).
+            Multihomed and round robin DNS addresses are **not** supported.
           - `port` (optional): port number on which to connect
           - `document_class` (optional): default class to use for
             documents returned from queries on this client
@@ -162,6 +202,11 @@ class MongoClient(common.BaseObject):
           - `heartbeatFrequencyMS`: (optional) The number of milliseconds
             between periodic server checks, or None to accept the default
             frequency of 10 seconds.
+          - `appname`: (string or None) The name of the application that
+            created this MongoClient instance. MongoDB 3.4 and newer will
+            print this value in the server log upon establishing each
+            connection. It is also recorded in the slow query log and
+            profile collections.
           - `event_listeners`: a list or tuple of event listeners. See
             :mod:`~pymongo.monitoring` for details.
 
@@ -198,9 +243,21 @@ class MongoClient(common.BaseObject):
             match this name. Implies that the hosts specified are a seed list
             and the driver should attempt to find all members of the set.
             Defaults to ``None``.
-          - `read_preference`: The read preference for this client.
-            See :class:`~pymongo.read_preferences.ReadPreference` for all
-            available read preference options. Defaults to ``PRIMARY``.
+
+          | **Read Preference:**
+
+          - `readPreference`: The replica set read preference for this client.
+            One of ``primary``, ``primaryPreferred``, ``secondary``,
+            ``secondaryPreferred``, or ``nearest``. Defaults to ``primary``.
+          - `readPreferenceTags`: Specifies a tag set as a comma-separated list
+            of colon-separated key-value pairs. For example ``dc:ny,rack:1``.
+            Defaults to ``None``.
+          - `maxStalenessSeconds`: (integer) The maximum estimated
+            length of time a replica set secondary can fall behind the primary
+            in replication before it will no longer be selected for operations.
+            Defaults to ``-1``, meaning no maximum. If maxStalenessSeconds
+            is set, it must be a positive integer greater than or equal to
+            90 seconds.
 
           | **SSL configuration:**
 
@@ -354,6 +411,10 @@ class MongoClient(common.BaseObject):
 
         keyword_opts = kwargs
         keyword_opts['document_class'] = document_class
+        if tz_aware is None:
+            tz_aware = opts.get('tz_aware', False)
+        if connect is None:
+            connect = opts.get('connect', True)
         keyword_opts['tz_aware'] = tz_aware
         keyword_opts['connect'] = connect
         # Validate all keyword options.
@@ -892,7 +953,7 @@ class MongoClient(common.BaseObject):
 
         # Host first...
         options = ['host=%r' % [
-            '%s:%d' % (host, port)
+            '%s:%d' % (host, port) if port is not None else host
             for host, port in self._topology_settings.seeds]]
         # ... then everything in self._constructor_args...
         options.extend(
@@ -1098,6 +1159,15 @@ class MongoClient(common.BaseObject):
           - `name_or_database`: the name of a database to drop, or a
             :class:`~pymongo.database.Database` instance representing the
             database to drop
+
+        .. note:: The :attr:`~pymongo.mongo_client.MongoClient.write_concern` of
+           this client is automatically applied to this operation when using
+           MongoDB >= 3.4.
+
+        .. versionchanged:: 3.4
+           Apply this client's write concern automatically to this operation
+           when connected to MongoDB >= 3.4.
+
         """
         name = name_or_database
         if isinstance(name, database.Database):
@@ -1108,8 +1178,15 @@ class MongoClient(common.BaseObject):
                             "of %s or a Database" % (string_type.__name__,))
 
         self._purge_index(name)
-        self[name].command("dropDatabase",
-                           read_preference=ReadPreference.PRIMARY)
+        with self._socket_for_reads(
+                ReadPreference.PRIMARY) as (sock_info, slave_ok):
+            self[name]._command(
+                sock_info,
+                "dropDatabase",
+                slave_ok=slave_ok,
+                read_preference=ReadPreference.PRIMARY,
+                write_concern=self.write_concern,
+                parse_write_concern_error=True)
 
     def get_default_database(self):
         """Get the database named in the MongoDB connection URI.

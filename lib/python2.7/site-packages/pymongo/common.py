@@ -16,6 +16,7 @@
 """Functions and classes common to multiple pymongo modules."""
 
 import collections
+import datetime
 import warnings
 
 from bson.binary import (STANDARD, PYTHON_LEGACY,
@@ -41,7 +42,7 @@ MAX_WRITE_BATCH_SIZE = 1000
 
 # What this version of PyMongo supports.
 MIN_SUPPORTED_WIRE_VERSION = 0
-MAX_SUPPORTED_WIRE_VERSION = 3
+MAX_SUPPORTED_WIRE_VERSION = 5
 
 # Frequency to call ismaster on servers, in seconds.
 HEARTBEAT_FREQUENCY = 10
@@ -285,6 +286,14 @@ def validate_timeout_or_zero(option, value):
     return validate_positive_float(option, value) / 1000.0
 
 
+def validate_max_staleness(option, value):
+    """Validates maxStalenessSeconds according to the Max Staleness Spec."""
+    if value == -1 or value == "-1":
+        # Default: No maximum staleness.
+        return -1
+    return validate_positive_integer(option, value)
+
+
 def validate_read_preference(dummy, value):
     """Validate a read preference.
     """
@@ -398,6 +407,17 @@ def validate_is_document_type(option, value):
                         "collections.MutableMapping" % (option,))
 
 
+def validate_appname_or_none(option, value):
+    """Validate the appname option."""
+    if value is None:
+        return value
+    validate_string(option, value)
+    # We need length in bytes, so encode utf8 first.
+    if len(value.encode('utf-8')) > 128:
+        raise ValueError("%s must be <= 128 bytes" % (option,))
+    return value
+
+
 def validate_ok_for_replace(replacement):
     """Validate a replacement document."""
     validate_is_mapping("replacement", replacement)
@@ -417,6 +437,27 @@ def validate_ok_for_update(update):
     first = next(iter(update))
     if not first.startswith('$'):
         raise ValueError('update only works with $ operators')
+
+
+_UNICODE_DECODE_ERROR_HANDLERS = frozenset(['strict', 'replace', 'ignore'])
+
+
+def validate_unicode_decode_error_handler(dummy, value):
+    """Validate the Unicode decode error handler option of CodecOptions.
+    """
+    if value not in _UNICODE_DECODE_ERROR_HANDLERS:
+        raise ValueError("%s is an invalid Unicode decode error handler. "
+                         "Must be one of "
+                         "%s" % (value, tuple(_UNICODE_DECODE_ERROR_HANDLERS)))
+    return value
+
+
+def validate_tzinfo(dummy, value):
+    """Validate the tzinfo option
+    """
+    if value is not None and not isinstance(value, datetime.tzinfo):
+        raise TypeError("%s must be an instance of datetime.tzinfo" % value)
+    return value
 
 
 # journal is an alias for j,
@@ -450,7 +491,9 @@ URI_VALIDATORS = {
     'tz_aware': validate_boolean_or_string,
     'uuidrepresentation': validate_uuid_representation,
     'connect': validate_boolean_or_string,
-    'minpoolsize': validate_non_negative_integer
+    'minpoolsize': validate_non_negative_integer,
+    'appname': validate_appname_or_none,
+    'unicode_decode_error_handler': validate_unicode_decode_error_handler
 }
 
 TIMEOUT_VALIDATORS = {
@@ -460,12 +503,14 @@ TIMEOUT_VALIDATORS = {
     'serverselectiontimeoutms': validate_timeout_or_zero,
     'heartbeatfrequencyms': validate_timeout_or_none,
     'maxidletimems': validate_timeout_or_none,
+    'maxstalenessseconds': validate_max_staleness,
 }
 
 KW_VALIDATORS = {
     'document_class': validate_document_class,
     'read_preference': validate_read_preference,
-    'event_listeners': _validate_event_listeners
+    'event_listeners': _validate_event_listeners,
+    'tzinfo': validate_tzinfo
 }
 
 URI_VALIDATORS.update(TIMEOUT_VALIDATORS)
