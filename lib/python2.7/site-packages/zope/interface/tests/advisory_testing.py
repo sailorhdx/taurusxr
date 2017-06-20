@@ -28,7 +28,7 @@ def ping(log, value):
 
 try:
     from types import ClassType
-    
+
     class ClassicClass:
         __metaclass__ = ClassType
         classLevelFrameInfo = getFrameInfo(sys._getframe())

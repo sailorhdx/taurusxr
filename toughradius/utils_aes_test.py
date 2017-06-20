@@ -135,6 +135,7 @@ if __name__ == '__main__':
         cur = conn.execute(_sql(sql), account_number='test')
         for i in cur.fetchall():
             # 打印结果
+            print(i)
             print(i[0] + ',' + i.ip_addr)
        # print cur.fetchall()
         #ipaddrs = [ addr.ip_addr for addr in cur]

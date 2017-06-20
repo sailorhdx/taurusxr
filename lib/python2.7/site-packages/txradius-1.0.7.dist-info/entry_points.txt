@@ -1,0 +1,11 @@
+[console_scripts]
+radtest = txradius.radtest:cli
+txovpn_auth = txradius.openvpn.user_pass_verify:cli
+txovpn_config = txradius.openvpn.setup_config:echo
+txovpn_connect = txradius.openvpn.client_connect:cli
+txovpn_daemon = txradius.openvpn.daemon:main
+txovpn_disconnect = txradius.openvpn.client_disconnect:cli
+txovpn_initdb = txradius.openvpn.statusdb:cli
+txovpn_kill = txradius.openvpn.client_kill:cli
+txovpn_list = txradius.openvpn.statusdb:list
+

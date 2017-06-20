@@ -59,7 +59,7 @@ This is used for testing support for ExtensionClass in new interfaces.
   >>> if sys.version[0] == '2': # This test only makes sense under Python 2.x
   ...     from types import ClassType
   ...     assert not isinstance(C, (type, ClassType))
-  
+
   >>> int(C.__class__.__class__ is C.__class__)
   1
 """
@@ -68,16 +68,16 @@ This is used for testing support for ExtensionClass in new interfaces.
 
 class MetaMetaClass(type):
 
-    def __getattribute__(self, name):
+    def __getattribute__(cls, name):
         if name == '__class__':
-            return self
-        return type.__getattribute__(self, name)
-    
+            return cls
+        # Under Python 3.6, __prepare__ gets requested
+        return type.__getattribute__(cls, name)
+
 
 class MetaClass(object):
     """Odd classes
     """
-    __metaclass__ = MetaMetaClass
 
     def __init__(self, name, bases, dict):
         self.__name__ = name
@@ -94,8 +94,14 @@ class MetaClass(object):
                 return v
         raise AttributeError(name)
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "<odd class %s at %s>" % (self.__name__, hex(id(self)))
+
+
+MetaClass = MetaMetaClass('MetaClass',
+                          MetaClass.__bases__,
+                          {k: v for k, v in MetaClass.__dict__.items()
+                          if k not in ('__dict__',)})
 
 class OddInstance(object):
 
@@ -115,15 +121,8 @@ class OddInstance(object):
         self.__dict__[name] = v
 
     def __delattr__(self, name):
-        del self.__dict__[name]
+        raise NotImplementedError()
 
-    def __repr__(self):
+    def __repr__(self): # pragma: no cover
         return "<odd %s instance at %s>" % (
             self.__class__.__name__, hex(id(self)))
-        
-
-
-# DocTest:
-if __name__ == "__main__":
-    import doctest, __main__
-    doctest.testmod(__main__, isprivate=lambda *a: False)

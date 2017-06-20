@@ -1,0 +1,69 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from txportal.simulator import choosereactor
+choosereactor.install_optimal_reactor(False)
+import sys,os
+sys.path.insert(0,os.path.split(__file__)[0])
+from twisted.python import log
+from twisted.internet import reactor
+from txportal.simulator import portald
+from txportal.simulator import simpp
+import argparse
+
+if __name__ == '__main__':
+    log.startLogging(sys.stdout)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-ph', '--portal_host', type=str, default="127.0.0.1", dest='portal_host', 
+        help='portal ip addr')
+    parser.add_argument('-pl', '--portal_listen', type=int, default=50100, dest='portal_listen', 
+        help='portal ip addr')
+    parser.add_argument('-v', '--vendor', type=str, default='cmccv2', dest='vendor', 
+        help='portal protoal version: cmccv1,cmccv2,huaweiv1,huaweiv2')
+    parser.add_argument('-e', '--secret', type=str, default='secret', dest='secret', 
+        help='portal share secret')
+    parser.add_argument('-p', '--port', type=int, default=2000, dest='port', 
+        help='ac port, default 2000')
+    parser.add_argument('-d', '--debug', action='store_true', default=False, dest='debug', help='debug option')
+    parser.add_argument('-M', '--master', action='store_true', default=False, dest='master', help='run master')
+    parser.add_argument('-W', '--worker', action='store_true', default=False, dest='worker', help='run worker')
+    parser.add_argument('-f', '--fork', type=int, default=4, dest='fork', help='worker fork num')
+    args = parser.parse_args(sys.argv[1:])
+    print args
+    if not args.master and not  args.worker:
+        parser.print_help()
+        sys.exit(0)
+
+    config = dict(
+        portal_host = os.environ.get("PORTAL_HOST",args.portal_host),
+        portal_listen = args.portal_listen,
+        port = args.port,
+        secret = os.environ.get("PROTAL_SECRET",args.secret),
+        vendor = os.environ.get("PROTAL_vendor",args.vendor),
+        debug = args.debug
+    )
+    
+    try:
+        if args.master:
+            portald.run_master(config)
+            cmd = sys.executable
+            path = os.path.dirname(__file__)
+            for i in range(args.fork):
+                reactor.spawnProcess(simpp.SimProtocol(),cmd,[cmd,'tpsim','-W','-d'],path=path, env={})
+
+        if args.worker:
+            portald.run_worker(config)
+
+        reactor.run()
+
+    except:
+        parser.print_help()
+        import traceback
+        traceback.print_exc()
+    
+        
+
+    
+    
+    
+
+

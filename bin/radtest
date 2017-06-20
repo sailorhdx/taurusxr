@@ -1,10 +1,11 @@
-#!/opt/taurusxr/bin/python
-# EASY-INSTALL-ENTRY-SCRIPT: 'txradius==1.0.3','console_scripts','radtest'
-__requires__ = 'txradius==1.0.3'
+#!/usr/bin/python
+
+# -*- coding: utf-8 -*-
+import re
 import sys
-from pkg_resources import load_entry_point
+
+from txradius.radtest import cli
 
 if __name__ == '__main__':
-    sys.exit(
-        load_entry_point('txradius==1.0.3', 'console_scripts', 'radtest')()
-    )
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(cli())

@@ -4,6 +4,7 @@
 #
 from twisted.conch.ssh.transport import SSHClientTransport, SSHCiphers
 from twisted.python import usage
+from twisted.python.compat import unicode
 
 import sys
 
@@ -65,30 +66,36 @@ class ConchOptions(usage.Options):
         "Select encryption algorithms"
         ciphers = ciphers.split(',')
         for cipher in ciphers:
-            if not SSHCiphers.cipherMap.has_key(cipher):
+            if cipher not in SSHCiphers.cipherMap:
                 sys.exit("Unknown cipher type '%s'" % cipher)
         self['ciphers'] = ciphers
 
 
     def opt_macs(self, macs):
         "Specify MAC algorithms"
-        macs = macs.split(',')
+        if isinstance(macs, unicode):
+            macs = macs.encode("utf-8")
+        macs = macs.split(b',')
         for mac in macs:
-            if not SSHCiphers.macMap.has_key(mac):
-                sys.exit("Unknown mac type '%s'" % mac)
+            if mac not in SSHCiphers.macMap:
+                sys.exit("Unknown mac type '%r'" % mac)
         self['macs'] = macs
 
     def opt_host_key_algorithms(self, hkas):
         "Select host key algorithms"
-        hkas = hkas.split(',')
+        if isinstance(hkas, unicode):
+            hkas = hkas.encode("utf-8")
+        hkas = hkas.split(b',')
         for hka in hkas:
             if hka not in SSHClientTransport.supportedPublicKeys:
-                sys.exit("Unknown host key type '%s'" % hka)
+                sys.exit("Unknown host key type '%r'" % hka)
         self['host-key-algorithms'] = hkas
 
     def opt_user_authentications(self, uas):
         "Choose how to authenticate to the remote server"
-        self['user-authentications'] = uas.split(',')
+        if isinstance(uas, unicode):
+            uas = uas.encode("utf-8")
+        self['user-authentications'] = uas.split(b',')
 
 #    def opt_compress(self):
 #        "Enable compression"

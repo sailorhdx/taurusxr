@@ -14,9 +14,7 @@ def accept(long listening, long accepting, object buff, object obj):
 
     PyObject_AsWriteBuffer(buff, &mem_buffer, &size)
 
-    ov = makeOV()
-    if obj is not None:
-        ov.obj = <PyObject *>obj
+    ov = makeOV(obj, buff)
 
     rc = lpAcceptEx(listening, accepting, mem_buffer, 0,
                     <DWORD>size / 2, <DWORD>size / 2,
@@ -24,11 +22,9 @@ def accept(long listening, long accepting, object buff, object obj):
     if not rc:
         rc = WSAGetLastError()
         if rc != ERROR_IO_PENDING:
-            PyMem_Free(ov)
+            unmakeOV(ov)
             return rc
 
-    # operation is in progress
-    Py_XINCREF(obj)
     return 0
 
 def get_accept_addrs(long s, object buff):
@@ -36,7 +32,8 @@ def get_accept_addrs(long s, object buff):
     cdef int locallen, remotelen
     cdef Py_ssize_t size
     cdef void *mem_buffer
-    cdef sockaddr *localaddr, *remoteaddr
+    cdef sockaddr *localaddr
+    cdef sockaddr *remoteaddr
 
     PyObject_AsReadBuffer(buff, &mem_buffer, &size)
 
