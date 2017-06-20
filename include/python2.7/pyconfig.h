@@ -551,9 +551,6 @@
 /* Define to 1 if you have the `putenv' function. */
 #define HAVE_PUTENV 1
 
-/* Define if the libcrypto has RAND_egd */
-#define HAVE_RAND_EGD 1
-
 /* Define to 1 if you have the `readlink' function. */
 #define HAVE_READLINK 1
 
@@ -580,6 +577,9 @@
 
 /* Define if you have readline 4.0 */
 #define HAVE_RL_PRE_INPUT_HOOK 1
+
+/* Define if you have readline 4.0 */
+#define HAVE_RL_RESIZE_TERMINAL 1
 
 /* Define to 1 if you have the `round' function. */
 #define HAVE_ROUND 1
@@ -709,7 +709,7 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the <stropts.h> header file. */
-#define HAVE_STROPTS_H 1
+/* #undef HAVE_STROPTS_H */
 
 /* Define to 1 if `st_birthtime' is a member of `struct stat'. */
 /* #undef HAVE_STRUCT_STAT_ST_BIRTHTIME */
@@ -731,10 +731,6 @@
 
 /* Define to 1 if `tm_zone' is a member of `struct tm'. */
 #define HAVE_STRUCT_TM_TM_ZONE 1
-
-/* Define to 1 if your `struct stat' has `st_blocks'. Deprecated, use
-   `HAVE_STRUCT_STAT_ST_BLOCKS' instead. */
-#define HAVE_ST_BLOCKS 1
 
 /* Define if you have the 'symlink' function. */
 #define HAVE_SYMLINK 1

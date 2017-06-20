@@ -22,15 +22,18 @@ from ._common import (
 )
 
 
+__all__ = [
+    "verify_hostname",
+]
+
+
 def verify_hostname(connection, hostname):
     """
     Verify whether the certificate of *connection* is valid for *hostname*.
 
-    :param connection: A pyOpenSSL connection object.
-    :type connection: :class:`OpenSSL.SSL.Connection`
-
-    :param hostname: The hostname that *connection* should be connected to.
-    :type hostname: :class:`unicode`
+    :param OpenSSL.SSL.Connection connection: A pyOpenSSL connection object.
+    :param unicode hostname: The hostname that *connection* should be connected
+        to.
 
     :raises service_identity.VerificationError: If *connection* does not
         provide a certificate that is valid for *hostname*.
@@ -57,8 +60,7 @@ def extract_ids(cert):
     If *cert* doesn't contain any identifiers, the ``CN``s are used as DNS-IDs
     as fallback.
 
-    :param cert: The certificate to be dissected.
-    :type cert: :class:`OpenSSL.SSL.X509`
+    :param OpenSSL.SSL.X509 cert: The certificate to be dissected.
 
     :return: List of IDs.
     """
@@ -90,19 +92,18 @@ def extract_ids(cert):
         # A client MUST NOT seek a match for a reference identifier of CN-ID if
         # the presented identifiers include a DNS-ID, SRV-ID, URI-ID, or any
         # application-specific identifier types supported by the client.
+        components = [c[1]
+                      for c
+                      in cert.get_subject().get_components()
+                      if c[0] == b"CN"]
+        cn = next(iter(components), b'<not given>')
+        ids = [DNSPattern(c) for c in components]
         warnings.warn(
-            "Certificate has no `subjectAltName`, falling back to check for a "
-            "`commonName` for now.  This feature is being removed by major "
-            "browsers and deprecated by RFC 2818.",
+            "Certificate with CN '{}' has no `subjectAltName`, falling back "
+            "to check for a `commonName` for now.  This feature is being "
+            "removed by major browsers and deprecated by RFC 2818.  "
+            "service_identity will remove the support for it in mid-2018."
+            .format(cn.decode("utf-8")),
             SubjectAltNameWarning
         )
-        ids = [DNSPattern(c[1])
-               for c
-               in cert.get_subject().get_components()
-               if c[0] == b"CN"]
     return ids
-
-
-__all__ = [
-    "verify_hostname",
-]

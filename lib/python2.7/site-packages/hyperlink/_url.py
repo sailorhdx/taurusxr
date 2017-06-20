@@ -152,6 +152,8 @@ _USERINFO_SAFE = _UNRESERVED_CHARS | _SUB_DELIMS
 _USERINFO_DELIMS = _ALL_DELIMS - _USERINFO_SAFE
 _PATH_SAFE = _UNRESERVED_CHARS | _SUB_DELIMS | set(u':@%')
 _PATH_DELIMS = _ALL_DELIMS - _PATH_SAFE
+_SCHEMELESS_PATH_SAFE = _PATH_SAFE - set(':')
+_SCHEMELESS_PATH_DELIMS = _ALL_DELIMS - _SCHEMELESS_PATH_SAFE
 _FRAGMENT_SAFE = _UNRESERVED_CHARS | _PATH_SAFE | set(u'/?')
 _FRAGMENT_DELIMS = _ALL_DELIMS - _FRAGMENT_SAFE
 _QUERY_SAFE = _UNRESERVED_CHARS | _FRAGMENT_SAFE - set(u'&=+')
@@ -173,12 +175,37 @@ def _make_quote_map(safe_chars):
 
 _USERINFO_PART_QUOTE_MAP = _make_quote_map(_USERINFO_SAFE)
 _PATH_PART_QUOTE_MAP = _make_quote_map(_PATH_SAFE)
+_SCHEMELESS_PATH_PART_QUOTE_MAP = _make_quote_map(_SCHEMELESS_PATH_SAFE)
 _QUERY_PART_QUOTE_MAP = _make_quote_map(_QUERY_SAFE)
 _FRAGMENT_QUOTE_MAP = _make_quote_map(_FRAGMENT_SAFE)
 
+_ROOT_PATHS = frozenset(((), (u'',)))
+
 
 def _encode_path_part(text, maximal=True):
-    """Percent-encode a single segment of a URL path.
+    "Percent-encode a single segment of a URL path."
+    if maximal:
+        bytestr = normalize('NFC', to_unicode(text)).encode('utf8')
+        return u''.join([_PATH_PART_QUOTE_MAP[b] for b in bytestr])
+    return u''.join([_PATH_PART_QUOTE_MAP[t] if t in _PATH_DELIMS else t
+                     for t in text])
+
+
+def _encode_schemeless_path_part(text, maximal=True):
+    """Percent-encode the first segment of a URL path for a URL without a
+    scheme specified.
+    """
+    if maximal:
+        bytestr = normalize('NFC', to_unicode(text)).encode('utf8')
+        return u''.join([_SCHEMELESS_PATH_PART_QUOTE_MAP[b] for b in bytestr])
+    return u''.join([_SCHEMELESS_PATH_PART_QUOTE_MAP[t]
+                     if t in _SCHEMELESS_PATH_DELIMS else t for t in text])
+
+
+def _encode_path_parts(text_parts, rooted=False, has_scheme=True,
+                       has_authority=True, joined=True, maximal=True):
+    """
+    Percent-encode a tuple of path parts into a complete path.
 
     Setting *maximal* to False percent-encodes only the reserved
     characters that are syntactically necessary for serialization,
@@ -187,12 +214,33 @@ def _encode_path_part(text, maximal=True):
     Leaving *maximal* set to its default True percent-encodes
     everything required to convert a portion of an IRI to a portion of
     a URI.
+
+    RFC 3986 3.3:
+
+       If a URI contains an authority component, then the path component
+       must either be empty or begin with a slash ("/") character.  If a URI
+       does not contain an authority component, then the path cannot begin
+       with two slash characters ("//").  In addition, a URI reference
+       (Section 4.1) may be a relative-path reference, in which case the
+       first path segment cannot contain a colon (":") character.
     """
-    if maximal:
-        bytestr = normalize('NFC', to_unicode(text)).encode('utf8')
-        return u''.join([_PATH_PART_QUOTE_MAP[b] for b in bytestr])
-    return u''.join([_PATH_PART_QUOTE_MAP[t] if t in _PATH_DELIMS else t
-                     for t in text])
+    if not text_parts:
+        return u'' if joined else text_parts
+    if rooted:
+        text_parts = (u'',) + text_parts
+    # elif has_authority and text_parts:
+    #     raise Exception('see rfc above')  # TODO: too late to fail like this?
+    encoded_parts = []
+    if has_scheme:
+        encoded_parts = [_encode_path_part(part, maximal=maximal)
+                         if part else part for part in text_parts]
+    else:
+        encoded_parts = [_encode_schemeless_path_part(text_parts[0])]
+        encoded_parts.extend([_encode_path_part(part, maximal=maximal)
+                              if part else part for part in text_parts[1:]])
+    if joined:
+        return u'/'.join(encoded_parts)
+    return tuple(encoded_parts)
 
 
 def _encode_query_part(text, maximal=True):
@@ -341,11 +389,25 @@ def _typecheck(name, value, *types):
     exception describing the problem using *name*.
     """
     if not types:
-        types = (unicode,)
+        raise ValueError('expected one or more types, maybe use _textcheck?')
     if not isinstance(value, types):
-        raise TypeError("expected %s for %s, got %s"
+        raise TypeError("expected %s for %s, got %r"
                         % (" or ".join([t.__name__ for t in types]),
-                           name, repr(value)))
+                           name, value))
+    return value
+
+
+def _textcheck(name, value, delims=frozenset(), nullable=False):
+    if not isinstance(value, unicode):
+        if nullable and value is None:
+            return value  # used by query string values
+        else:
+            str_name = "unicode" if bytes is str else "str"
+            exp = str_name + ' or NoneType' if nullable else str_name
+            raise TypeError('expected %s for %s, got %r' % (exp, name, value))
+    if delims and set(value) & set(delims):  # TODO: test caching into regexes
+        raise ValueError('one or more reserved delimiters %s present in %s: %r'
+                         % (''.join(delims), name, value))
     return value
 
 
@@ -529,34 +591,36 @@ class URL(object):
             rooted = bool(host)
 
         # Set attributes.
-        self._scheme = _typecheck("scheme", scheme)
+        self._scheme = _textcheck("scheme", scheme)
         if self._scheme:
             if not _SCHEME_RE.match(self._scheme):
                 raise ValueError('invalid scheme: %r. Only alphanumeric, "+",'
                                  ' "-", and "." allowed. Did you meant to call'
                                  ' %s.from_text()?'
                                  % (self._scheme, self.__class__.__name__))
-        self._host = _typecheck("host", host)
+        self._host = _textcheck("host", host, '/?#@')
         if isinstance(path, unicode):
             raise TypeError("expected iterable of text for path, not: %r"
                             % (path,))
-        self._path = tuple((_typecheck("path segment", segment)
+        self._path = tuple((_textcheck("path segment", segment, '/?#')
                             for segment in path))
         self._query = tuple(
-            (_typecheck("query parameter name", k),
-             _typecheck("query parameter value", v, unicode, NoneType))
+            (_textcheck("query parameter name", k, '&=#'),
+             _textcheck("query parameter value", v, '&#', nullable=True))
             for (k, v) in query
         )
-        self._fragment = _typecheck("fragment", fragment)
+        self._fragment = _textcheck("fragment", fragment)
         self._port = _typecheck("port", port, int, NoneType)
         self._rooted = _typecheck("rooted", rooted, bool)
-        self._userinfo = _typecheck("userinfo", userinfo)
+        self._userinfo = _textcheck("userinfo", userinfo, '/?#@')
         self._family = _typecheck("family", family,
                                   type(socket.AF_INET), NoneType)
+        if ':' in self._host and self._family != socket.AF_INET6:
+            raise ValueError('invalid ":" present in host: %r' % self._host)
 
         uses_netloc = scheme_uses_netloc(self._scheme, uses_netloc)
-        self._uses_netloc = _typecheck("uses_netloc", uses_netloc, bool, NoneType)
-
+        self._uses_netloc = _typecheck("uses_netloc",
+                                       uses_netloc, bool, NoneType)
         return
 
     @property
@@ -718,11 +782,14 @@ class URL(object):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             return NotImplemented
-        for attr in ['scheme', 'userinfo', 'host', 'path', 'query',
-                     'fragment', 'port', 'rooted', 'family', 'uses_netloc']:
+        for attr in ['scheme', 'userinfo', 'host', 'query',
+                     'fragment', 'port', 'family', 'uses_netloc']:
             if getattr(self, attr) != getattr(other, attr):
                 return False
-        return True
+        if self.path == other.path or (self.path in _ROOT_PATHS
+                                       and other.path in _ROOT_PATHS):
+            return True
+        return False
 
     def __ne__(self, other):
         if not isinstance(other, self.__class__):
@@ -837,8 +904,10 @@ class URL(object):
 
         host, port = None, None
         if hostinfo:
-            host, sep, port_str = hostinfo.partition(u':')
-            if sep:
+            host, sep, port_str = hostinfo.rpartition(u':')
+            if not sep:
+                host = port_str
+            else:
                 if u']' in port_str:
                     host = hostinfo  # wrong split, was an ipv6
                 else:
@@ -886,14 +955,18 @@ class URL(object):
             u'http://localhost/a/b/c/d?x=y'
 
         Args:
-           segments (str): Additional parts to be joined and added to the
-              path, like :func:`os.path.join`.
+           segments (str): Additional parts to be joined and added to
+              the path, like :func:`os.path.join`. Special characters
+              in segments will be percent encoded.
 
         Returns:
            URL: A copy of the current URL with the extra path segments.
+
         """
+        segments = [_textcheck('path segment', s) for s in segments]
+        new_segs = _encode_path_parts(segments, joined=False, maximal=False)
         new_path = self.path[:-1 if (self.path and self.path[-1] == u'')
-                             else None] + segments
+                             else None] + new_segs
         return self.replace(path=new_path)
 
     def sibling(self, segment):
@@ -905,9 +978,13 @@ class URL(object):
 
         Returns:
            URL: A copy of the current URL with the last path segment
-              replaced by *segment*.
+              replaced by *segment*. Special characters such as
+              ``/?#`` will be percent encoded.
+
         """
-        return self.replace(path=self.path[:-1] + (segment,))
+        _textcheck('path segment', segment)
+        new_path = self.path[:-1] + (_encode_path_part(segment),)
+        return self.replace(path=new_path)
 
     def click(self, href=u''):
         """Resolve the given URL relative to this URL.
@@ -932,7 +1009,7 @@ class URL(object):
 
         .. _RFC 3986 section 5: https://tools.ietf.org/html/rfc3986#section-5
         """
-        _typecheck("relative URL", href)
+        _textcheck("relative URL", href)
         if href:
             clicked = URL.from_text(href)
             if clicked.absolute:
@@ -980,15 +1057,16 @@ class URL(object):
         """
         new_userinfo = u':'.join([_encode_userinfo_part(p) for p in
                                   self.userinfo.split(':', 1)])
+        new_path = _encode_path_parts(self.path, has_scheme=bool(self.scheme),
+                                      rooted=False, joined=False, maximal=True)
         return self.replace(
             userinfo=new_userinfo,
             host=self.host.encode("idna").decode("ascii"),
-            path=(_encode_path_part(segment, maximal=True)
-                  for segment in self.path),
-            query=(tuple(_encode_query_part(x, maximal=True)
-                         if x is not None else None
-                         for x in (k, v))
-                   for k, v in self.query),
+            path=new_path,
+            query=tuple([tuple(_encode_query_part(x, maximal=True)
+                               if x is not None else None
+                               for x in (k, v))
+                         for k, v in self.query]),
             fragment=_encode_fragment_part(self.fragment, maximal=True)
         )
 
@@ -1003,6 +1081,14 @@ class URL(object):
             >>> print(url.to_iri().to_text())
             https://→example.com/foo⇧bar/
 
+        .. note::
+
+            As a general Python issue, "narrow" (UCS-2) builds of
+            Python may not be able to fully decode certain URLs, and
+            the in those cases, this method will return a best-effort,
+            partially-decoded, URL which is still valid. This issue
+            does not affect any Python builds 3.4+.
+
         Returns:
             URL: A new instance with its path segments, query parameters, and
             hostname decoded for display purposes.
@@ -1014,7 +1100,11 @@ class URL(object):
         except UnicodeEncodeError:
             textHost = self.host
         else:
-            textHost = asciiHost.decode("idna")
+            try:
+                textHost = asciiHost.decode("idna")
+            except ValueError:
+                # only reached on "narrow" (UCS-2) Python builds <3.4, see #7
+                textHost = self.host
         return self.replace(userinfo=new_userinfo,
                             host=textHost,
                             path=[_percent_decode(segment)
@@ -1052,9 +1142,11 @@ class URL(object):
         """
         scheme = self.scheme
         authority = self.authority(with_password)
-        path = u'/'.join(([u''] if self.rooted else [])
-                         + [_encode_path_part(segment, maximal=False)
-                            for segment in self.path])
+        path = _encode_path_parts(self.path,
+                                  rooted=self.rooted,
+                                  has_scheme=bool(scheme),
+                                  has_authority=bool(authority),
+                                  maximal=False)
         query_string = u'&'.join(
             u'='.join((_encode_query_part(x, maximal=False)
                        for x in ([k] if v is None else [k, v])))

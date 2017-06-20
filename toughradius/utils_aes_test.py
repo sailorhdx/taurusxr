@@ -128,7 +128,11 @@ def changeTime(allTime):
         return "%d mins, %d sec" % (int(mins[0]), math.ceil(mins[1]))
 
 if __name__ == '__main__':
-
+    import sys
+    if sys.maxunicode > 65535:
+        print 'UCS4 build'
+    else:
+        print 'UCS2 build'
     db_engine = create_engine("mysql://root:Root123@115.47.117.189:3306/taurusxr", max_overflow=5)
     with db_engine.begin() as conn:
         sql = '\n                select bas.ip_addr  \n                from tr_bas as bas,tr_customer as cus,tr_account as user,tr_bas_node as bn\n                where cus.customer_id = user.customer_id\n                    and cus.node_id = bn.node_id\n                    and bn.bas_id = bas.id\n                    and user.account_number = :account_number\n                '
@@ -164,13 +168,3 @@ if __name__ == '__main__':
         :type name: string        
     """
     print bb
-
-
-
-
-
-
-
-
-
-

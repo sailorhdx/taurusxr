@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/python2.7.13/bin/python
 """PILdriver, an image-processing calculator using PIL.
 
 An instance of class PILDriver is essentially a software stack machine

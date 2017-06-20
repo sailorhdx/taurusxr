@@ -10,7 +10,7 @@ from unittest import TestCase
 
 from .. import URL, URLParseError
 # automatically import the py27 windows implementation when appropriate
-from .._url import inet_pton
+from .._url import inet_pton, SCHEME_PORT_MAP
 
 unicode = type(u'')
 
@@ -738,7 +738,6 @@ class TestURL(TestCase):
 
             assertRaised(raised, expectation, param)
 
-
         check("scheme")
         check("host")
         check("fragment")
@@ -816,6 +815,14 @@ class TestURL(TestCase):
 
         url = URL.from_text('ztp:test:com')
         self.assertEqual(url.uses_netloc, False)
+
+    def test_ipv6_with_port(self):
+        t = 'https://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]:80/'
+        url = URL.from_text(t)
+        assert url.host == '2001:0db8:85a3:0000:0000:8a2e:0370:7334'
+        assert url.port == 80
+        assert url.family == socket.AF_INET6
+        assert SCHEME_PORT_MAP[url.scheme] != url.port
 
     def test_invalid_ipv6(self):
         invalid_ipv6_ips = ['2001::0234:C1ab::A0:aabc:003F',
@@ -960,6 +967,60 @@ class TestURL(TestCase):
         assert url.to_text() == u'http://example.com/?a=b&x=x&c&x=y'
         # Would expect:
         # assert url.to_text() == u'http://example.com/?a=b&c&x=x&x=y'
+
+    def test_schemeless_path(self):
+        "See issue #4"
+        u1 = URL.from_text("urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob")
+        u2 = URL.from_text(u1.to_text())
+        assert u1 == u2  # sanity testing roundtripping
+
+        u3 = URL.from_text(u1.to_iri().to_text())
+        assert u1 == u3
+        assert u2 == u3
+
+        # test that colons are ok past the first segment
+        u4 = URL.from_text("first-segment/urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob")
+        u5 = u4.to_iri()
+        assert u5.to_text() == u'first-segment/urn:ietf:wg:oauth:2.0:oob'
+
+        u6 = URL.from_text(u5.to_text()).to_uri()
+        assert u5 == u6  # colons stay decoded bc they're not in the first seg
+
+    def test_emoji_domain(self):
+        "See issue #7, affecting only narrow builds (2.6-3.3)"
+        url = URL.from_text('https://xn--vi8hiv.ws')
+        iri = url.to_iri()
+        iri.to_text()
+        # as long as we don't get ValueErrors, we're good
+
+    def test_delim_in_param(self):
+        "Per issue #6 and #8"
+        self.assertRaises(ValueError, URL, scheme=u'http', host=u'a/c')
+        self.assertRaises(ValueError, URL, path=(u"?",))
+        self.assertRaises(ValueError, URL, path=(u"#",))
+        self.assertRaises(ValueError, URL, query=((u"&", "test")))
+
+    def test_empty_paths_eq(self):
+        u1 = URL.from_text('http://example.com/')
+        u2 = URL.from_text('http://example.com')
+
+        assert u1 == u2
+
+        u1 = URL.from_text('http://example.com')
+        u2 = URL.from_text('http://example.com')
+
+        assert u1 == u2
+
+        u1 = URL.from_text('http://example.com')
+        u2 = URL.from_text('http://example.com/')
+
+        assert u1 == u2
+
+        u1 = URL.from_text('http://example.com/')
+        u2 = URL.from_text('http://example.com/')
+
+        assert u1 == u2
+
 
     # python 2.6 compat
     def assertRaises(self, excClass, callableObj=None, *args, **kwargs):

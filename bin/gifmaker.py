@@ -1,4 +1,4 @@
-#!/opt/taurusxr/bin/pyrun
+#!/usr/local/python2.7.13/bin/python
 #
 # The Python Imaging Library
 # $Id$
