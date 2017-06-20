@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 from io import BytesIO
 
 import mock
@@ -7,7 +8,7 @@ from twisted.internet.protocol import Protocol
 
 from twisted.python.failure import Failure
 
-from twisted.web.client import Agent
+from twisted.web.client import Agent, ResponseFailed
 from twisted.web.http_headers import Headers
 
 from treq.test.util import TestCase, with_clock
@@ -33,6 +34,12 @@ class HTTPClientTests(TestCase):
     def assertBody(self, expected):
         body = self.FileBodyProducer.mock_calls[0][1][0]
         self.assertEqual(body.read(), expected)
+
+    def test_request_uri_idn(self):
+        self.client.request('GET', u'http://‽.net')
+        self.agent.request.assert_called_once_with(
+            b'GET', b'http://xn--fwg.net',
+            Headers({b'accept-encoding': [b'gzip']}), None)
 
     def test_request_case_insensitive_methods(self):
         self.client.request('gEt', 'http://example.com/')
@@ -329,6 +336,27 @@ class HTTPClientTests(TestCase):
 
         # YOLO public attribute.
         self.assertEqual(self.successResultOf(d).original, response)
+
+    def test_request_post_redirect_denied(self):
+        response = mock.Mock(code=302, headers=Headers({'Location': ['/']}))
+        self.agent.request.return_value = succeed(response)
+        d = self.client.post('http://www.example.com')
+        self.failureResultOf(d, ResponseFailed)
+
+    def test_request_browser_like_redirects(self):
+        response = mock.Mock(code=302, headers=Headers({'Location': ['/']}))
+
+        self.agent.request.return_value = succeed(response)
+
+        raw = mock.Mock(return_value=[])
+        final_resp = mock.Mock(code=200, headers=mock.Mock(getRawHeaders=raw))
+        with mock.patch('twisted.web.client.RedirectAgent._handleRedirect',
+                        return_value=final_resp):
+            d = self.client.post('http://www.google.com',
+                                 browser_like_redirects=True,
+                                 unbuffered=True)
+
+        self.assertEqual(self.successResultOf(d).original, final_resp)
 
 
 class BodyBufferingProtocolTests(TestCase):

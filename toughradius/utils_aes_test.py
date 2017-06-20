@@ -9,8 +9,13 @@ import base64
 import os
 import json
 
+import sqlalchemy
+from sqlalchemy import create_engine
+
 from toughradius.common import tools, safefile
+from toughradius.modules import models
 from toughradius.toughlib import utils
+from sqlalchemy.sql import text as _sql
 
 import math
 import decimal
@@ -123,6 +128,17 @@ def changeTime(allTime):
         return "%d mins, %d sec" % (int(mins[0]), math.ceil(mins[1]))
 
 if __name__ == '__main__':
+
+    db_engine = create_engine("mysql://root:Root123@115.47.117.189:3306/taurusxr", max_overflow=5)
+    with db_engine.begin() as conn:
+        sql = '\n                select bas.ip_addr  \n                from tr_bas as bas,tr_customer as cus,tr_account as user,tr_bas_node as bn\n                where cus.customer_id = user.customer_id\n                    and cus.node_id = bn.node_id\n                    and bn.bas_id = bas.id\n                    and user.account_number = :account_number\n                '
+        cur = conn.execute(_sql(sql), account_number='test')
+        for i in cur.fetchall():
+            # 打印结果
+            print(i[0] + ',' + i.ip_addr)
+       # print cur.fetchall()
+        #ipaddrs = [ addr.ip_addr for addr in cur]
+        #print ipaddrs
     m = re.match('(\w\w\w)-(\d\d\d)', 'abc-123')
     if m is not None:
         print '1111'

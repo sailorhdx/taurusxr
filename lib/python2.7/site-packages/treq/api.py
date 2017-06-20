@@ -97,6 +97,13 @@ def request(method, url, **kwargs):
         received within this timeframe, a connection is aborted with
         ``CancelledError``.
 
+    :param bool browser_like_redirects: Use browser like redirects
+        (i.e. Ignore  RFC2616 section 10.3 and follow redirects from
+        POST requests).  Default: ``False``
+
+    :param bool unbuffered: Pass ``True`` to to disable response buffering.  By
+        default treq buffers the entire response body in memory.
+
     :rtype: Deferred that fires with an IResponse provider.
 
     """

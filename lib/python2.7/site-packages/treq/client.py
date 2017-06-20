@@ -10,17 +10,10 @@ from twisted.internet.defer import Deferred
 from twisted.python.components import proxyForInterface
 from twisted.python.compat import _PY3, unicode
 from twisted.python.filepath import FilePath
+from twisted.python.url import URL
 
 from twisted.web.http import urlparse
 
-if _PY3:
-    from urllib.parse import urlunparse, urlencode as _urlencode
-
-    def urlencode(query, doseq):
-        return _urlencode(query, doseq).encode('ascii')
-else:
-    from urlparse import urlunparse
-    from urllib import urlencode
 
 from twisted.web.http_headers import Headers
 from twisted.web.iweb import IBodyProducer, IResponse
@@ -28,6 +21,7 @@ from twisted.web.iweb import IBodyProducer, IResponse
 from twisted.web.client import (
     FileBodyProducer,
     RedirectAgent,
+    BrowserLikeRedirectAgent,
     ContentDecoderAgent,
     GzipDecoder,
     CookieAgent
@@ -39,13 +33,18 @@ from treq._utils import default_reactor
 from treq.auth import add_auth
 from treq import multipart
 from treq.response import _Response
+from requests.cookies import cookiejar_from_dict, merge_cookies
 
 if _PY3:
+    from urllib.parse import urlunparse, urlencode as _urlencode
+
+    def urlencode(query, doseq):
+        return _urlencode(query, doseq).encode('ascii')
     from http.cookiejar import CookieJar
 else:
     from cookielib import CookieJar
-
-from requests.cookies import cookiejar_from_dict, merge_cookies
+    from urlparse import urlunparse
+    from urllib import urlencode
 
 
 class _BodyBufferingProtocol(proxyForInterface(IProtocol)):
@@ -134,7 +133,7 @@ class HTTPClient(object):
             url = _combine_query_params(url, params)
 
         if isinstance(url, unicode):
-            url = url.encode('ascii')
+            url = URL.fromText(url).asURI().asText().encode('ascii')
 
         # Convert headers dictionary to
         # twisted raw headers format.
@@ -205,7 +204,10 @@ class HTTPClient(object):
         wrapped_agent = CookieAgent(self._agent, cookies)
 
         if kwargs.get('allow_redirects', True):
-            wrapped_agent = RedirectAgent(wrapped_agent)
+            if kwargs.get('browser_like_redirects', False):
+                wrapped_agent = BrowserLikeRedirectAgent(wrapped_agent)
+            else:
+                wrapped_agent = RedirectAgent(wrapped_agent)
 
         wrapped_agent = ContentDecoderAgent(wrapped_agent,
                                             [(b'gzip', GzipDecoder)])
