@@ -32,8 +32,3 @@ dict2xml
 psutil
 pytz
 IPy
-Twisted>=15.0.0
-treq
-cyclone
-txzmq
-txmongo
