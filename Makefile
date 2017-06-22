@@ -3,10 +3,10 @@ install:
 	-useradd taurusxr -g taurusxr -M -d /var/taurusxr -s /bin/false
 	-mkdir -p /var/taurusxr/lib
 	-mkdir -p /var/taurusxr/data
-	install /opt/taurusxr/lib/python2.7/site-packages/OpenSSL/libssl.so.1.0.0 /var/taurusxr/lib/libssl.so.1.0.0
-	install /opt/taurusxr/lib/python2.7/site-packages/OpenSSL/libcrypto.so.1.0.0 /var/taurusxr/lib/libcrypto.so.1.0.0
-	install /opt/taurusxr/lib/python2.7/site-packages/OpenSSL/libssl.so.1.0.0 /var/taurusxr/lib/libssl.so.10
-	install /opt/taurusxr/lib/python2.7/site-packages/OpenSSL/libcrypto.so.1.0.0 /var/taurusxr/lib/libcrypto.so.10
+	install /opt/taurusxr/lib/libssl.so.1.0.0 /var/taurusxr/lib/libssl.so.1.0.0
+	install /opt/taurusxr/lib/libcrypto.so.1.0.0 /var/taurusxr/lib/libcrypto.so.1.0.0
+	install /opt/taurusxr/lib/libssl.so.1.0.0 /var/taurusxr/lib/libssl.so.10
+	install /opt/taurusxr/lib/libcrypto.so.1.0.0 /var/taurusxr/lib/libcrypto.so.10
 	install /opt/taurusxr/lib/libmysqlclient.so.18 /var/taurusxr/lib/libmysqlclient.so.18
 	install /opt/taurusxr/lib/libpgm-5.2.so.0 /var/taurusxr/lib/libpgm-5.2.so.0
 	install /opt/taurusxr/lib/libzmq.so.3 /var/taurusxr/lib/libzmq.so.3
