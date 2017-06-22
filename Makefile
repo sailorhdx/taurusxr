@@ -19,6 +19,14 @@ install:
 	chmod +x /opt/taurusxr/radiusctl
 	systemctl enable taurusxr && systemctl daemon-reload
 
+uninstall:
+	-systemctl disable taurusxr && systemctl daemon-reload
+	-rm -rf /usr/lib/systemd/system/taurusxr.service
+	-rm -rf /usr/local/bin/toughkey
+	-rm -rf /usr/local/bin/radiusctl
+	-sed -i '/taurusxr/d' /etc/ld.so.conf && ldconfig
+	-userdel -r taurusxr
+
 upgrade-libs:
 	bin/pip install -r requirements.txt
 
