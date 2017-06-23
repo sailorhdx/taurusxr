@@ -1,0 +1,119 @@
+<%def name="page_nav()">
+    <!-- Logo -->
+
+    <a href="/" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><img src="${handler.get_param_value('index_logo_mini','/static/img/logo_white_45X45.png')}"></span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><img src="${handler.get_param_value('index_logo','/static/img/logo_white_38X38.png')}">${handler.get_param_value('system_name','OPENRADIUS')}</span>
+    </a>
+
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </a>
+
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <!-- Messages: style can be found in dropdown.less-->
+          % if permit.match(current_user.username,'/admin/stat/buiness'):
+                % if handler.get_param_value('style_nav_busstat_link','1') == '1':
+                <li><a href="/admin/stat/buiness"><i class="fa fa-bar-chart-o"></i> 运营分析</a></li>
+                % endif
+            % endif
+
+            % if permit.match(current_user.username,'/admin/superrpc'):
+                % if handler.get_param_value('style_nav_status_link','1') == '1':
+                <li><a href="/admin/superrpc"><i class="fa fa-laptop"></i> 系统状态</a></li>
+                % endif
+            % endif
+
+            <li><a href="/admin/dashboard"><i class="fa fa-dashboard"></i> 控制面板</a></li>
+            <li><a href="/admin/password"><i class="fa fa-key"></i> 修改密码</a></li>
+            <li><a href="/admin/logout"> ${current_user.username}  <i class="fa fa-sign-out"></i> 退出</a></li>
+        </ul>
+      </div>
+    </nav>
+</%def>
+
+
+<%def name="page_sidebar()">
+<%
+def inactive(req,menu):
+    _path = req.path
+    if _path.endswith("/"):
+        _path = _path[:-1]
+    return _path in [ it['path'] for it in menu['items'] ] and 'active' or ''
+
+def aclass(req,path):
+    _path = req.path
+    if _path.endswith("/"):
+        _path = _path[:-1]
+    return _path==path and 'active' or ''
+%>
+<!-- sidebar: style can be found in sidebar.less -->
+<section class="sidebar">
+    <!-- Sidebar user panel -->
+    <!-- search form -->
+    <form action="/admin/customer" method="get" class="sidebar-form">
+    <div class="input-group">
+      <input type="text" name="user_name" class="form-control" placeholder="快速查找用户"/>
+      <span class="input-group-btn">
+        <button type='submit' name='search' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+      </span>
+    </div>
+    </form>
+    <!-- sidebar menu: : style can be found in sidebar.less -->
+    <ul class="sidebar-menu">
+
+        <li class="header">功能导航</li>
+
+        % for menu in all_menus:
+        % if permit.check_opr_category(current_user.username,menu['category']):
+        <li class="treeview ${inactive(request,menu)}">
+            <a href="#">
+                <i class="${menu_icons.get(menu['category'])}"></i> <span>${menu['category']}</span>
+                <span class="pull-right-container">
+                    <i class="fa fa-angle-left pull-right"></i>
+                </span>
+            </a>
+            <ul class="treeview-menu">
+                % for item in sorted(menu['items'],key=lambda r:r['order']):
+                % if item['is_menu'] and permit.match(current_user.username,item['path']):
+                <li class="${aclass(request,item['path'])}"><a href="${item['path']}"><i class="fa fa-circle-o"></i>${item['name']}</a>
+                </li>
+                % endif
+                % endfor
+            </ul>
+        </li>
+        % endif
+        % endfor
+
+    </ul>
+</section>
+<!-- /.sidebar -->
+</%def>
+
+
+<%def name="page_footer()">
+    <footer class="main-footer">
+    <div class="pull-right hidden-xs">
+      <b>Version</b> ${sys_version or 'unknow'}
+    </div>
+    <strong>${handler.get_param_value("copy_right")} </strong>
+    </footer>
+</%def>
+
+
+
+
+
+
+
+
+

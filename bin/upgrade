@@ -10,8 +10,8 @@ install_release()
     test -d /tmp/taurusxr && rm -fr /tmp/taurusxr
     cd /tmp && tar Jxf taurusxr-linux-x64.tar.xz
     echo "start upgrade ..."
-    test -d /opt/taurusxr/toughradius && mv /opt/taurusxr/toughradius /var/taurusxr/taurusxr_`date +%Y%m%d%H%M%S`
-    \cp -r /tmp/taurusxr/toughradius /opt/taurusxr/toughradius
+    test -d /opt/taurusxr/taurusxradius && mv /opt/taurusxr/taurusxradius /var/taurusxr/taurusxr_`date +%Y%m%d%H%M%S`
+    \cp -r /tmp/taurusxr/taurusxradius /opt/taurusxr/taurusxradius
     install /tmp/taurusxr/Makefile /opt/taurusxr/Makefile
     install -m 0755  /tmp/taurusxr/radiusctl /opt/taurusxr/radiusctl
     install -m 0755 /opt/taurusxr/radiusctl  /usr/local/bin/radiusctl

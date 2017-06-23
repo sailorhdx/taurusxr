@@ -5,26 +5,26 @@ RUNDIR = "/opt/taurusxr"
 if not os.path.exists(RUNDIR):
     RUNDIR = os.path.dirname(__file__)
 sys.path.insert(0,RUNDIR)
-from toughradius.toughlib import choosereactor
+from taurusxradius.taurusxlib import choosereactor
 choosereactor.install_optimal_reactor(False)
 import sys,signal,click,re
 import platform as pf
 from twisted.internet import reactor
 from twisted.python import log
-from toughradius.toughlib import config as iconfig
-from toughradius.toughlib import utils,dispatch,logger
-from toughradius.toughlib.dbengine import get_engine
-from toughradius import __version__
+from taurusxradius.taurusxlib import config as iconfig
+from taurusxradius.taurusxlib import utils,dispatch,logger
+from taurusxradius.taurusxlib.dbengine import get_engine
+from taurusxradius import __version__
 from supervisor.supervisord import main as superd
 from supervisor.supervisorctl import main as superctl
 import traceback
 
 reactor.suggestThreadPoolSize(60)
 
-os.environ['TOUGHEE_RELEASE'] = 'y'
+os.environ['taurusxee_RELEASE'] = 'y'
 
-radius_conf = '%s/etc/toughee.conf'%RUNDIR
-radius_json = '%s/etc/toughee.json'%RUNDIR
+radius_conf = '%s/etc/taurusxee.conf'%RUNDIR
+radius_json = '%s/etc/taurusxee.json'%RUNDIR
 
 def check_environ(config):
     """ 环境变量检查
@@ -94,7 +94,7 @@ def cli():
 def manage(conf,port,debug):
     """ 管理控制台进程 """
     try:
-        from toughradius.modules import free_httpd as httpd
+        from taurusxradius.modules import free_httpd as httpd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -115,7 +115,7 @@ def manage(conf,port,debug):
 def ssportal(conf,debug):
     """ 自助服务进程 """
     try:
-        from toughradius.modules import free_sspd as sspd
+        from taurusxradius.modules import free_sspd as sspd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -136,8 +136,8 @@ def ssportal(conf,debug):
 def wlanportal(conf,debug,port,listen_port):
     """ 自助服务进程 """
     try:
-        from toughradius.modules import wland
-        from toughradius.modules.wlanportal import portald
+        from taurusxradius.modules import wland
+        from taurusxradius.modules.wlanportal import portald
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -163,7 +163,7 @@ def wlanportal(conf,debug,port,listen_port):
 def acsim(conf):
     """ AC模拟器 """
     try:
-        from toughradius.txportal.simulator import portald
+        from taurusxradius.txportal.simulator import portald
         config = iconfig.find_config(conf)
         update_timezone(config)
         setup_logger(config)
@@ -179,7 +179,7 @@ def acsim(conf):
 def mpd(conf,debug):
     """ 微信服务进程 """
     try:
-        from toughradius.modules import mpd
+        from taurusxradius.modules import mpd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -197,7 +197,7 @@ def mpd(conf,debug):
 def task(conf,debug):
     """ 定时任务进程 """
     try:
-        from toughradius.modules import taskd
+        from taurusxradius.modules import taskd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -216,7 +216,7 @@ def task(conf,debug):
 def syncd(conf,debug):
     """ 同步定时任务进程 """
     try:
-        from toughradius.modules import syncd
+        from taurusxradius.modules import syncd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -235,7 +235,7 @@ def syncd(conf,debug):
 def auth(conf,debug):
     """  Radius 认证监听进程 """
     try:
-        from toughradius.modules import radiusd
+        from taurusxradius.modules import radiusd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -255,7 +255,7 @@ def auth(conf,debug):
 def acct(conf,debug):
     """  Radius 记账监听进程 """
     try:
-        from toughradius.modules import radiusd
+        from taurusxradius.modules import radiusd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -275,7 +275,7 @@ def acct(conf,debug):
 def worker(conf,debug,num):
     """  Radius 消息处理队列 """
     try:
-        from toughradius.modules import radiusd
+        from taurusxradius.modules import radiusd
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -294,7 +294,7 @@ def worker(conf,debug,num):
 @click.option('-f','--force', is_flag=True)
 def initdb(conf,force):
     """ 初始化数据库 """
-    from toughradius.common import initdb as init_db
+    from taurusxradius.common import initdb as init_db
     config = iconfig.find_config(conf)  
     init_db.update(config,force=force)
 
@@ -304,7 +304,7 @@ def initdb(conf,force):
 def backup(conf):
     """ 升级数据库 """
     try:
-        from toughradius.common import initdb as init_db
+        from taurusxradius.common import initdb as init_db
         config = iconfig.find_config(conf)  
         init_db.backup(config)
     except:
@@ -316,7 +316,7 @@ def backup(conf):
 def updb(conf):
     """ 升级数据库 """
     try:
-        from toughradius.common import initdb as init_db
+        from taurusxradius.common import initdb as init_db
         config = iconfig.find_config(conf)  
         init_db.upgrade(config)
     except:
@@ -326,7 +326,7 @@ def updb(conf):
 @click.option('-c','--conf', default=radius_json, help='config file')
 def builddb(conf):
     """ 初始化数据库表 """
-    from toughradius.common import initdb as init_db
+    from taurusxradius.common import initdb as init_db
     config = iconfig.find_config(conf)
     init_db.build_tables(config)
 
@@ -336,7 +336,7 @@ def builddb(conf):
 @click.option('-name','--tablename', help='table name')
 def addtable(conf,tablename):
     """ 创建数据库表 """
-    from toughradius.common import initdb as init_db
+    from taurusxradius.common import initdb as init_db
     config = iconfig.find_config(conf)
     init_db.create_table(config,tablename)
 
@@ -345,7 +345,7 @@ def addtable(conf,tablename):
 @click.option('-name','--tablename', help='table name')
 def deltable(conf,tablename):
     """ 删除数据库表 """
-    from toughradius.common import initdb as init_db
+    from taurusxradius.common import initdb as init_db
     config = iconfig.find_config(conf)
     init_db.drop_table(config,tablename)
 
@@ -354,7 +354,7 @@ def deltable(conf,tablename):
 @click.option('-name','--tablename', help='table name')
 def redotable(conf,tablename):
     """ 重建数据库表 """
-    from toughradius.common import initdb as init_db
+    from taurusxradius.common import initdb as init_db
     config = iconfig.find_config(conf)
     init_db.drop_table(config,tablename)
     init_db.create_table(config,tablename)
@@ -366,13 +366,13 @@ def redotable(conf,tablename):
 def standalone(conf,debug):
     """ 单进程运行模式 """
     try:
-        from toughradius.modules import free_httpd as httpd
-        # from toughradius.modules import sspd
-        from toughradius.modules import radiusd
-        from toughradius.modules import taskd
-        from toughradius.modules import syncd
-        from toughradius.toughlib.config import redis_conf
-        from toughradius.toughlib.redis_cache import CacheManager
+        from taurusxradius.modules import free_httpd as httpd
+        # from taurusxradius.modules import sspd
+        from taurusxradius.modules import radiusd
+        from taurusxradius.modules import taskd
+        from taurusxradius.modules import syncd
+        from taurusxradius.taurusxlib.config import redis_conf
+        from taurusxradius.taurusxlib.redis_cache import CacheManager
         config = iconfig.find_config(conf)
         check_environ(config)
         update_timezone(config)
@@ -400,7 +400,7 @@ def standalone(conf,debug):
 @click.option('-r','--rate', default=32,type=click.INT,help='batch insert rate')
 def importe2(iconf,conf,rate):
     """ import version 2 data """
-    from toughradius.common.import_e2 import import_data
+    from taurusxradius.common.import_e2 import import_data
     idb = get_engine(iconfig.find_config(iconf))
     odb = get_engine(iconfig.find_config(conf))
     import_data(idb, odb, int(rate))
@@ -411,16 +411,16 @@ def importe2(iconf,conf,rate):
 def shell(conf):
     """ 命令行工具 """
     try:
-        from toughradius.shell import toughshell
+        from taurusxradius.shell import taurusxshell
         config = iconfig.find_config(conf)
-        toughshell.main(config)
+        taurusxshell.main(config)
     except:
         traceback.print_exc()
   
 @click.command()
 def dbdoc():
     try:
-        from toughradius.common import mkdbdoc
+        from taurusxradius.common import mkdbdoc
         print "数据字典"
         print "=====================\n\n"
         for mdl in mkdbdoc.mdls:

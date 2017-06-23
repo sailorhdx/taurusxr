@@ -8,7 +8,7 @@ cp -rf bin/ target/
 cp -rf etc/ target/
 cp -rf include/ target/ 
 cp -rf lib/ target/
-cp -rf toughradius/ target/
+cp -rf taurusxradius/ target/
 cp -rf LICENSE target/
 cp -rf Makefile target/
 cp -rf radiusctl target/ 

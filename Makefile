@@ -11,18 +11,19 @@ install:
 	install /opt/taurusxr/lib/libpgm-5.2.so.0 /var/taurusxr/lib/libpgm-5.2.so.0
 	install /opt/taurusxr/lib/libzmq.so.3 /var/taurusxr/lib/libzmq.so.3
 	echo "/var/taurusxr/lib" >> /etc/ld.so.conf && ldconfig
-	install etc/toughee.service /usr/lib/systemd/system/taurusxr.service
-	install -m 0755 /opt/taurusxr/bin/toughkey  /usr/local/bin/toughkey
+	install etc/taurusxee.service /usr/lib/systemd/system/taurusxr.service
+	install -m 0755 /opt/taurusxr/bin/taurusxkey  /usr/local/bin/taurusxkey
 	install -m 0755 /opt/taurusxr/radiusctl  /usr/local/bin/radiusctl
 	chown -R taurusxr /opt/taurusxr
 	chown -R taurusxr /var/taurusxr
 	chmod +x /opt/taurusxr/radiusctl
+	chmod +x /opt/taurusxr/bin/*
 	systemctl enable taurusxr && systemctl daemon-reload
 
 uninstall:
 	-systemctl disable taurusxr && systemctl daemon-reload
 	-rm -rf /usr/lib/systemd/system/taurusxr.service
-	-rm -rf /usr/local/bin/toughkey
+	-rm -rf /usr/local/bin/taurusxkey
 	-rm -rf /usr/local/bin/radiusctl
 	-sed -i '/taurusxr/d' /etc/ld.so.conf && ldconfig
 	-userdel -r taurusxr
@@ -31,15 +32,15 @@ upgrade-libs:
 	bin/pip install -r requirements.txt
 
 initdb:
-	bin/python radiusctl initdb -f -c etc/toughee.json
+	bin/python radiusctl initdb -f -c etc/taurusxee.json
 	chown -R taurusxr /var/taurusxr
 
 updb:
-	bin/python radiusctl updb -c etc/toughee.json
+	bin/python radiusctl updb -c etc/taurusxee.json
 	chown -R taurusxr /var/taurusxr
 
 backup:
-	bin/python radiusctl backup -c etc/toughee.json
+	bin/python radiusctl backup -c etc/taurusxee.json
 	chown -R taurusxr /var/taurusxr
 
 clean-build:
@@ -80,14 +81,14 @@ runs:
 	python radiusctl standalone -c testdata/slave.json
 
 suprun:
-	python radiusctl daemon -s startup -n -c testdata/toughee.conf
+	python radiusctl daemon -s startup -n -c testdata/taurusxee.conf
 
 shell:
 	python radiusctl shell -c testdata/master.json
 
 test:
-	python radiusctl initdb -f -c toughradius/tests/test.json;\
-	trial toughradius.tests
+	python radiusctl initdb -f -c taurusxradius/tests/test.json;\
+	trial taurusxradius.tests
 
 inittest:
 	python radiusctl initdb -c testdata/master.json
