@@ -1,0 +1,25 @@
+<%inherit file="base.html"/>
+<%def name="head()">
+<script>
+$(function () {
+        $('[data-toggle="popover"]').popover()
+    })
+</script>
+</%def>
+<%def name="body()">
+<div class="jumbotron">
+  <div class="container lbanner">
+    <h2>${form.title}</h2>
+  </div>
+</div>
+
+<div class="container-fluid">  
+    % if msg:
+    <div class="alert alert-warning">${msg}</div>
+    % endif
+    <form class="form-horizontal form-well" role="form" action="${form.action}" method="post">
+          ${xsrf_form_html()|n}
+          ${form.render_css()|n}
+    </form>
+</div>
+</%def>

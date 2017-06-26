@@ -48,6 +48,10 @@
         "host": "0.0.0.0", 
         "port": 1819
     },
+    "usrportal": {
+        "host": "0.0.0.0",
+        "port": 1829
+    },
     "syslog": {
         "enable": 0, 
         "level": "INFO", 
