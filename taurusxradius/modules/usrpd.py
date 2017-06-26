@@ -60,4 +60,4 @@ class HttpServer(cyclone.web.Application):
 
 def run(config, dbengine, **kwargs):
     app = HttpServer(config, dbengine)
-    reactor.listenTCP(int(config.usrportal.port), app, interface=config.ssportal.host)
+    reactor.listenTCP(int(config.usrportal.port), app, interface=config.usrportal.host)

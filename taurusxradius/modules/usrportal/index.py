@@ -2,7 +2,7 @@
 # coding=utf-8
 import datetime
 import time
-from taurusxradius.modules.ssportal.base import BaseHandler, authenticated
+from taurusxradius.modules.usrportal.base import BaseHandler, authenticated
 from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.modules import models
 
