@@ -22,9 +22,8 @@ class BaseHandler(cyclone.web.RequestHandler):
         super(BaseHandler, self).__init__(*argc, **argkw)
         self.aes = self.application.aes
         self.cache = self.application.mcache
-        self.paycache = self.application.paycache
-        self.license = self.application.license
         self.session = redis_session.Session(self.application.session_manager, self)
+        self.lictype = os.environ.get('LICENSE_TYPE')
 
     def initialize(self):
         self.tp_lookup = self.application.tp_lookup
@@ -53,7 +52,7 @@ class BaseHandler(cyclone.web.RequestHandler):
                 return self.render_string('error.html', msg=u'500:服务器处理失败，请联系管理员')
             return self.render_string('error.html', msg=u'%s:服务器处理失败，请联系管理员' % status_code)
         except Exception as err:
-            logger.exception(err, tag='manage_handler_error')
+            logger.exception(err)
             return self.render_string('error.html', msg=u'%s:服务器处理失败，请联系管理员' % status_code)
 
     def render(self, template_name, **template_vars):

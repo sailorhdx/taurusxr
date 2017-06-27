@@ -32,7 +32,8 @@ if os.environ.get('TAURUSXEE_SUPER_RPC') == 'true':
      'redis': u'Redis缓存服务',
      'mongod': u'Mongodb数据库',
      'acsim': u'AC模拟器',
-     'wlanportal': u'无线认证门户'}
+     'wlanportal': u'无线认证门户',
+     'usrportal': u'大众用户门户'}
 
     @permit.suproute('/admin/superrpc', u'系统服务管理', MenuSys, order=9.0, is_menu=True)
 

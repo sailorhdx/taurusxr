@@ -32,7 +32,7 @@ class HttpServer(cyclone.web.Application):
         self.config = config
         os.environ['LICENSE_TYPE'] = 'taurusxee'
         settings = dict(cookie_secret='12oETzKXQAGaYdkL5gEmGeJJFuYh7EQnp2XdTP1o/Vo=', login_url='/usrportal/login', template_path=os.path.join(os.path.dirname(taurusxradius.__file__), 'views'), static_path=os.path.join(os.path.dirname(taurusxradius.__file__), 'static'), xsrf_cookies=True, config=self.config, debug=self.config.system.debug, xheaders=True)
-        self.tp_lookup = TemplateLookup(directories=[settings['template_path']], default_filters=['decode.utf8', 'h'], input_encoding='utf-8', output_encoding='utf-8', encoding_errors='ignore', module_directory='/var/taurusxr/usrportal')
+        self.tp_lookup = TemplateLookup(directories=[settings['template_path']], default_filters=['decode.utf8', 'h'], input_encoding='utf-8', output_encoding='utf-8', encoding_errors='ignore', module_directory='/var/taurusxr/module_usrportal')
         self.db_engine = dbengine or get_engine(config)
         self.db = scoped_session(sessionmaker(bind=self.db_engine, autocommit=False, autoflush=False))
         redisconf = redis_conf(config)

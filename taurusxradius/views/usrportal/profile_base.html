@@ -1,0 +1,89 @@
+<%namespace name="profile_base_ui" file="profile_base_ui.html" inheritable="True"/>
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/static/favicon.ico">
+    <title>${handler.get_param_value("ssportal_name",u"计费网上营业厅")}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+    <!-- AdminLTE Skins. Choose a skin from the css/skins
+       folder instead of downloading all of them to reduce the load. -->
+    <link rel="stylesheet" href="/static/css/skins/_all-skins.min.css">
+
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" href="/static/css/usrportal-profile.css">
+
+    <!-- jQuery 2.2.3 -->
+    <script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="/static/js/html5shiv.min.js"></script>
+    <script src="/static/js/respond.min.js"></script>
+    <![endif]-->
+     ${self.head()}
+  </head>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+
+    <header class="main-header">
+        ${profile_base_ui.page_nav()}
+    </header>
+
+     <!-- Left side column. contains the logo and sidebar -->
+    <aside class="main-sidebar">
+        ${profile_base_ui.page_sidebar()}
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        ${self.body()}
+    </div>
+    <!-- /.content-wrapper -->
+
+   ${profile_base_ui.page_footer()}
+
+  <aside class="control-sidebar control-sidebar-dark"></aside>
+  <div class="control-sidebar-bg"></div>
+</div>
+
+
+
+<div class="modal" id="info-dialog" >
+  <div class="modal-dialog">
+    <div  class="modal-content">
+
+    </div>
+  </div>
+</div>
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/static/js/json2.js"></script>
+<script src="/static/js/markdown.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="/static/js/bootstrap.min.js"></script><!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+<!-- SlimScroll -->
+<script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
+<!-- FastClick -->
+<script src="/static/plugins/fastclick/fastclick.js"></script><!-- AdminLTE App -->
+<script src="/static/js/app.js"></script>
+</body>
+
+
+

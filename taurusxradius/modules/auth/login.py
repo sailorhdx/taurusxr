@@ -14,8 +14,8 @@ class LoginHandler(BaseHandler):
         self.render('taurusxee_login.html')
 
     def post(self):
-        uname = self.get_argument('username')
-        upass = self.get_argument('password')
+        uname = self.get_argument('username', '')
+        upass = self.get_argument('password', '')
         if not uname:
             return self.render_json(code=1, msg=u'请填写用户名')
         if not upass:

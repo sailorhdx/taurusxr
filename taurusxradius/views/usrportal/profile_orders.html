@@ -1,0 +1,39 @@
+% include('header.html')
+% setdefault('paystatus',{0:u"未支付",1:u"已支付",2:u"已取消"})
+
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container lbanner">
+    <h2>订购记录</h2>
+<!--         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p> -->
+  </div>
+</div>
+
+<div class="container-fluid">
+    <nav class="navbar navbar2 navbar-default " role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand" href="#">套餐办理</a>
+        </div>
+      </div>
+    </nav>   
+    <div class="list-group">
+    % for order in orders:
+        % if product.product_policy in (0,2,7):
+        <a href="javascript:commit_order('${product.id}');" class="list-group-item">
+        % else:
+        <a href="javascript:commit_order('${product.id}');" class="list-group-item">
+        % endif
+            <h4 class="list-group-item-heading">▸ {{order['account_number']}} ：{{get_product(order['product_id']).get('product_name','')}} ： ￥{{utils.fen2yuan(order['actual_fee'])}}  </h4>
+            <p class="list-group-item-text">- {{order.get('order_desc','')}}<</p>
+            <p class="list-group-item-text">- {{order['create_time']}}</p>
+            <p>
+        </p>
+      </a>
+    % endfor
+    </div>   
+
+  </div>
+
+
+% include('footer.html')

@@ -87,6 +87,7 @@ class HttpServer(cyclone.web.Application):
         """
         handler_path = os.path.abspath(os.path.dirname(__file__))
         excludes = ['ssportal',
+                    'usrportal',
          'webserver',
          'radius',
          'mps',

@@ -3,6 +3,7 @@
 import datetime
 import time
 from taurusxradius.modules.usrportal.base import BaseHandler, authenticated
+from taurusxradius.taurusxlib import logger
 from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.modules import models
 
@@ -11,7 +12,7 @@ from taurusxradius.modules import models
 class HomeHandler(BaseHandler):
 
     def get(self):
-        self.render('index.html')
+        self.render('usrportal_index.html')
 
 
 @permit.route('/usrportal')
@@ -19,4 +20,11 @@ class HomeHandler(BaseHandler):
 class UsrPortalHandler(BaseHandler):
 
     def get(self):
-        self.render('index.html')
+        self.render('usrportal_index.html')
+
+@permit.route('/portalui')
+
+class PortalUIHandler(BaseHandler):
+
+    def get(self):
+        self.render('usrportal_index.html')

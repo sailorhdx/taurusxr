@@ -566,3 +566,276 @@ class CustomerAdd(BaseService):
             return False
 
         return
+
+
+
+    def add_account_from_portal(self, account_number, password, email):
+
+        try:
+            account = models.TrAccount()
+            account.account_number = account_number.strip()
+            account.ip_address = ''
+            account.customer_id = account_number.strip()
+            account.product_id = '014E7F784D2311E79C5EFA163EFD1A3E'
+            account.install_address = '默认小区地址'
+            account.mac_addr = ''
+            account.password = self.aes.encrypt(password)
+            account.status = UsrNormal
+            account.balance = 0
+            account.time_length = int(0)
+            account.flow_length = 0
+            account.expire_date = '3000-12-30'
+            account.user_concur_number = 1
+            account.bind_mac = 0
+            account.bind_vlan = 0
+            account.vlan_id1 = 0
+            account.vlan_id2 = 0
+            account.create_time = utils.get_currtime()
+            account.update_time = utils.get_currtime()
+            account.account_desc = ''
+            account.sync_ver = tools.gen_sync_ver()
+            self.db.add(account)
+
+            return True
+        except Exception as err:
+            self.db.rollback()
+            traceback.print_exc()
+            self.last_error = u'客户开户操作失败:%s' % utils.safeunicode(err)
+            logger.error(self.last_error, tag='customer_add_error', username=account_number)
+            return False
+
+        return
+
+    @logparams
+    def add_account_from_portal(self, account_number, password, email, **kwargs):
+        """用户自助开户"""
+        try:
+
+            account_number = account_number.strip()
+            billing_type = int(1)
+            pay_status = int(1)
+            customer_id = utils.get_uuid()
+            order_id = utils.get_uuid()
+            product_id = '014E7F784D2311E79C5EFA163EFD1A3E'
+            node_id = '1'
+            area_id = '1'
+            agency_id = ''
+            realname = account_number
+            realname = realname or account_number
+            password = password
+            ip_address = ''
+            idcard = ''
+            sex = '1'
+            age = '0'
+            email = email
+            mobile = ''
+            address = ''
+            customer_desc = ''
+            accept_source = 'console'
+            expire_date = '3000-12-31'
+            months = '0'
+            days = '0'
+            fee_value = '0'
+            giftflows = '0'
+            giftdays = '0'
+            charge_code = ''
+            builder_name = ''
+            status = '1'
+            wechat_oid = ''
+            vcard_code = ''
+            vcard_pwd = ''
+
+            product = self.db.query(models.TrProduct).get(product_id)
+            vcard = None
+            if vcard_code and vcard_pwd:
+                vcard = self.db.query(models.TrValCard).get(vcard_code)
+                if not self.check_vcard(vcard, vcard_pwd, product):
+                    return False
+            if hasattr(self.operator, 'agency_id') and self.operator.agency_id is not None:
+                agency_id = self.operator.agency_id
+            customer = models.TrCustomer()
+            customer.customer_id = customer_id
+            customer.node_id = node_id
+            customer.area_id = area_id
+            customer.agency_id = agency_id
+            customer.realname = utils.safeunicode(realname)
+            customer.customer_name = account_number
+            customer.password = md5(password.encode()).hexdigest()
+            customer.idcard = idcard
+            customer.sex = sex
+            customer.age = age
+            customer.email = email
+            customer.mobile = mobile
+            customer.address = address
+            customer.create_time = utils.get_currtime()
+            customer.update_time = utils.get_currtime()
+            customer.email_active = 0
+            customer.mobile_active = 0
+            customer.active_code = utils.get_uuid()
+            customer.customer_desc = customer_desc
+            customer.wechat_oid = wechat_oid
+            customer.sync_ver = tools.gen_sync_ver()
+            self.db.add(customer)
+            accept_log = models.TrAcceptLog()
+            accept_log.id = utils.get_uuid()
+            accept_log.accept_type = 'open'
+            accept_log.accept_source = accept_source
+            accept_log.account_number = account_number
+            accept_log.accept_time = customer.create_time
+            accept_log.operator_name = self.operator.operator_name
+            accept_log.accept_desc = u'用户新开户：(%s)%s' % (customer.customer_name, customer.realname)
+            accept_log.stat_year = accept_log.accept_time[0:4]
+            accept_log.stat_month = accept_log.accept_time[0:7]
+            accept_log.stat_day = accept_log.accept_time[0:10]
+            accept_log.sync_ver = tools.gen_sync_ver()
+            self.db.add(accept_log)
+            order_fee = 0
+            balance = 0
+            expire_date = expire_date
+            flow_length = 0
+            if product.product_policy == PPMonth:
+                order_fee = decimal.Decimal(product.fee_price) * decimal.Decimal(months)
+                order_fee = int(order_fee.to_integral_value())
+            if product.product_policy == PPDay:
+                order_fee = decimal.Decimal(product.fee_price) * decimal.Decimal(days)
+                order_fee = int(order_fee.to_integral_value())
+            elif product.product_policy == APMonth:
+                order_fee = 0
+            elif product.product_policy in (BOMonth, BODay):
+                order_fee = int(product.fee_price)
+            elif product.product_policy == BOFlows:
+                order_fee = int(product.fee_price)
+                flow_length = int(product.fee_flows)
+            order = models.TrCustomerOrder()
+            order.order_id = order_id
+            order.customer_id = customer.customer_id
+            order.product_id = product.id
+            order.account_number = account_number
+            order.order_fee = order_fee
+            order.actual_fee = utils.yuan2fen(fee_value)
+            order.pay_status = pay_status
+            order.accept_id = accept_log.id
+            order.order_source = accept_log.accept_source
+            order.create_time = customer.create_time
+            order.order_desc = u'用户新开账号'
+            order.stat_year = order.create_time[0:4]
+            order.stat_month = order.create_time[0:7]
+            order.stat_day = order.create_time[0:10]
+            order.sync_ver = tools.gen_sync_ver()
+            self.db.add(order)
+            if vcard:
+                vcard.status = 2
+                vcard.use_time = utils.get_currtime()
+                vcard.customer_id = customer.customer_id
+            if agency_id and pay_status == 1:
+                agency = self.db.query(models.TrAgency).get(agency_id)
+                if agency.amount < order.actual_fee:
+                    self.last_error = u'代理商预存款余额不足'
+                    return False
+                agency_share = models.TrAgencyShare()
+                agency_share.id = utils.get_uuid()
+                agency_share.agency_id = agency_id
+                agency_share.order_id = order.order_id
+                agency_share.share_rate = agency.share_rate
+                sfee = decimal.Decimal(order.actual_fee) * decimal.Decimal(agency.share_rate) / decimal.Decimal(100)
+                sfee = int(sfee.to_integral_value())
+                agency_share.share_fee = sfee
+                agency_share.create_time = utils.get_currtime()
+                agency_share.sync_ver = tools.gen_sync_ver()
+                self.db.add(agency_share)
+                agency.amount -= order.actual_fee
+                aorder = models.TrAgencyOrder()
+                aorder.id = utils.get_uuid()
+                aorder.agency_id = agency.id
+                aorder.fee_type = 'cost'
+                aorder.fee_value = -order.actual_fee
+                aorder.fee_total = agency.amount
+                aorder.fee_desc = u'用户 %s 开通扣费' % account_number
+                aorder.create_time = agency_share.create_time
+                aorder.sync_ver = tools.gen_sync_ver()
+                self.db.add(aorder)
+                agency.amount += agency_share.share_fee
+                aorder2 = models.TrAgencyOrder()
+                aorder2.id = utils.get_uuid()
+                aorder2.agency_id = agency.id
+                aorder2.fee_type = 'share'
+                aorder2.fee_value = agency_share.share_fee
+                aorder2.fee_total = agency.amount
+                aorder2.fee_desc = u'用户 %s 开通分成(%s%%)' % (account_number, agency.share_rate)
+                aorder2.create_time = agency_share.create_time
+                aorder2.sync_ver = tools.gen_sync_ver()
+                self.db.add(aorder2)
+            charge_value = 0
+            if charge_code:
+                charge_log = models.TrChargeLog()
+                charge_log.id = utils.get_uuid()
+                charge_log.order_id = order.order_id
+                charge_log.charge_code = charge_code
+                charge_log.operator_name = accept_log.operator_name
+                charge_log.operate_time = order.create_time
+                charge_log.sync_ver = tools.gen_sync_ver()
+                self.db.add(charge_log)
+                charge_value = int(self.db.query(models.TrCharges).get(charge_code).charge_value or 0)
+            account = models.TrAccount()
+            account.account_number = account_number
+            account.ip_address = ip_address
+            account.customer_id = customer.customer_id
+            account.product_id = order.product_id
+            account.install_address = customer.address
+            account.mac_addr = ''
+            account.password = self.aes.encrypt(password)
+            account.status = status
+            if billing_type == 0:
+                account.status = UsrPreAuth
+            if pay_status == 0:
+                account.status = UsrPadding
+            account.balance = balance - charge_value
+            account.time_length = int(product.fee_times)
+            account.flow_length = flow_length
+            account.expire_date = expire_date
+            account.user_concur_number = product.concur_number
+            account.bind_mac = product.bind_mac
+            account.bind_vlan = product.bind_vlan
+            account.vlan_id1 = 0
+            account.vlan_id2 = 0
+            account.create_time = customer.create_time
+            account.update_time = customer.create_time
+            account.account_desc = customer.customer_desc
+            account.sync_ver = tools.gen_sync_ver()
+            self.db.add(account)
+            if pay_status == 0:
+                order.before_account_data = self.warp_account_data(account, status=UsrPadding)
+            order.after_account_data = self.warp_account_data(account, status=1)
+            order.order_desc = u'用户新开账号,赠送天数：%s, 收费项金额：%s' % (giftdays, utils.fen2yuan(charge_value))
+            issues = None
+            builder_phone = None
+            if builder_name and pay_status == 1:
+                builder_phone = self.db.query(models.TrBuilder.builder_phone).filter_by(
+                    builder_name=builder_name).scalar()
+                issues = models.TrIssues()
+                issues.id = utils.get_uuid()
+                issues.account_number = account.account_number
+                issues.issues_type = '0'
+                issues.content = u'用户新开账号, 请前往安装'
+                issues.builder_name = builder_name
+                issues.status = 0
+                issues.operator_name = self.operator.operator_name
+                issues.date_time = utils.get_currtime()
+                issues.sync_ver = tools.gen_sync_ver()
+                self.db.add(issues)
+            opsdesc = u'用户新开账号 %s, 赠送天数：%s, 收费项金额：%s' % (account.account_number, giftdays, utils.fen2yuan(charge_value))
+            self.add_oplog(opsdesc)
+            self.db.commit()
+            dispatch.pub(ACCOUNT_OPEN_EVENT, account.account_number, async=True)
+            if issues and builder_phone:
+                dispatch.pub(ISSUES_ASSIGN_EVENT, issues.account_number, builder_phone, async=True)
+            self.update_routeros_sync_event(account_number, password, product_id, node_id)
+            return True
+        except Exception as err:
+            self.db.rollback()
+            traceback.print_exc()
+            self.last_error = u'客户开户操作失败:%s' % utils.safeunicode(err)
+            logger.error(self.last_error, tag='customer_add_error', username=account_number)
+            return False
+
+        return

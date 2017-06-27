@@ -1,0 +1,109 @@
+<%inherit file="profile_base.html"/>
+<%def name="head()">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+
+function commit_renew(){
+    $.get("/usrportal/product/renew?timestr="+(new Date().getTime()), function (data) {
+        $("#info-dialog .modal-content").html(data);
+        $('#info-dialog').modal('show');
+    }, "html");
+}
+
+function commit_charge(){
+    $.get("/usrportal/product/charge?timestr="+(new Date().getTime()), function (data) {
+        $("#info-dialog .modal-content").html(data);
+        $('#info-dialog').modal('show');
+    }, "html");
+}
+
+function commit_vcardcharge(){
+    $.get("/usrportal/product/vcardcharge?timestr="+(new Date().getTime()), function (data) {
+        $("#info-dialog .modal-content").html(data);
+        $('#info-dialog').modal('show');
+    }, "html");
+}
+
+function release_bind(){
+    params = {_xsrf: '${handler.xsrf_token}'}    
+    $.post("/usrportal/account/release", params, function (ev) {
+        if(ev.code==0){
+          toastr.success(ev.msg);
+          setTimeout("window.location.reload()",1000);
+        }else{
+          toastr.error(ev.msg);
+        }
+    }, "json");
+}
+
+
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+<nav class="navbar navbar-default" role="navigation">
+   <div class="collapse navbar-collapse">
+    <ul class="nav navbar-nav nav-pills">
+      <li><a href="#">账号管理</a></li>
+    </ul>      
+  </div>
+</nav>
+ <div class="container-fluid">       
+    <div class="panel panel-default">
+        <div class="panel-heading">基本信息</div>
+        <div class="panel-body">
+            <div class="pull-left">
+            % if user.status  in (1,4) and user.product_policy  in (0,2,3,5,7,9,10):
+                <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号续费</a>
+            % endif
+            % if user.status  in (1,4) and user.product_policy  in (3,5) and handler.lictype != 'community':
+                <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_vcardcharge();">充值卡充值</a>
+            % endif
+            % if handler.get_param_value('ssportal_allow_release_bind','0') == '1':
+                <a class="btn btn-md btn-warning navbar-btn" onclick="javascript:release_bind();">清除绑定</a>
+            % endif
+            </div>   
+            <div class="clearfix"></div><br>             
+            <div class="row itlist">
+                <div class="col-md-6 itbox">用户姓名: ${customer.realname}</div>
+                <div class="col-md-6 itbox">联系电话: ${customer.mobile or ''}</div>
+                <div class="col-md-6 itbox">区域: ${user.node_name or ''}</div>
+                <div class="col-md-6 itbox">社区: ${user.area_name or ''}</div>
+                <div class="col-md-6 itbox">Email: ${customer.email or ''}</div>
+                <div class="col-md-6 itbox">证件号码: ${customer.idcard or ''}</div>      
+                <div class="col-md-12 itbox">地址: ${customer.address}</div> 
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">认证信息</div>
+        <div class="panel-body">
+            <div class="row itlist">
+                    <div class="col-md-6 itbox">用户账号: ${user.account_number}</div>
+                    <div class="col-md-6 itbox">资费名称: ${user.product_name|h}</div>
+                    <div class="col-md-6 itbox">用户状态: 
+                        % if utils.is_expire(user.expire_date) or user.status == 4:
+                            <span class="label label-warning">到期</span>
+                        % elif user.status == 1:
+                            <span class="label label-success">正常</span>
+                        % elif user.status == 0:
+                            <span class="label label-info">预定</span>
+                        % elif user.status == 2:
+                            <span class="label label-default">停机</span>
+                        % elif user.status == 3:
+                            <span class="label label-danger">销户</span>
+                        % endif
+                    </div>                 
+                    <div class="col-md-6 itbox">过期时间: ${user.expire_date}</div>
+                    <div class="col-md-6 itbox">剩余时长: ${utils.sec2hour(user.time_length)}小时</div>
+                    <div class="col-md-6 itbox">剩余流量: ${utils.kb2gb(user.flow_length)}G </div>
+                    <div class="col-md-6 itbox">开通时间: ${user.create_time}</div>                              
+                    <div class="col-md-6 itbox">Mac地址: ${user.mac_addr}</div>                                                            
+            </div>
+        </div>
+    </div>
+</div>
+</session>
+</%def>
