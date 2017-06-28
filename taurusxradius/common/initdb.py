@@ -44,8 +44,8 @@ def init_db(db):
     db.add(area)
     params = [('system_name', u'管理系统名称', u'计费管理控制台'),
      ('system_theme', u'系统风格样式', u'skin-blue'),
-     ('login_logo', u'登录页面Logo', u'/static/img/manage_login_logo200X120.png'),
-     ('index_logo', u'管理页面Logo', u'/static/img/manage_logo200X38.png'),
+     ('login_logo', u'登录页面Logo', u'/static/img/manage_login_logo200X120_radius.png'),
+     ('index_logo', u'管理页面Logo', u'/static/img/manage_logo180X38_radius.png'),
      ('login_bgimg', u'登录页面背景图', u'/static/img/manage_login_bg.jpg'),
      ('ssportal_title', u'网上营业厅名称', u'计费网上营业厅'),
      ('ssportal_banner_bg', u'网上营业厅背景图', u'/static/img/ssportal-banner-bg.jpg'),

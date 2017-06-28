@@ -1,86 +1,102 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>${handler.get_param_value("system_name",u"TaurusXRADIUS 管理控制台")}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>${handler.get_param_value("system_name",u"TaurusXRADIUS 管理控制台")}</title>
+    <!-- Bootstrap 3.3.6 -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="/static/css/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="/static/css/AdminLTE.min.css">
+    <!-- iCheck -->
+    <link rel="stylesheet" href="/static/plugins/iCheck/square/blue.css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="/static/js/html5shiv.min.js"></script>
+    <script src="/static/js/respond.min.js"></script>
+    <![endif]-->
+    <!-- jQuery 2.2.3 -->
+    <script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+
 <style>
-body {margin:0;padding:0;font: normal 12px "微软雅黑","宋体",Helvetica, Arial, sans-serif;color:#666;
-background:url(${handler.get_param_value('login_bgimg','/static/img/taurusxee_bg.jpg')}) center 0 no-repeat #FFF;}
-a img, ul, form, p{border:0;margin:0;padding:0;}
-.input01, button:focus{outline:none;}
+.login-page {
+    background: #364150 !important;
+}
 
-.container{width:350px; margin:0 auto;}
-.login{float:left;width:350px;height:500px; margin-top:50px;display:inline;}
-.footer{float:left;width:350px; height:40px; line-height:20px; margin-top:60px;display:inline; text-align:center;}
+.login-box {
+    margin: 60px auto;
+}
 
-.logo{float:left;width:200px;height:120px; margin:15px 75px;display:inline-block; font-size:  24px; color:#FFF; text-align: center;}
-.main{float:left;width:350px; margin-top:30px;}
-.main p{float:left;height:60px; line-height:60px;width:350px; position:relative;}
-.main .tl{float:left;width:70px;font-size:18px;color:#ddd; position:absolute; left:60px;top:1px;}
+.login-box .login-logo {
+    margin-bottom: 15px;
+}
 
-.input01{float:left;width:210px;display:inline-block;line-height:30px;margin:10px 0 0 0;padding:10px 0 10px 70px;border:0;border-bottom:1px solid #fff; background:none;font: normal 18px "微软雅黑";color:#fff;}
-.icon01{float:left;width:50px;height:50px; margin:10px 10px 0 0; display:inline;}
-.btn01{width:350px;height:60px;color:#FFF;font: normal 24px "微软雅黑"; border-radius:30px;background:#0072bf;border:0;margin-top:50px;display:inline; cursor:pointer;}
-.btn01:hover{opacity:0.8;}
-.btn01:active{opacity:0.6;}
-input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0px 1000px white inset;
+.login-box .copyright {
+    text-align: center;
+    margin: 15px auto 30px 0;
+    padding: 10px;
+    color: #7a8ca5;
+    font-size: 15px;
 }
 </style>
-<script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
-    <script>
-        function dokey(e) {
-            var keynum;
-            var keychar;
-            keynum = window.event ? e.keyCode : e.which;
-            keychar = String.fromCharCode(keynum);
-            if (keynum == 13) {
-                doLogin();
-            }
-        }
-        function doLogin() {
-            var username = $("#_user").val();
-            var password = $("#_passwd").val();
-            params = {username: username, password: password, _xsrf: '${handler.xsrf_token}'};
-            $.post("/admin/login", params, function (data) {
-                if (data.code > 0) {
-                    alert(data.msg)
-                    return false;
-                }
-                else {
-                    window.location.href = "/admin";
-                }
-            }, "json");
-        }
 
-    </script>
+
 </head>
 
-<body>
-<div class="container">
-    <div class="login">
-        <div class="logo">
-            <img src="${handler.get_param_value('login_logo','/static/img/taurusxee_logo.png')}" />
-            <div class="clearfix"></div>
-            <span class="logo-tile">${handler.get_param_value('system_name','TaurusXRADIUS')}</span>
-        </div>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+     <img src="${handler.get_param_value('login_logo','/static/img/taurusxee_logo.png')}" />
+  </div>
+  <!-- /.login-logo -->
+  <div class="login-box-body">
 
-        <div class="main">
-            <p>
-                <img src="/static/img/taurusxee_icon01.png" width="50" height="50" class="icon01" />
-                <span class="tl">账　号</span>
-                <input id="_user" name="_user" type="text"  class="input01" autocomplete="off"/>
-            </p>
-            <p>
-                <input type="password" style="display:none">
-                <img src="/static/img/taurusxee_icon02.png" width="50" height="50" class="icon01" autocomplete="off" />
-                <span class="tl">密　码</span>
-                <input id="_passwd" name="_passwd" type="password" class="input01"  />
-          </p>
-            <button class="btn01" onclick="javascript:doLogin();">登 录</button>
-    </div>
-    </div>
-    <div class="footer">
+    <h3 class="login-box-msg">${handler.get_param_value('system_name','TaurusXRADIUS')}</h3>
+
+    <form id="loginForm" class="login-form">
+        <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
+            <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;">所思所</div>
+        </div>
+         % if msg:
+        <div class="alert alert-warning">${msg}</div>
+        % endif
+        <div class="form-group has-feedback">
+            <input id="username" name="username" type="text"  class="form-control" placeholder="用户名" autocomplete="off"/>
+            <span class="glyphicon glyphicon-user form-control-feedback"></span>
+        </div>
+        <div class="form-group has-feedback">
+            <input id="password" name="password" type="password" class="form-control" placeholder="密码" />
+            <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+        </div>
+        <div class="row">
+            <div class="col-xs-8">
+                <div class="checkbox icheck">
+                    <label>
+                    <input type="checkbox"> Remember Me
+                    </label>
+                </div>
+            </div>
+            <!-- /.col -->
+            <div class="col-xs-4">
+                <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+            </div>
+            <!-- /.col -->
+        </div>
+    </form>
+
+    <!-- /.social-auth-links -->
+
+    <a href="#">I forgot my password</a><br>
+    <a href="#" class="text-center">Register a new membership</a>
+
+  </div>
+  <!-- /.login-box-body -->
+        <div class="copyright">
         <p> ${handler.get_param_value("copy_right")} </p>
         <p>
         % if handler.get_param_value("support_desc"):
@@ -90,6 +106,99 @@ input:-webkit-autofill {
         % endif
         </p>
     </div>
+
 </div>
+<!-- /.login-box -->
+
+
+<!-- Bootstrap 3.3.6 -->
+<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/plugins/jquery-validation/js/jquery.validate.min.js"></script>
+<script src="/static/plugins/jquery-validation/js/additional-methods.min.js"></script>
+<!-- iCheck -->
+<script src="/static/plugins/iCheck/icheck.min.js"></script>
+<script>
+
+
+    function doLogin() {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        params = {username: username, password: password, _xsrf: '${handler.xsrf_token}'};
+        $.post("/admin/login", params, function (data) {
+            if (data.code > 0) {
+                //alert(data.msg)
+                $("#alertmsgcontent").html(data.msg);
+                $("#alertmsg").css('display', 'block');
+                return false;
+            }
+            else {
+                window.location.href = "/admin";
+            }
+        }, "json");
+    }
+
+    $('.login-form').validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            rules: {
+                username: {
+                    required: true
+                },
+                password: {
+                    required: true
+                }
+            },
+
+            messages: {
+                username: {
+                    required: "用户名不能为空."
+                },
+                password: {
+                    required: "密码不能为空."
+                }
+            },
+
+            invalidHandler: function(event, validator) { //display error alert on form submit
+                $('.alert-danger', $('.login-form')).show();
+            },
+
+            highlight: function(element) { // hightlight error inputs
+                $(element)
+                    .closest('.form-group').addClass('has-error'); // set error class to the control group
+            },
+
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+                label.remove();
+            },
+
+            errorPlacement: function(error, element) {
+                error.insertAfter(element.closest('.form-group'));
+            },
+
+            submitHandler: function(form) {
+                doLogin();//form.submit(); // form validation success, call ajax form submit
+            }
+        });
+
+        $('.login-form input').keypress(function(e) {
+            if (e.which == 13) {
+                if ($('.login-form').validate().form()) {
+                    $('.login-form').submit(); //form validation success, call ajax form submit
+                }
+                return false;
+            }
+        });
+
+
+  $(function () {
+    $('input').iCheck({
+      checkboxClass: 'icheckbox_square-blue',
+      radioClass: 'iradio_square-blue',
+      increaseArea: '20%' // optional
+    });
+  });
+</script>
 </body>
 </html>
