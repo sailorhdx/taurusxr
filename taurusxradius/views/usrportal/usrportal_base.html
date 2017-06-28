@@ -1,4 +1,4 @@
-<%namespace name="base_ui" file="base_ui.html" inheritable="True"/>
+<%namespace name="usrportal_base_ui" file="usrportal_base_ui.html" inheritable="True"/>
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
@@ -23,7 +23,9 @@
        folder instead of downloading all of them to reduce the load. -->
     <link rel="stylesheet" href="/static/css/skins/_all-skins.min.css">
     <!-- CUSTOM STYLES -->
-    <link rel="stylesheet" href="/static/css/portalui.css" />
+    <link rel="stylesheet" href="/static/css/usrportal.css" />
+    <!-- CORE JQUERY FILE -->
+    <script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
 	<!-- HTML5 Shiv and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -49,11 +51,12 @@
             </div>
             <div class="navbar-collapse collapse navbar-right scroll-me">
                 <ul class="nav navbar-nav ">
-                    <li><a href="#banner-box">HOME</a></li>
+                    <li><a href="/"><i class="fa fa-home"></i> 首页</a></li>
+                    <li><a href="#slider-box">SLIDER</a></li>
                     <li><a href="#services">SERVICES</a></li>
+                    <li><a href="#home">SHOW</a></li>
                     <li><a href="#works">WORKS</a></li>
                     <li><a href="#contact">CONTACT</a></li>
-                    <li><a href="/"><i class="fa fa-home"></i> 首页</a></li>
                     % if current_user:
                     <!-- User Account Menu -->
                     <li class="dropdown user user-menu">
@@ -96,8 +99,7 @@
 <!-- Placed at the end of the document so the pages load faster -->
     <!-- FOOTER SECTION END-->
     <!-- REQUIRED SCRIPTS FILES -->
-    <!-- CORE JQUERY FILE -->
-    <script src="/static/plugins/jQuery/jquery-2.2.3.min.js"></script>
+
     <!-- REQUIRED BOOTSTRAP SCRIPTS -->
     <script src="/static/js/bootstrap.min.js"></script>
     <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
@@ -108,8 +110,8 @@
     <!-- SCROLLING SCRIPTS PLUGIN  -->
     <script src="/static/js/jquery.easing.min.js"></script>
     <!-- CUSTOM SCRIPTS   -->
-    <script src="/static/js/portalui.js"></script>
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/usrportal.js"></script>
+
     ${self.js()}
 </body>
 <%def name="js()">

@@ -21,10 +21,3 @@ class UsrPortalHandler(BaseHandler):
 
     def get(self):
         self.render('usrportal_index.html')
-
-@permit.route('/portalui')
-
-class PortalUIHandler(BaseHandler):
-
-    def get(self):
-        self.render('usrportal_index.html')

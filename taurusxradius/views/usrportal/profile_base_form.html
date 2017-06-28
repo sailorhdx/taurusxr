@@ -24,7 +24,6 @@ $(function(){
             <h3 class="box-title">${form.title}</h3>
             <div class="bar pull-right">
             <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
-            <a href="javascript:showhelp('${form.htopic}');"><i class="fa fa-question-circle"></i> 帮助</a>
             </div>
         </div>
         <div class="box-body">
@@ -32,11 +31,11 @@ $(function(){
             % if msg:
             <div class="alert alert-warning">${msg}</div>
             % endif
-        <form class="form-horizontal form-well bottom20" role="form" action="${form.action}" method="post">
-                ${xsrf_form_html()|n}
-                ${form.render_css()|n}
-        </form>
-                </div>
+            <form class="form-horizontal form-well bottom20" role="form" action="${form.action}" method="post">
+                    ${xsrf_form_html()|n}
+                    ${form.render_css()|n}
+            </form>
+            </div>
     </div>
 </div>
 </section>
