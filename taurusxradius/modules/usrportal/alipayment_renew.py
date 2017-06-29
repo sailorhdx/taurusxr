@@ -64,7 +64,7 @@ class UsrPortalRenewOrderHandler(alipayment_new.BasicOrderHandler):
             formdata['product_id'] = account.product_id
             formdata['fee_value'] = _feevalue
             formdata['expire_date'] = _expire
-            formdata['accept_source'] = 'ssportal'
+            formdata['accept_source'] = 'usrportal'
             formdata['giftdays'] = 0
             formdata['operate_desc'] = u'用户自助续费'
             formdata['old_expire'] = account.expire_date

@@ -33,7 +33,7 @@ class UsrPortalLogin2Handler(BaseHandler):
             return self.render_json(code=1, msg=u'账号不存在')
         if self.aes.decrypt(account.password) != uPassword:
             return self.render_json(code=1, msg=u'密码错误')
-        self.set_session_user(account.customer_id, account.account_number, self.request.remote_ip, utils.get_currtime())
+        self.set_session_user(account.customer_id, account.account_number, self.request.remote_ip, utils.get_currtime(), account.status, account.expire_date, account.create_time)
         self.render_json(code=0, msg='ok')
 
 @permit.route('/usrportal/register')

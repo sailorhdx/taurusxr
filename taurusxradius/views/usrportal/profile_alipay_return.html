@@ -1,33 +1,44 @@
-<%inherit file="base.html"/>
+<%inherit file="profile_base.html"/>
 <%def name="head()">
 </%def>
 <%def name="body()">
-<nav class="navbar navbar-default" role="navigation">
-   <div class="collapse navbar-collapse">
-    <ul class="nav navbar-nav nav-pills">
-      <li><a href="#">支付完成</a></li>
-    </ul>      
-  </div>
-</nav>
-<div class="container-fluid">
-    <div class="panel panel-default">
-        <div class="panel-heading">订单支付结果</div>
-        <div class="panel-body">
-           % if handler.get_param_value("ssportal_paydone_text",""):
-             <div class="alert alert-info">
-             ${ handler.get_param_value("ssportal_paydone_text","") | n}
-             </div>
-           % endif
-            <div class="row itlist">
-                <div class="col-md-6 itbox">订单号: ${order.order_id}</div>
-                <div class="col-md-6 itbox">支付时间: ${order.create_time}</div>
-                <div class="col-md-6 itbox">支付状态: ${u"已支付" if order.pay_status==1 else u"未支付"}</div>                
-                <div class="col-md-6 itbox">用户账号: ${order.account_number}</div>
-                <div class="col-md-6 itbox">商品名称: ${handler.get_product_name(order.product_id)|h}</div>
-                <div class="col-md-6 itbox">交易金额: ${utils.fen2yuan(order.actual_fee)}元</div>
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+          <div class="box">
+            <div class="box-header with-border">
+                <i class="fa fa-ticket"></i>
+                <h3 class="box-title">订单支付结果</h3>
             </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        % if handler.get_param_value("ssportal_paydone_text",""):
+                         <div class="alert alert-info">
+                         ${ handler.get_param_value("ssportal_paydone_text","") | n}
+                         </div>
+                        % endif
+                        <div class="row itlist">
+                            <div class="col-md-6 itbox">订单号: ${order.order_id}</div>
+                            <div class="col-md-6 itbox">支付时间: ${order.create_time}</div>
+                            <div class="col-md-6 itbox">支付状态: ${u"已支付" if order.pay_status==1 else u"未支付"}</div>
+                            <div class="col-md-6 itbox">用户账号: ${order.account_number}</div>
+                            <div class="col-md-6 itbox">商品名称: ${handler.get_product_name(order.product_id)|h}</div>
+                            <div class="col-md-6 itbox">交易金额: ${utils.fen2yuan(order.actual_fee)}元</div>
+                        </div>
+                    </div>
+                    <!-- /.col -->
+                </div>
+              <!-- /.row -->
+            </div>
+
+          </div>
+          <!-- /.box -->
         </div>
+        <!-- /.col -->
     </div>
-</div>
+    <!-- /.row -->
+</section>
 </%def>
 

@@ -34,7 +34,7 @@ $('#form_${form.id}').submit(function() {
             $("#submit_btn_${form.id}").removeAttr("disabled");
             if(data.code==0){
                 $("#alert-${form.id}").html(data.msg);
-                window.setTimeout(function(){location.href='/ssportal/order';},200);
+                window.setTimeout(function(){location.href='/usrportal/order';},200);
             }else{
                 $("#alert-${form.id}").html(data.msg);
             }

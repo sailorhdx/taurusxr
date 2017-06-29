@@ -36,7 +36,7 @@ $('#form_${form.id}').submit(function() {
             if(data.code==0){
                 $("#alert-${form.id}").html(data.msg);
                 window.setTimeout(function(){
-                    location.href='/ssportal/product/charge/alipay?order_id='+data.order_id
+                    location.href='/usrportal/product/charge/alipay?order_id='+data.order_id
                 },300);
             }
             else{

@@ -36,11 +36,11 @@ $('#form_${form.id}').submit(function() {
             if(data.code==0){
                 $("#alert-${form.id}").html(data.msg);
                 window.setTimeout(function(){
-                    location.href='/ssportal/product/renew/alipay?order_id='+data.order_id
+                    location.href='/usrportal/product/renew/alipay?order_id='+data.order_id
                 },300);
             }else if(data.code==100){
                 $("#alert-${form.id}").html(data.msg);
-                window.setTimeout(function(){location.href='/ssportal/order';},300);
+                window.setTimeout(function(){location.href='/usrportal/order';},300);
             }else{
                 $("#alert-${form.id}").html(data.msg);
             }

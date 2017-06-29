@@ -1,4 +1,4 @@
-<%inherit file="base.html"/>
+<%inherit file="profile_base.html"/>
 <%def name="head()">
 <script>
 $(function () {
@@ -30,7 +30,7 @@ $(function () {
             </div>
         </div>
         <form id="payform" class="form-horizontal form-well" role="form" 
-            action="/ssportal/product/renew/alipay" method="post">
+            action="/usrportal/product/renew/alipay" method="post">
             ${xsrf_form_html()|n}
             <input type="hidden" name="order_id" value="${formdata.order_id}">
             <button name="button" placeholder="" id="paypost" type="button" class="btn btn-primary"><b> 支付宝支付</b></button>

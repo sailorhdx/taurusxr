@@ -11,23 +11,24 @@ from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.taurusxlib import utils, logger
 from taurusxradius.modules.settings import *
 from taurusxradius.modules.dbservice.product_service import ProductService
-product_add_actions = ((u'预付费包日', '/admin/product/add?product_policy=9'),
+product_add_actions = (#(u'预付费包日', '/admin/product/add?product_policy=9'),
  (u'买断包日', '/admin/product/add?product_policy=10'),
- (u'预付费包月', '/admin/product/add?product_policy=0'),
- (u'后付费包月', '/admin/product/add?product_policy=8'),
+ #(u'预付费包月', '/admin/product/add?product_policy=0'),
+ #(u'后付费包月', '/admin/product/add?product_policy=8'),
  (u'买断包月', '/admin/product/add?product_policy=2'),
  (u'买断时长', '/admin/product/add?product_policy=3'),
  (u'买断流量', '/admin/product/add?product_policy=5'))
-product_policys = {PPMonth: u'预付费包月',
- APMonth: u'后付费包月',
- PPTimes: u'预付费时长',
- BOMonth: u'买断包月',
- BOTimes: u'买断时长',
- PPFlow: u'预付费流量',
- BOFlows: u'买断流量',
- PPMFlows: u'预付费流量包月',
- PPDay: u'预付费包日',
- BODay: u'买断包日'}
+product_policys = {#PPMonth: u'预付费包月', #0
+ #APMonth: u'后付费包月', #8
+ #PPTimes: u'预付费时长', #1
+ BOMonth: u'买断包月', #2
+ BOTimes: u'买断时长', #3
+ #PPFlow: u'预付费流量', #4
+ BOFlows: u'买断流量', #5
+ #PPMFlows: u'预付费流量包月', #7
+ #PPDay: u'预付费包日', #9
+ BODay: u'买断包日' #10
+}
 
 @permit.route('/admin/product', u'资费套餐管理', MenuRes, order=3.0, is_menu=True)
 

@@ -6,6 +6,9 @@ import cyclone.web
 import functools
 import urlparse
 from cyclone.util import ObjectDict
+from twisted.python.failure import Failure
+
+from taurusxradius.common.alipay import AliPay, Settings
 from taurusxradius.taurusxlib import utils
 from taurusxradius.taurusxlib.paginator import Paginator
 from taurusxradius import __version__ as sys_version
@@ -22,8 +25,18 @@ class BaseHandler(cyclone.web.RequestHandler):
         super(BaseHandler, self).__init__(*argc, **argkw)
         self.aes = self.application.aes
         self.cache = self.application.mcache
+        self.paycache = self.application.paycache
         self.session = redis_session.Session(self.application.session_manager, self)
         self.lictype = os.environ.get('LICENSE_TYPE')
+
+    @property
+    def alipay(self):
+        return AliPay(Settings(ALIPAY_INPUT_CHARSET='utf-8', ALIPAY_KEY=self.get_param_value('ALIPAY_KEY'),
+                               ALIPAY_NOTIFY_URL=self.get_param_value('ALIPAY_NOTIFY_URL'),
+                               ALIPAY_PARTNER=self.get_param_value('ALIPAY_PARTNER'),
+                               ALIPAY_RETURN_URL=self.get_param_value('ALIPAY_RETURN_URL'),
+                               ALIPAY_SELLER_EMAIL=self.get_param_value('ALIPAY_SELLER_EMAIL'), ALIPAY_SHOW_URL='',
+                               ALIPAY_SIGN_TYPE='MD5', ALIPAY_TRANSPORT='https'), logger=logger)
 
     def initialize(self):
         self.tp_lookup = self.application.tp_lookup
@@ -32,28 +45,28 @@ class BaseHandler(cyclone.web.RequestHandler):
     def on_finish(self):
         self.db.close()
 
-    def get_error_html(self, status_code = 500, **kwargs):
-        if 'exception' in kwargs:
-            failure = kwargs.get('exception')
-            print type(failure), dir(failure)
-            logger.exception(failure)
-            if os.environ.get('XDEBUG'):
-                from mako import exceptions
-                return exceptions.html_error_template().render(traceback=failure.getTracebackObject())
+    def get_error_html(self, status_code, **kwargs):
         try:
-            logger.error('HTTPError : {0} [status_code:{1}], {2}'.format(self.request.path, status_code, repr(kwargs)), tag='manage_handler_error')
+            if 'exception' in kwargs:
+                failure = kwargs.get('exception')
+                if isinstance(failure, cyclone.web.HTTPError):
+                    failure = Failure(failure)
+                logger.exception(failure)
+                if os.environ.get('XDEBUG'):
+                    from mako import exceptions
+                    return exceptions.html_error_template().render(traceback=failure.getTracebackObject())
             if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return self.render_json(code=1, msg=u'%s:服务器处理失败，请联系管理员' % status_code)
             if status_code == 404:
-                return self.render_string('error.html', msg=u'404:页面不存在')
+                return self.render_error(msg=u'404:页面不存在')
             if status_code == 403:
-                return self.render_string('error.html', msg=u'403:非法的请求')
+                return self.render_error(msg=u'403:非法的请求')
             if status_code == 500:
-                return self.render_string('error.html', msg=u'500:服务器处理失败，请联系管理员')
-            return self.render_string('error.html', msg=u'%s:服务器处理失败，请联系管理员' % status_code)
+                return self.render_error(msg=u'500:服务器处理失败，请联系管理员')
+            return self.render_error(msg=u'%s:服务器处理失败，请联系管理员' % status_code)
         except Exception as err:
             logger.exception(err)
-            return self.render_string('error.html', msg=u'%s:服务器处理失败，请联系管理员' % status_code)
+            return self.render_error(msg=u'%s:服务器处理失败，请联系管理员' % status_code)
 
     def render(self, template_name, **template_vars):
         html = self.render_string(template_name, **template_vars)
@@ -88,6 +101,9 @@ class BaseHandler(cyclone.web.RequestHandler):
         template = Template(template_string)
         return template.render(**template_vars)
 
+    def render_alert(self, title, msg):
+        self.render('alert.html', title=title, msg=msg)
+
     def get_page_data(self, query, page_size = 15):
         page = int(self.get_argument('page', 1))
         offset = (page - 1) * page_size
@@ -109,12 +125,15 @@ class BaseHandler(cyclone.web.RequestHandler):
         qdict['page'] = page
         return path + '?' + urllib.urlencode(qdict)
 
-    def set_session_user(self, uid, username, ipaddr, login_time):
+    def set_session_user(self, uid, username, ipaddr, login_time, status, expire_date, create_time):
         session_user = ObjectDict()
         session_user.uid = uid
         session_user.username = username
         session_user.ipaddr = ipaddr
         session_user.login_time = login_time
+        session_user.status = status
+        session_user.expire_date = expire_date
+        session_user.create_time = create_time
         self.session['session_user'] = session_user
         self.session.save()
         return

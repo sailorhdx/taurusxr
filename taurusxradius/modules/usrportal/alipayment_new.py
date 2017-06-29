@@ -9,6 +9,8 @@ import string
 import urllib
 import base64
 from hashlib import md5
+
+from taurusxradius.modules.dbservice.account_renew import AccountRenew
 from taurusxradius.taurusxlib import utils, logger
 from taurusxradius.common import safefile
 from taurusxradius.common import tools
@@ -23,13 +25,18 @@ from taurusxradius.modules import models
 from taurusxradius.modules.dbservice.customer_add import CustomerAdd
 from taurusxradius.modules.settings import order_paycaache_key
 from taurusxradius.modules.settings import PPMonth, PPTimes, BOMonth, BOTimes, PPFlow, BOFlows, PPMFlows, APMonth, PPDay, BODay, MAX_EXPIRE_DATE, VcodeNotify
-product_policys = {PPMonth: u'预付费包月',
- APMonth: u'后付费包月',
- PPTimes: u'预付费时长',
- BOMonth: u'买断包月',
- BOTimes: u'买断时长',
- PPFlow: u'预付费流量',
- BOFlows: u'买断流量'}
+product_policys = {#移除资费类型：预付费时长，预付费流量，预付费流量包月
+    BOMonth: u'买断包月', #2
+    BOTimes: u'买断时长', #3
+    BOFlows: u'买断流量', #5
+    #PPMFlows u'预付费流量包月', #7
+    #APMonth: u'后付费包月', #8
+    #PPMonth: u'预付费包月', #0
+    #PPTimes: u'预付费时长', #1
+    #PPDay: u'预付费包日', #9
+    # PPFlow: u'预付费流量', #4
+    BODay: u'买断包日' #10
+}
 
 @permit.route('/usrportal/product')
 
@@ -215,7 +222,7 @@ class UsrPortalProductOrderHandler(BasicOrderHandler):
             formdata['area_id'] = ''
             formdata['fee_value'] = _feevalue
             formdata['expire_date'] = _expire
-            formdata['accept_source'] = 'ssportal'
+            formdata['accept_source'] = 'usrportal'
             formdata['giftdays'] = 0
             formdata['giftflows'] = 0
             formdata['ip_address'] = ''
@@ -228,6 +235,104 @@ class UsrPortalProductOrderHandler(BasicOrderHandler):
             logger.exception(err)
             return self.render('profile_neworder_form.html', form=form, msg=u'无效的订单')
 
+
+@permit.route('/usrportal/product/reneworder')
+
+class UsrPortalProductOrderNewHandler(BasicOrderHandler):
+    """  支付宝支付第一步：进入订购表单，发起订购支付
+    """
+
+    def get_product_name(self, pid):
+        return self.db.query(models.TrProduct.product_name).filter_by(id=pid).scalar()
+
+    def get(self):
+        product_id = self.get_argument('product_id')
+        product = self.db.query(models.TrProduct).get(product_id)
+        if not product:
+            self.render_error(msg=u'套餐不存在')
+            return
+        account_number = self.current_user.username
+        account = self.db.query(models.TrAccount).get(account_number)
+        if not account_number or not account:
+            self.render_error(msg=u'用户不存在')
+            return
+
+        form = order_forms.profile_order_form(product.product_policy)
+        form.product_id.set_value(product_id)
+        form.product_name.set_value(product.product_name)
+        form.months.set_value(product.fee_months)
+        form.days.set_value(product.fee_days)
+        form.account_number.set_value(account_number)
+        self.render('profile_neworder_form.html', form=form)
+
+    def do_vcard(self, form, product):
+        account = self.db.query(models.TrAccount).get(form.d.account_number)
+        if not account:
+            return self.render_json(code=1, msg=u'账号不存在')
+
+        vcard_code = form.d.vcard_code
+        vcard_pwd = form.d.vcard_pwd
+        product_id = form.d.product_id
+        _feevalue, _expire = self.order_calc(product_id)
+
+        order_id = utils.gen_order_id()
+        formdata = Storage(form.d)
+        formdata['order_id'] = order_id
+        formdata['product_id'] = product_id
+        formdata['fee_value'] = _feevalue
+        formdata['expire_date'] = _expire
+        formdata['accept_source'] = 'usrportal'
+        formdata['giftdays'] = 0
+        formdata['operate_desc'] = u'用户自助续费'
+        formdata['old_expire'] = account.expire_date
+        formdata['vcard_code'] = vcard_code
+        formdata['vcard_pwd'] = vcard_pwd
+
+        manager = AccountRenew(self.db, self.aes)
+        ret = manager.renew(formdata)
+        if ret:
+            order = self.db.query(models.TrCustomerOrder).get(order_id)
+            logger.info(u'充值卡续费成功')
+            self.render('profile_alipay_return.html', order=order)
+        else:
+            return self.render('profile_neworder_form.html', form=form, msg=u'%s' % manager.last_error)
+
+    def post(self):
+        try:
+            product_id = self.get_argument('product_id', '')
+            product = self.db.query(models.TrProduct).get(product_id)
+            if not product:
+                return self.render('profile_neworder_form.html', form=form, msg=u'套餐不存在')
+            form = order_forms.profile_order_form(product.product_policy)
+            if not form.validates(source=self.get_params()):
+                return self.render('profile_neworder_form.html', form=form, msg=form.errors)
+
+            account = self.db.query(models.TrAccount).get(form.d.account_number)
+            if not account:
+                return self.render('profile_neworder_form.html', form=form, msg=u'用户不存在')
+
+            if form.d.vcard_code and form.d.vcard_pwd:
+                return self.do_vcard(form, product)
+            _feevalue, _expire = self.order_calc(form.d.product_id)
+            order_id = utils.gen_order_id()
+            formdata = Storage(form.d)
+            formdata.order_id = order_id
+            formdata['node_id'] = self.get_param_value('default_user_node_id', 1)
+            formdata['area_id'] = ''
+            formdata['fee_value'] = _feevalue
+            formdata['expire_date'] = _expire
+            formdata['accept_source'] = 'usrportal'
+            formdata['giftdays'] = 0
+            formdata['giftflows'] = 0
+            formdata['ip_address'] = ''
+            formdata['status'] = 1
+            formdata['customer_desc'] = u'客户自助续费'
+            formdata['product_name'] = product.product_name
+            self.paycache.set(order_paycaache_key(order_id), formdata)
+            return self.render('profile_renew_alipay.html', formdata=formdata)
+        except Exception as err:
+            logger.exception(err)
+            return self.render('profile_neworder_form.html', form=form, msg=u'无效的订单')
 
 @permit.route('/usrportal/product/order/alipay')
 
