@@ -34,15 +34,15 @@ class AccountRenew(BaseService):
             self.last_error = u'充值卡密码错误'
             return False
         if product.product_policy not in (BOMonth, BOFlows, BOTimes):
-            self.last_error = u'当前资费不支持此充值卡(买断包月,买断流量,买断时长)'
+            self.last_error = u'当前资费不支持此充值卡(仅支持买断包月,买断流量,买断时长类型资费)'
             return False
-        #pattr = self.db.query(models.TrProductAttr).filter_by(product_id=product.id, attr_name='product_tag', attr_value=vcard.product_tag).first()
-        #if not pattr:
-        #    self.last_error = u'当前资费不支持此充值卡'
+        pattr = self.db.query(models.TrProductAttr).filter_by(product_id=product.id, attr_name='product_tag', attr_value=vcard.product_tag).first()
+        if not pattr:
+            self.last_error = u'当前资费不支持此充值卡'
+            return False
+        #if vcard.fee_price !=  utils.fen2yuan(product.fee_price):
+        #    self.last_error = u'充值卡面值与套餐价格不一致'
         #    return False
-        if vcard.fee_price !=  utils.fen2yuan(product.fee_price):
-            self.last_error = u'充值卡面值与套餐价格不一致'
-            return False
         return True
 
     @logparams

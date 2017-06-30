@@ -68,6 +68,7 @@ class BasicOrderHandler(BaseHandler):
         months = int(self.get_argument('months', 0))
         days = int(self.get_argument('days', 0))
         product = self.db.query(models.TrProduct).get(product_id)
+
         fee_value, expire_date = (None, None)
         if product.product_policy in (BOTimes, BOFlows):
             fee_value = utils.fen2yuan(product.fee_price)
@@ -95,7 +96,7 @@ class BasicOrderHandler(BaseHandler):
             if months > 0:
                 mprice = self.get_product_attr(product.id, 'month_price')
                 if mprice:
-                    mpricefee = decimal.Decimal(mprice.attr_value)
+                    mpricefee = utils.yuan2fen(decimal.Decimal(mprice.attr_value))
                 else:
                     mpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_months)
                 fee = decimal.Decimal(months) * mpricefee
@@ -113,7 +114,7 @@ class BasicOrderHandler(BaseHandler):
             if days > 0:
                 dprice = self.get_product_attr(product.id, 'day_price')
                 if dprice:
-                    dpricefee = decimal.Decimal(dprice.attr_value)
+                    dpricefee = utils.yuan2fen(decimal.Decimal(dprice.attr_value))
                 else:
                     dpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_days)
                 print 'dprice=', dpricefee

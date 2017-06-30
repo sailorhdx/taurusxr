@@ -57,10 +57,10 @@ function release_bind(){
                 <div class="row">
                     <div class="col-md-12">
                         % if user.status  in (1,4) and user.product_policy  in (0,2,3,5,7,9,10):
-                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号续费</a>
+                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号套餐续费</a>
                         % endif
                         % if user.status  in (1,4) and user.product_policy  in (3,5) and handler.lictype != 'community':
-                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_vcardcharge();">充值卡充值</a>
+                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_vcardcharge();">充值卡续费</a>
                         % endif
                         % if handler.get_param_value('ssportal_allow_release_bind','0') == '1':
                             <a class="btn btn-md btn-warning navbar-btn" onclick="javascript:release_bind();">清除绑定</a>

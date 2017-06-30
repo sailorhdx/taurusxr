@@ -3,6 +3,18 @@
 import decimal, os
 decimal.getcontext().prec = 11
 decimal.getcontext().rounding = decimal.ROUND_UP
+"""
+PPMonth: u'预付费包月', #0   
+PPTimes: u'预付费时长', #1  
+BOMonth: u'买断包月', #2
+BOTimes: u'买断时长', #3
+PPFlow: u'预付费流量', #4
+BOFlows: u'买断流量', #5
+PPMFlows: u'预付费流量包月', #7
+APMonth: u'后付费包月', #8
+PPDay: u'预付费包日', #9
+BODay: u'买断包日' #10 
+"""
 FEES = PPMonth, PPTimes, BOMonth, BOTimes, PPFlow, BOFlows, PPMFlows, APMonth, PPDay, BODay = (0, 1, 2, 3, 4, 5, 7, 8, 9, 10)
 ACCOUNT_STATUS = UsrPreAuth, UsrNormal, UsrPause, UsrCancel, UsrExpire, UsrPadding = (0, 1, 2, 3, 4, 5)
 CARD_STATUS = CardInActive, CardActive, CardUsed, CardRecover = (0, 1, 2, 3)

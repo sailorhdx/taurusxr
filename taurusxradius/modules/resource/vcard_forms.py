@@ -9,7 +9,7 @@ button_style = {'class': 'btn btn-sm'}
 boolean = {0: u'否',
  1: u'是'}
 cardtype = {'product': u'资费卡',
- 'balance': u'余额卡',
+ #'balance': u'余额卡', 此卡仅支持 PPFlow预付费流量, PPTimes预付费时长  注意，该版本移除了资费 预付费时长，预付费流量，预付费流量包月，并且以后也不会再继续提供支持，若仍需要此类资费，请勿升级该版本。
  'flowlen': u'流量卡',
  'timelen': u'时长卡'}
 pwdtype = {'random': u'随机密码'}

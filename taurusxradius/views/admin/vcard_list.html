@@ -137,7 +137,7 @@ function do_export(){
                 <div class="col-md-3">
                     <select id="card_type" name="card_type" class="form-control">
                         <option value=""></option>
-                        % for k,v in {'banalace':u"余额卡", 'product':u"资费卡",'timelen':u"时长卡",'flowlen':u"流量卡"}.items():
+                        % for k,v in {'product':u"资费卡",'timelen':u"时长卡",'flowlen':u"流量卡"}.items():
                         <option value="${k}"  ${str(k)==card_type and "selected" or ""} >${v}</option>
                         % endfor
                     </select>

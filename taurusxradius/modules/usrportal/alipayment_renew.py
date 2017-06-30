@@ -17,7 +17,6 @@ from taurusxradius.modules import models
 from taurusxradius.common import tools
 from taurusxradius.modules.dbservice.account_renew import AccountRenew
 from taurusxradius.modules.settings import order_paycaache_key
-from taurusxradius.modules.settings import PPMonth, BOMonth, BOTimes, BOFlows, MAX_EXPIRE_DATE
 
 @permit.route('/usrportal/product/renew')
 
@@ -37,11 +36,12 @@ class UsrPortalRenewOrderHandler(alipayment_new.BasicOrderHandler):
         account = self.db.query(models.TrAccount).get(account_number)
         product_id = account.product_id
         product = self.db.query(models.TrProduct).get(product_id)
+        get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
         if not product:
             return self.render_alert(u'错误提示', u'套餐不存在')
         if product.product_status == 1:
             return self.render_alert(u'错误提示', u'套餐已停用')
-        form = order_forms.renew_form(product.product_policy)
+        form = order_forms.renew_form(product.product_policy, get_product_attr_val)
         form.account_number.set_value(account_number)
         form.product_id.set_value(product_id)
         form.product_name.set_value(product.product_name)
@@ -50,7 +50,8 @@ class UsrPortalRenewOrderHandler(alipayment_new.BasicOrderHandler):
     def post(self):
         product_id = self.get_argument('product_id')
         product = self.db.query(models.TrProduct).get(product_id)
-        form = order_forms.renew_form(product.product_policy)
+        get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
+        form = order_forms.renew_form(product.product_policy, get_product_attr_val)
         if not form.validates(source=self.get_params()):
             return self.render_json(code=1, msg=form.errors)
         account = self.db.query(models.TrAccount).get(form.d.account_number)
@@ -68,7 +69,7 @@ class UsrPortalRenewOrderHandler(alipayment_new.BasicOrderHandler):
             formdata['giftdays'] = 0
             formdata['operate_desc'] = u'用户自助续费'
             formdata['old_expire'] = account.expire_date
-            if form.d.vcard_code and form.d.vcard_pwd:
+            if get_product_attr_val('product_tag') and form.d.vcard_code and form.d.vcard_pwd:
                 formdata['vcard_code'] = form.d.vcard_code
                 formdata['vcard_pwd'] = form.d.vcard_pwd
                 manager = AccountRenew(self.db, self.aes)

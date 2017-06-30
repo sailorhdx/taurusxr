@@ -33,6 +33,11 @@ $(function(){
             <div class="alert alert-warning">${msg}</div>
             % endif
         <form class="form-horizontal form-well bottom20" role="form" action="${form.action}" method="post">
+            <div class="alert alert-info">提示：
+                『资费卡』用于"买断包月,买断流量,买断时长"类型套餐的购买或用户当前绑定套餐续费，套餐必须设置“资费充值卡标签”标签且必须与充值卡“资费标签(资费卡)”一致；
+                『流量卡』用于绑定“买断流量”类型套餐用户进行自助“充值卡续费”，将充值卡内的流量充值到当前账户的剩余流量中；
+                『时长卡』用于绑定“买断时长”类型套餐用户进行自助“充值卡续费”，将充值卡内的时长充值到当前账户的剩余时长中。
+            </div>
                 ${xsrf_form_html()|n}
                 ${form.render_css()|n}
         </form>
