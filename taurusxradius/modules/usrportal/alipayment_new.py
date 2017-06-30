@@ -249,6 +249,7 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
     def get(self):
         product_id = self.get_argument('product_id')
         product = self.db.query(models.TrProduct).get(product_id)
+        get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
         if not product:
             self.render_error(msg=u'套餐不存在')
             return
@@ -258,13 +259,13 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
             self.render_error(msg=u'用户不存在')
             return
 
-        form = order_forms.profile_order_form(product.product_policy)
+        form = order_forms.profile_order_form(product.product_policy, get_product_attr_val)
         form.product_id.set_value(product_id)
         form.product_name.set_value(product.product_name)
         form.months.set_value(product.fee_months)
         form.days.set_value(product.fee_days)
         form.account_number.set_value(account_number)
-        self.render('profile_neworder_form.html', form=form)
+        self.render('profile_reneworder_form.html', form=form)
 
     def do_vcard(self, form, product):
         account = self.db.query(models.TrAccount).get(form.d.account_number)
@@ -296,23 +297,24 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
             logger.info(u'充值卡续费成功')
             self.render('profile_alipay_return.html', order=order)
         else:
-            return self.render('profile_neworder_form.html', form=form, msg=u'%s' % manager.last_error)
+            return self.render('profile_reneworder_form.html', form=form, msg=u'%s' % manager.last_error)
 
     def post(self):
         try:
             product_id = self.get_argument('product_id', '')
             product = self.db.query(models.TrProduct).get(product_id)
+            get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
             if not product:
-                return self.render('profile_neworder_form.html', form=form, msg=u'套餐不存在')
-            form = order_forms.profile_order_form(product.product_policy)
+                return self.render('profile_reneworder_form.html', form=form, msg=u'套餐不存在')
+            form = order_forms.profile_order_form(product.product_policy, get_product_attr_val)
             if not form.validates(source=self.get_params()):
-                return self.render('profile_neworder_form.html', form=form, msg=form.errors)
+                return self.render('profile_reneworder_form.html', form=form, msg=form.errors)
 
             account = self.db.query(models.TrAccount).get(form.d.account_number)
             if not account:
-                return self.render('profile_neworder_form.html', form=form, msg=u'用户不存在')
+                return self.render('profile_reneworder_form.html', form=form, msg=u'用户不存在')
 
-            if form.d.vcard_code and form.d.vcard_pwd:
+            if get_product_attr_val('product_tag') and form.d.vcard_code and form.d.vcard_pwd:
                 return self.do_vcard(form, product)
             _feevalue, _expire = self.order_calc(form.d.product_id)
             order_id = utils.gen_order_id()
@@ -333,7 +335,7 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
             return self.render('profile_renew_alipay.html', formdata=formdata)
         except Exception as err:
             logger.exception(err)
-            return self.render('profile_neworder_form.html', form=form, msg=u'无效的订单')
+            return self.render('profile_reneworder_form.html', form=form, msg=u'无效的订单')
 
 @permit.route('/usrportal/product/order/alipay')
 

@@ -568,44 +568,6 @@ class CustomerAdd(BaseService):
         return
 
 
-
-    def add_account_from_portal(self, account_number, password, email):
-
-        try:
-            account = models.TrAccount()
-            account.account_number = account_number.strip()
-            account.ip_address = ''
-            account.customer_id = account_number.strip()
-            account.product_id = '014E7F784D2311E79C5EFA163EFD1A3E'
-            account.install_address = '默认小区地址'
-            account.mac_addr = ''
-            account.password = self.aes.encrypt(password)
-            account.status = UsrNormal
-            account.balance = 0
-            account.time_length = int(0)
-            account.flow_length = 0
-            account.expire_date = '3000-12-30'
-            account.user_concur_number = 1
-            account.bind_mac = 0
-            account.bind_vlan = 0
-            account.vlan_id1 = 0
-            account.vlan_id2 = 0
-            account.create_time = utils.get_currtime()
-            account.update_time = utils.get_currtime()
-            account.account_desc = ''
-            account.sync_ver = tools.gen_sync_ver()
-            self.db.add(account)
-
-            return True
-        except Exception as err:
-            self.db.rollback()
-            traceback.print_exc()
-            self.last_error = u'客户开户操作失败:%s' % utils.safeunicode(err)
-            logger.error(self.last_error, tag='customer_add_error', username=account_number)
-            return False
-
-        return
-
     @logparams
     def add_account_from_portal(self, account_number, password, email, **kwargs):
         """用户自助开户"""
@@ -616,7 +578,7 @@ class CustomerAdd(BaseService):
             pay_status = int(1)
             customer_id = utils.get_uuid()
             order_id = utils.get_uuid()
-            product_id = '014E7F784D2311E79C5EFA163EFD1A3E'
+            product_id = '00000000000000000000000000000000'
             node_id = '1'
             area_id = '1'
             agency_id = ''

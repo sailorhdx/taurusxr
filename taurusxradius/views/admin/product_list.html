@@ -109,7 +109,7 @@
                             <i class="fa fa-edit"></i> 修改</a>
                             % endif
                         % endif
-                        % if permit.match(current_user.username, '/admin/product/delete'):
+                        % if permit.match(current_user.username, '/admin/product/delete') and product.id != '00000000000000000000000000000000':
                         <a class="btn btn-xs"  href="javascript:deleteProduct('${product.id}')">
                         <i class="fa fa-times"></i> 删除</a>
                         % endif

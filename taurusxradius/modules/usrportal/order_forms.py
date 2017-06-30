@@ -9,7 +9,7 @@ lbutton_style = {'class': 'btn btn-sm btn-link'}
 boolean = {0: u'否',
  1: u'是'}
 
-def profile_order_form(policy):
+def profile_order_form(policy, get_product_attr_val):
     form = btforms.Form(title=u'套餐订购', action='/usrportal/product/reneworder')
     items = form.inputs = []
     items.append(btforms.Textbox('account_number', description=u'用户账号', readonly='readonly', **input_style))
@@ -23,7 +23,7 @@ def profile_order_form(policy):
         items.append(btforms.Textbox('days', rules.is_number, description=u'订购天数(预付费包天)', required='required', **input_style))
     else:
         items.append(btforms.Hidden('days', description=u'订购天数(预付费包天)', **input_style))
-    if os.environ.get('LICENSE_TYPE') != 'community':
+    if os.environ.get('LICENSE_TYPE') != 'community' and get_product_attr_val('product_tag'):
         items.append(btforms.Textbox('vcard_code', description=u'充值卡', **input_style))
         items.append(btforms.Password('vcard_pwd', description=u'充值卡密码', **input_style))
     items.append(btforms.Button('submit', type='submit', html=u'<b>提交订单</b>', **button_style))

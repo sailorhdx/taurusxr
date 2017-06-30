@@ -1,0 +1,45 @@
+<%inherit file="profile_base.html"/>
+<%def name="head()">
+<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/js/toastr.min.js"></script>
+<script>
+
+$(function () {
+    $('[data-toggle="popover"]').popover()   
+})
+</script>
+</%def>
+<%def name="body()">
+<section class="content">
+    <div class="row">
+        <div class="col-md-12">
+          <div class="box">
+            <div class="box-header with-border">
+                <i class="fa fa-shopping-cart"></i>
+                <h3 class="box-title">套餐订购</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        % if msg:
+                        <div class="alert alert-warning">${msg}</div>
+                        % endif
+                        <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
+                              ${xsrf_form_html()|n}
+                              ${form.render_css()|n}
+                        </form>
+                    </div>
+                    <!-- /.col -->
+                </div>
+              <!-- /.row -->
+            </div>
+
+          </div>
+          <!-- /.box -->
+        </div>
+        <!-- /.col -->
+    </div>
+    <!-- /.row -->
+</section>
+</%def>

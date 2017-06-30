@@ -18,6 +18,31 @@ from hashlib import md5
 import random
 
 def init_db(db):
+    product = models.TrProduct()
+    product.id = '00000000000000000000000000000000'
+    product.product_name = '买断时长资费'
+    product.ispub = 0
+    product.product_policy = 3
+    product.product_status = 0
+    product.fee_days = 0
+    product.fee_months = 0
+    product.fee_times = 0
+    product.fee_flows = 0
+    product.bind_mac = 0
+    product.bind_vlan = 0
+    product.concur_number = 1
+    product.fee_price = 0
+    product.fee_period = ''
+    product.input_max_limit = utils.mbps2bps(100)
+    product.output_max_limit = utils.mbps2bps(100)
+    product.free_auth = 0
+    product.free_auth_uprate = 0
+    product.free_auth_downrate = 0
+    _datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    product.create_time = _datetime
+    product.update_time = _datetime
+    product.sync_ver = tools.gen_sync_ver()
+    db.add(product)
     arule = models.TrAccountRule()
     arule.id = 1
     arule.rule_name = u'默认账号生成规则'
