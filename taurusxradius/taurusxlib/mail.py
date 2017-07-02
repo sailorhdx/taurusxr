@@ -30,7 +30,7 @@ class SendMail:
         self.smtp_pwd = password
 
     def send_mail(self, mailto, topic, content, tls = False, **kwargs):
-        message = email.MIMEText.MIMEText(content, 'html', 'utf-8')
+        message = email.MIMEText.MIMEText(content, 'plain', 'utf-8')
         message['Subject'] = email.Header.Header(topic, 'utf-8')
         message['From'] = self.from_addr
         message['To'] = mailto

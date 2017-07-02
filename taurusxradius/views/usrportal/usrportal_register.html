@@ -19,7 +19,7 @@
              <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
                 <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;"></div>
              </div>
-            <form action="/usrportal/register2" method="post">
+            <form id="registerForm" class="register-form" method="post">
               <div class="form-group">
                  <div class="input-group">
                     <span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
@@ -48,7 +48,7 @@
               </div>
 
               <div class="form-group">
-                <button type="button" class="btn btn-danger btn-block btn-lg" onclick="javascript:doRegister();">立即注册</button>
+                <button type="submit" class="btn btn-danger btn-block btn-lg">立即注册</button>
               </div>
 
               <div class="form-group">
@@ -65,6 +65,8 @@
 </%def>
 
 <%def name="js()">
+<script src="/static/plugins/jquery-validation/js/jquery.validate.min.js"></script>
+<script src="/static/plugins/jquery-validation/js/additional-methods.min.js"></script>
 <script>
         function doRegister() {
             var username = $("#username").val();
@@ -79,10 +81,81 @@
                     return false;
                 }
                 else {
-                    window.location.href = "/usrportal/login";
+                    $(".panel-body").html(data.msg);
                 }
             }, "json");
         }
+
+        $('.register-form').validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            rules: {
+                username: {
+                    required: true
+                },
+                password: {
+                    required: true
+                },
+                confirmpassword: {
+                    required: true,
+                    equalTo:"#password"
+                },
+                email: {
+                    required: true,
+                    email:true
+                }
+
+            },
+
+            messages: {
+                username: {
+                    required: "用户名不能为空."
+                },
+                password: {
+                    required: "登录密码不能为空."
+                },
+                confirmpassword: {
+                    required: "确认密码不能为空.",
+                    equalTo:"确认密码必须与登录密码相同"
+                },
+                email: {
+                    required: "电子邮箱地址不能为空.",
+                    email:"请输入有效的电子邮箱地址."
+                }
+            },
+
+            invalidHandler: function(event, validator) { //display error alert on form submit
+                $('.alert-danger', $('.login-form')).show();
+            },
+
+            highlight: function(element) { // hightlight error inputs
+                $(element)
+                    .closest('.form-group').addClass('has-error'); // set error class to the control group
+            },
+
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+                label.remove();
+            },
+
+            errorPlacement: function(error, element) {
+                error.insertAfter(element.closest('.form-group'));
+            },
+
+            submitHandler: function(form) {
+                doRegister();//form.submit(); // form validation success, call ajax form submit
+            }
+        });
+
+        $('.register-form input').keypress(function(e) {
+            if (e.which == 13) {
+                if ($('.register-form').validate().form()) {
+                    $('.register-form').submit(); //form validation success, call ajax form submit
+                }
+                return false;
+            }
+        });
 
 </script>
 </%def>

@@ -20,7 +20,7 @@ import random
 def init_db(db):
     product = models.TrProduct()
     product.id = '00000000000000000000000000000000'
-    product.product_name = '买断时长资费'
+    product.product_name = '自助注册时长套餐'
     product.ispub = 0
     product.product_policy = 3
     product.product_status = 0
@@ -91,6 +91,7 @@ def init_db(db):
      ('mail_notify_enable', u'启动邮件到期提醒', u'0'),
      ('mail_notify_interval', u'邮件到期提醒提前间隔(分钟)', u'1440'),
      ('mail_notify_time', u'邮件到期提醒时间(hh:mm)', u'09:00'),
+     ('mail_to', u'测试邮件接收地址', u''),
      ('sms_notify_enable', u'启动短信到期提醒', u'0'),
      ('sms_notify_interval', u'短信到期提醒提前间隔(分钟)', u'1440'),
      ('sms_notify_time', u'短信到期提醒时间(hh:mm)', u'09:00'),

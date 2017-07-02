@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #coding:utf-8
+import hmac
 import re
 
+import time
 from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
@@ -11,14 +13,19 @@ import json
 
 import sqlalchemy
 from sqlalchemy import create_engine
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
 from taurusxradius.common import tools, safefile
 from taurusxradius.modules import models
 from taurusxradius.taurusxlib import utils
 from sqlalchemy.sql import text as _sql
 
+
 import math
 import decimal
+
+from taurusxradius.taurusxlib.mail import send_mail
+
 
 class AESCipher:
 
@@ -127,12 +134,34 @@ def changeTime(allTime):
         mins = divmod(allTime, min)
         return "%d mins, %d sec" % (int(mins[0]), math.ceil(mins[1]))
 
+
+class QXToken(object):
+    def __init__(self, name, key):
+        self.name = name
+        self.key = key
+
+    def generate_auth_token(self, expiration=3600):
+        s = Serializer(self.key, expires_in=expiration)
+        return s.dumps({'name': self.name})
+
+    def verify_auth_token(self, token):
+        s = Serializer(self.key)
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None  # valid token, but expired
+        except BadSignature:
+            return None  # invalid token
+        return data['name'] == self.name
+
+
 if __name__ == '__main__':
     import sys
     if sys.maxunicode > 65535:
         print 'UCS4 build'
     else:
         print 'UCS2 build'
+    """
     db_engine = create_engine("mysql://root:Root123@115.47.117.189:3306/taurusxr", max_overflow=5)
     with db_engine.begin() as conn:
         sql = '\n                select bas.ip_addr  \n                from tr_bas as bas,tr_customer as cus,tr_account as user,tr_bas_node as bn\n                where cus.customer_id = user.customer_id\n                    and cus.node_id = bn.node_id\n                    and bn.bas_id = bas.id\n                    and user.account_number = :account_number\n                '
@@ -151,7 +180,7 @@ if __name__ == '__main__':
         print m.groups()
     else:
         print '2222'
-
+    """
     aes = AESCipher("0pNxtSi4kFaK2MEZTLYIATnQIdrCPtLq")
     aa = aes.encrypt(u"中文".encode('utf-8'))
     print aa
@@ -168,3 +197,17 @@ if __name__ == '__main__':
         :type name: string        
     """
     print bb
+
+    key = "JD98Dskw=23njQndW9D"
+    # 生成用户token
+
+    token = QXToken('zl',key)
+    strToken  = token.generate_auth_token()
+    print token.generate_auth_token()
+
+    uuid = 'h@neusoft.com'
+
+
+    # 验证token
+    token = QXToken('zl',key)
+    print token.verify_auth_token(strToken)

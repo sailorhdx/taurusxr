@@ -87,9 +87,34 @@ $(function () {
                     </form>
                 </div>
                 <div role="tabpanel" class="tab-pane ${active=='mailcfg' and 'active' or '' }" id="mailcfg">
+                    <script>
+                        function doTestEmail() {
+                            var smtp_server = $("#smtp_server").val();
+                            var smtp_port = $("#smtp_port").val();
+                            var smtp_tls = $("#smtp_tls").val();
+                            var smtp_from = $("#smtp_from").val();
+                            var smtp_user = $("#smtp_user").val();
+                            var smtp_pwd = $("#smtp_pwd").val();
+                            var mail_to = $("#mail_to").val();
+
+                            params = {smtp_server: smtp_server,smtp_port: smtp_port,smtp_tls: smtp_tls,smtp_from: smtp_from,smtp_user: smtp_user,smtp_pwd: smtp_pwd, mail_to:mail_to, _xsrf: '${handler.xsrf_token}'};
+                            $.post("/admin/param/testemail", params, function (data) {
+                                //if (data.code > 0) {
+                                    //$("#alertmsgcontent").html(data.msg);
+                                    //$("#alertmsg").css('display', 'block');
+                                //    return false;
+                                //}
+                                //else {
+                                //    window.location.href = "/usrportal/profile";
+                                //}
+                                alert(data.msg);
+                            }, "json");
+                        }
+                    </script>
                     <form class="form-horizontal form-well" role="form" action="${mail_form.action}" method="post">
                         ${xsrf_form_html()|n}
                         ${mail_form.render_css()|n}
+
                     </form>
                 </div>
                 <div role="tabpanel" class="tab-pane ${active=='alipaycfg' and 'active' or '' }" id="alipaycfg">

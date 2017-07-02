@@ -17,6 +17,7 @@ import json
 import functools
 import logging
 import urlparse
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer, BadSignature, SignatureExpired
 
 random_generator = random.SystemRandom()
 
@@ -357,7 +358,24 @@ def get_cron_interval(cron_time):
     else:
         return 120
 
+class QXToken(object):
+    def __init__(self, name, key):
+        self.name = name
+        self.key = key
 
+    def generate_auth_token(self, expiration=3600):
+        s = Serializer(self.key, expires_in=expiration)
+        return s.dumps({'name': self.name})
+
+    def verify_auth_token(self, token):
+        s = Serializer(self.key)
+        try:
+            data = s.loads(token)
+        except SignatureExpired:
+            return None  # valid token, but expired
+        except BadSignature:
+            return None  # invalid token
+        return data['name'] == self.name
 
 if __name__ == '__main__':
     aes = AESCipher("0pNxtSi4kFaK2MEZTLYIATnQIdrCPtLq")

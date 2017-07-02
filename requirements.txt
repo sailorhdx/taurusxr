@@ -32,6 +32,7 @@ dict2xml
 psutil
 pytz
 IPy
+itsdangerous
 Twisted>=15.0.0
 treq
 cyclone

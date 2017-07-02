@@ -21,7 +21,14 @@ themes = {'skin-black': u'黑色风格',
           'skin-green': u'绿色风格',
           'skin-purple': u'紫色风格',
           'skin-red': u'红色风格',
-          'skin-yellow': u'黄色风格'}
+          'skin-yellow': u'黄色风格',
+          'skin-black-light': u'浅黑色风格',
+          'skin-blue-light': u'浅蓝色风格',
+          'skin-green-light': u'浅绿色风格',
+          'skin-purple-light': u'浅紫色风格',
+          'skin-red-light': u'浅红色风格',
+          'skin-yellow-light': u'浅黄色风格'
+          }
 en_modes = {'normal': u'明文',
  'compatible': u'兼容模式',
  'safe': u'安全模式'}
@@ -30,7 +37,7 @@ if not os.environ.get('DEMO_VER'):
 else:
     sys_form = btforms.Form(btforms.Textbox('system_name', description=u'管理系统名称', help=u'管理系统名称,可以根据你的实际情况进行定制', **input_style), btforms.Dropdown('system_theme', args=themes.items(), description=u'系统风格样式', **input_style), btforms.Textbox('ssportal_title', description=u'网上营业厅名称', readonly='readonly', **input_style), btforms.Textbox('support_desc', description=u'技术服务支持声明', help=u'显示在管理登陆和网上营业厅页面底部', readonly='readonly', **input_style), btforms.Textbox('login_logo', description=u'登陆页面Logo(200x120)', readonly='readonly', **input_style), btforms.Textbox('login_bgimg', description=u'登陆页面背景图片(1920x600)', readonly='readonly', **input_style), btforms.Textbox('index_logo', description=u'管理页面Logo(191x36)', readonly='readonly', **input_style), btforms.Textbox('ssportal_banner_bg', description=u'网上营业厅背景图(1920x300+)', readonly='readonly', **input_style), btforms.Dropdown('style_nav_fixed', args=booleans.items(), description=u'设置顶部导航栏固定', help=u'顶部导航条固定样式，若需要在小屏幕设备管理，建议设置为否', **input_style), btforms.Dropdown('style_nav_doc_link', args=booleans.items(), description=u'导航栏显示文档链接', **input_style), btforms.Dropdown('style_nav_busstat_link', args=booleans.items(), description=u'导航栏显示运营分析链接', **input_style), btforms.Dropdown('style_nav_status_link', args=booleans.items(), description=u'导航栏显示系统状态链接', **input_style), title=u'管理界面设置', action='/admin/param/update?active=syscfg')
 if not os.environ.get('DEMO_VER'):
-    mail_form = btforms.Form(btforms.Textbox('smtp_server', description=u'SMTP服务器', **input_style), btforms.Textbox('smtp_port', description=u'SMTP服务器端口', **input_style), btforms.Dropdown('smtp_tls', args=booleans.items(), description=u'SMTP启用TLS/SSL', **input_style), btforms.Textbox('smtp_from', description=u'SMTP邮件发送地址', **input_style), btforms.Textbox('smtp_user', description=u'SMTP用户名', **input_style), btforms.Password('smtp_pwd', description=u'SMTP密码', help=u'如果密码不是必须的，请填写none', **input_style), btforms.Dropdown('mail_notify_enable', args=booleans.items(), description=u'启动到期提醒', **input_style), btforms.Textbox('mail_notify_interval', rules.is_number, description=u'到期提醒间隔(分钟)', **input_style), btforms.Textbox('mail_notify_time', rules.is_time_hm, description=u'到期提醒时间(hh:mm)', **input_style), btforms.Button('submit', type='submit', html=u'<b>更新</b>', **button_style), title=u'邮件设置', action='/admin/param/update?active=mailcfg')
+    mail_form = btforms.Form(btforms.Textbox('smtp_server', description=u'SMTP服务器', **input_style), btforms.Textbox('smtp_port', description=u'SMTP服务器端口', **input_style), btforms.Dropdown('smtp_tls', args=booleans.items(), description=u'SMTP启用TLS/SSL', **input_style), btforms.Textbox('smtp_from', description=u'SMTP邮件发送地址', **input_style), btforms.Textbox('smtp_user', description=u'SMTP用户名', **input_style), btforms.Password('smtp_pwd', description=u'SMTP密码', help=u'如果密码不是必须的，请填写none', **input_style), btforms.Textbox('mail_to', description=u'测试邮件接收地址', help=u'', **input_style), btforms.Dropdown('mail_notify_enable', args=booleans.items(), description=u'启动到期提醒', **input_style), btforms.Textbox('mail_notify_interval', rules.is_number, description=u'到期提醒间隔(分钟)', **input_style), btforms.Textbox('mail_notify_time', rules.is_time_hm, description=u'到期提醒时间(hh:mm)', **input_style), btforms.Button('testemail', type='button', onclick='javascript:doTestEmail();', html=u'<b>发送测试邮件</b>', **button_style), btforms.Button('submit', type='submit', html=u'<b>更新</b>', **button_style), title=u'邮件设置', action='/admin/param/update?active=mailcfg')
 else:
     mail_form = btforms.Form(btforms.Textbox('smtp_server', description=u'SMTP服务器', **input_style), btforms.Dropdown('smtp_tls', args=booleans.items(), description=u'SMTP启用TLS/SSL', **input_style), btforms.Textbox('smtp_from', description=u'SMTP邮件发送地址', **input_style), btforms.Dropdown('mail_notify_enable', args=booleans.items(), description=u'启动到期提醒', **input_style), btforms.Textbox('mail_notify_interval', rules.is_number, description=u'到期提醒间隔(分钟)', **input_style), btforms.Textbox('mail_notify_time', rules.is_time_hm, description=u'到期提醒时间(hh:mm)', **input_style), title=u'邮件设置', action='/admin/param/update?active=mailcfg')
 sms_gateway = {'smscn': u'云信(sms.cn)',
@@ -72,6 +79,7 @@ def adconfig_form(nodes = [], **kwargs):
     items.append(btforms.Textbox('billtask_last_day', rules.is_number, description=u'用户账单任务截止日期(1-28)', **input_style))
     items.append(btforms.Dropdown('billing_fee_precision', args=fee_precisions.items(), description=u'后付费账单金额精度(元/分)', **input_style))
     items.append(btforms.Dropdown('ssportal_smsvcode_required', args=booleans.items(), description=u'自助注册开户采用短信验证', **input_style))
+    items.append(btforms.Dropdown('ssportal_email_required', args=booleans.items(), description=u'自助注册开户采用邮件验证', **input_style))
     items.append(btforms.Dropdown('ssportal_allow_release_bind', args=booleans.items(), description=u'自助服务允许清除Mac绑定', **input_style))
     items.append(btforms.Dropdown('ssportal_allow_online_unlock', args=booleans.items(), description=u'自助服务允许下线操作', **input_style))
     items.append(btforms.Textarea('ssportal_paydone_text', description=u'自助服务支付完成提示信息(支持html)', rows=5, **input_style))

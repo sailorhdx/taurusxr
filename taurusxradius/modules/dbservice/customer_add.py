@@ -602,7 +602,7 @@ class CustomerAdd(BaseService):
             giftdays = '0'
             charge_code = ''
             builder_name = ''
-            status = '1'
+            status = '0' #自助注册默认未激活状态
             wechat_oid = ''
             vcard_code = ''
             vcard_pwd = ''

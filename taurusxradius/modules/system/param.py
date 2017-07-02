@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 import os, sys
+import smtplib
+from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 import cyclone.auth
 import cyclone.escape
 import cyclone.web
@@ -8,6 +13,7 @@ import taurusxradius
 from taurusxradius.modules.base import BaseHandler, authenticated
 from taurusxradius.modules.system import param_forms
 from taurusxradius.modules import models
+from taurusxradius.taurusxlib.mail import send_mail
 from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.taurusxlib import dispatch, db_cache, logger, utils
 from taurusxradius.modules.settings import *
@@ -69,6 +75,76 @@ class ParamUpdateHandler(BaseHandler):
         self.db.commit()
         self.redirect('/admin/param?active=%s' % active)
 
+@permit.route('/admin/param/testemail')
+
+class TestEmailHandler(BaseHandler):
+
+    def sendMailaaa(self, topic, content):
+
+        smtp_server = self.get_argument('smtp_server')
+        smtp_port = self.get_argument('smtp_port')
+        smtp_tls = self.get_argument('smtp_tls')
+        smtp_from = self.get_argument('smtp_from')
+        smtp_user = self.get_argument('smtp_user')
+        smtp_pwd = self.get_argument('smtp_pwd')
+        mail_to = self.get_argument('mail_to')
+
+        msg = MIMEMultipart()
+        msg['Subject'] = Header(topic, 'utf-8')
+        msg['From'] = smtp_from
+        msg['To'] = mail_to
+
+        part = MIMEText(content, 'plain', 'utf-8')
+        msg.attach(part)
+
+        try:
+            smtpServer = smtplib.SMTP(smtp_server, str(smtp_port))
+        except Exception as e:
+            logger.error('SMTP连接邮件服务器失败,可能原因:' + str(e))
+            return False
+        try:
+            smtpServer.login(smtp_user, smtp_pwd)
+            smtpServer.sendmail(smtp_from, mail_to, msg.as_string())
+            logger.info('send mail to:' + mail_to)
+        except smtplib.SMTPException as e:
+            logger.error('SMTP发送邮件失败,可能原因:' + str(e))
+        finally:
+            smtpServer.quit()
+            return True
+
+    def delivered(self):
+
+        logger.info(u'邮件发送响应; %s ' % ('aaaa'))
+        return True
+
+    def failed(self, err):
+        logger.info(u'邮件发送失败; %s %s' % str(err))
+        return err
+
+    @authenticated
+    def post(self):
+        smtp_server = self.get_argument('smtp_server')
+        smtp_port = self.get_argument('smtp_port')
+        smtp_tls = self.get_argument('smtp_tls')
+        smtp_from = self.get_argument('smtp_from')
+        smtp_user = self.get_argument('smtp_user')
+        smtp_pwd = self.get_argument('smtp_pwd')
+        mail_to = self.get_argument('mail_to')
+
+        logger.info('smtp_server = {0}'.format(smtp_server))
+        logger.info('smtp_port = {0}'.format(smtp_port))
+        logger.info('smtp_tls = {0}'.format(smtp_tls))
+        logger.info('smtp_from = {0}'.format(smtp_from))
+        logger.info('smtp_user = {0}'.format(smtp_user))
+        logger.info('smtp_pwd = {0}'.format(smtp_pwd))
+        logger.info('mail_to = {0}'.format(mail_to))
+
+        topic = '这是来自TaurusXRadius的一封测试邮件！'
+        content = '当您收到这封邮件时，恭喜你的邮件配置成功通过！'
+        ret = send_mail(server=smtp_server, port=smtp_port, user=smtp_user, password=smtp_pwd, from_addr=smtp_from,
+                       mailto=mail_to, topic=topic, content=content, tls=smtp_tls)
+
+        self.render_json(code=0, msg='ok')
 
 @permit.suproute('/(MP_verify_.*\\.txt$)')
 
