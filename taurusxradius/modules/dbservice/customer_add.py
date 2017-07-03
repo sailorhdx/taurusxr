@@ -18,6 +18,8 @@ from taurusxradius.common import tools
 from taurusxradius.taurusxlib.btforms import rules
 from taurusxradius.taurusxlib.storage import Storage
 from taurusxradius.modules.events import settings as evset
+from taurusxradius.taurusxlib.utils import QXToken
+
 
 class CustomerAdd(BaseService):
 
@@ -607,6 +609,9 @@ class CustomerAdd(BaseService):
             vcard_code = ''
             vcard_pwd = ''
 
+            token = QXToken('TaurusX', customer_id)
+            strToken = token.generate_auth_token()
+
             product = self.db.query(models.TrProduct).get(product_id)
             vcard = None
             if vcard_code and vcard_pwd:
@@ -634,6 +639,7 @@ class CustomerAdd(BaseService):
             customer.email_active = 0
             customer.mobile_active = 0
             customer.active_code = utils.get_uuid()
+            customer.token = strToken
             customer.customer_desc = customer_desc
             customer.wechat_oid = wechat_oid
             customer.sync_ver = tools.gen_sync_ver()

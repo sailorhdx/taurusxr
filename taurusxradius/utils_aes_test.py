@@ -4,6 +4,8 @@ import hmac
 import re
 
 import time
+
+import datetime
 from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
@@ -202,12 +204,10 @@ if __name__ == '__main__':
     # 生成用户token
 
     token = QXToken('zl',key)
-    strToken  = token.generate_auth_token()
-    print token.generate_auth_token()
-
-    uuid = 'h@neusoft.com'
+    strToken  = token.generate_auth_token(expiration=100)
+    print strToken
 
 
     # 验证token
-    token = QXToken('zl',key)
-    print token.verify_auth_token(strToken)
+    token1 = QXToken('zl',key)
+    print token1.verify_auth_token('eyJhbGciOiJIUzI1NiIsImV4cCI6MTQ5OTA0NzU4NCwiaWF0IjoxNDk5MDQ3NDg0fQ.eyJuYW1lIjoiemwifQ.VeIKLfIeCZGkZ2bxdrzL9HUBknf-HpeMl-l10HqiXbU')

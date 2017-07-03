@@ -213,6 +213,7 @@ class TrCustomer(DeclarativeBase):
     email = Column('email', Unicode(length=255), nullable=True, doc=u'用户邮箱')
     email_active = Column('email_active', SMALLINT(), default=0, doc=u'用户邮箱激活状态')
     active_code = Column('active_code', Unicode(length=32), nullable=False, doc=u'邮箱激活码')
+    token = Column('token', Unicode(length=255), nullable=False, doc=u'Token码')
     mobile = Column('mobile', Unicode(length=16), nullable=True, doc=u'用户手机')
     mobile_active = Column('mobile_active', SMALLINT(), default=0, doc=u'用户手机绑定状态')
     address = Column('address', Unicode(length=255), nullable=True, doc=u'用户地址')

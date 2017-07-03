@@ -14,7 +14,7 @@ from taurusxradius.taurusxlib.utils import QXToken
 class UsrPortalLoginHandler(BaseHandler):
 
     def get(self):
-        self.render('usrportal_login.html')
+        return self.render('usrportal_login.html')
 
     def post(self):
         uUsername = self.get_argument('username', '')
@@ -32,14 +32,14 @@ class UsrPortalLoginHandler(BaseHandler):
         if self.aes.decrypt(account.password) != uPassword:
             return self.render_json(code=1, msg=u'密码错误')
         self.set_session_user(account.customer_id, account.account_number, self.request.remote_ip, utils.get_currtime(), account.status, account.expire_date, account.create_time)
-        self.render_json(code=0, msg='ok')
+        return self.render_json(code=0, msg='ok')
 
 @permit.route('/usrportal/register')
 
 class UsrPortalRegisterHandler(BaseHandler):
 
     def get(self):
-        self.render('usrportal_register.html')
+        return self.render('usrportal_register.html')
 
     def post(self):
         uUsername = self.get_argument('username', '')
@@ -70,10 +70,13 @@ class UsrPortalRegisterHandler(BaseHandler):
             return self.render_json(code=1, msg=cmanager.last_error)
         self.db.commit()
 
-        customer = self.db.query(models.TrCustomer).filter_by(email=uEmail).scalar()
-        uuid = customer.active_code
-        token = QXToken('TaurusX', uuid)
-        strToken = token.generate_auth_token()
+        customer = self.db.query(models.TrCustomer).filter(models.TrCustomer.customer_id == models.TrAccount.customer_id, models.TrAccount.account_number == uUsername).scalar()
+
+        if not customer:
+            return self.render_json(code=1, msg=u'用户[%s]添加异常' % (uUsername))
+
+        uuid = customer.customer_id
+        strToken = customer.token
 
         topic = 'TaurusXRadius注册激活邮件！'
         content = "尊敬的用户：" + str(uUsername) + "\n\n\
@@ -85,7 +88,7 @@ class UsrPortalRegisterHandler(BaseHandler):
         sendEmail(self, uEmail, topic, content)
 
         msgEmail = str(uEmail[0:1] + 3 * '*' + uEmail[uEmail.find('@'):])
-        self.render_json(code=0, msg='我们已经将激活帐号的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，激活您的帐号。' % (msgEmail))
+        return self.render_json(code=0, msg='我们已经将激活帐号的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，激活您的帐号。' % (msgEmail))
 
 @permit.route('/usrportal/regconfirm')
 
@@ -99,29 +102,33 @@ class UsrPortalRegConfirmHandler(BaseHandler):
         ret = token.verify_auth_token(strToken)
         if not ret:
             # Token验证失败
-            self.render('usrportal_regconfirm.html', msg='Token验证失败，无法更新密码。')
+            return self.render('usrportal_regconfirm.html', msg=u'Token验证失败，无法更新密码。')
 
-        customer = self.db.query(models.TrCustomer).filter(models.TrCustomer.active_code == uUUid).first()
+        customer = self.db.query(models.TrCustomer).get(str(uUUid))
         if not customer:
-            self.render('usrportal_regconfirm.html', msg=u'账号不存在')
-        customer.email_active = 1
+            return self.render('usrportal_regconfirm.html', msg=u'账号不存在')
 
-        account = self.db.query(models.TrAccount).filter(models.TrCustomer.customer_id == models.TrAccount.customer_id,
-                                                         models.TrCustomer.active_code == uUUid).first()
+        if customer.token != strToken:
+            return self.render('usrportal_regconfirm.html', msg=u'Token信息失效')
+
+        customer.email_active = 1
+        customer.token = '' #激活成功清除Token信息，确保激活连接只能使用一次
+
+        account = self.db.query(models.TrAccount).get(customer.customer_name)
         if not account:
-            self.render('usrportal_regconfirm.html', msg=u'账号不存在')
+            return self.render('usrportal_regconfirm.html', msg=u'账号不存在')
         account.status = 1
 
         self.db.commit()
 
-        self.render('usrportal_regconfirm.html', msg=u'恭喜 %s ，帐号已成功激活！' % (str(customer.customer_name)))
+        return self.render('usrportal_regconfirm.html', msg=u'恭喜 %s ，帐号已成功激活！' % (str(customer.customer_name)))
 
 @permit.route('/usrportal/forgot')
 
-class UsrPortalForgot2Handler(BaseHandler):
+class UsrPortalForgotHandler(BaseHandler):
 
     def get(self):
-        self.render('usrportal_forgot.html')
+        return self.render('usrportal_forgot.html')
 
     def post(self):
         uUsername = self.get_argument('username', '')
@@ -141,9 +148,12 @@ class UsrPortalForgot2Handler(BaseHandler):
         elif customer.email != uEmail:
             return self.render_json(code=1, msg=u'电子邮箱地址[%s]不正确' % (uEmail))
 
-        uuid= customer.active_code
+        uuid= account.customer_id
         token = QXToken('TaurusX', uuid)
         strToken = token.generate_auth_token(expiration=86400) #密码重置Token有效期24小时，24*60*60秒
+
+        customer.token = strToken #将生成的Token保存到数据库中，成功召回密码后清除此Token
+        self.db.commit()
 
         topic = 'TaurusXRadius重置密码！'
         content = "尊敬的用户：" + str(uUsername) + "\n\n\
@@ -155,7 +165,7 @@ class UsrPortalForgot2Handler(BaseHandler):
         sendEmail(self, uEmail, topic, content)
 
         msgEmail = str(uEmail[0:1] + 3 * '*' + uEmail[uEmail.find('@'):])
-        self.render_json(code=0, msg='我们已经将修改密码的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，重置您的密码。' % (msgEmail))
+        return self.render_json(code=0, msg='我们已经将修改密码的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，重置您的密码。' % (msgEmail))
 
 @permit.route('/usrportal/resetpassword')
 
@@ -168,8 +178,15 @@ class UsrPortalResetPasswordHandler(BaseHandler):
         ret = token.verify_auth_token(strToken)
         if not ret:
             # Token验证失败
-            self.render('usrportal_resetpassword.html', msg='Token验证失败，无法更新密码。')
-        self.render('usrportal_resetpassword.html', uuid=uUUid, token=strToken)
+            return self.render('usrportal_resetpassword.html', msg='Token验证失败，无法更新密码。')
+
+        customer = self.db.query(models.TrCustomer).get(uUUid)
+        if not customer:
+            return self.render('usrportal_resetpassword.html', msg=u'帐号不存在')
+        if customer.token != strToken:
+            return self.render('usrportal_resetpassword.html', msg=u'Token信息失效')
+
+        return self.render('usrportal_resetpassword.html', uuid=uUUid, token=strToken)
 
     def post(self):
 
@@ -191,15 +208,24 @@ class UsrPortalResetPasswordHandler(BaseHandler):
         ret = token.verify_auth_token(strToken)
         if not ret:
             # Token验证失败
-            self.render_json(code=1, msg=u'Token验证失败，无法更新密码。')
+            return self.render_json(code=1, msg=u'Token验证失败，无法更新密码。')
 
-        account = self.db.query(models.TrAccount).filter(models.TrCustomer.customer_id == models.TrAccount.customer_id, models.TrCustomer.active_code == uUUid).first()
+        customer = self.db.query(models.TrCustomer).get(uUUid)
+        if not customer:
+            return self.render_json(code=1, msg=u'帐号不存在')
+        if customer.token != strToken:
+            return self.render_json(code=1, msg=u'Token信息失效')
+
+        customer.token = '' #重置成功清除Token信息，确保重置密码连接只能使用一次
+
+        account = self.db.query(models.TrAccount).get(customer.customer_name)
         if not account:
-            self.render_json(code=1, msg=u'账号不存在')
+            return self.render_json(code=1, msg=u'账号不存在')
         account.password = self.aes.encrypt(uPassword)
+
         self.db.commit()
 
-        self.render_json(code=0, msg='恭喜 %s ，密码修改成功，请登录！' % (str(account.account_number)))
+        return self.render_json(code=0, msg='恭喜 %s ，密码修改成功，请登录！' % (str(account.account_number)))
 
 @permit.route('/usrportal/logout')
 
@@ -220,14 +246,6 @@ def sendEmail(self, mail_to, topic, content):
     smtp_from = self.get_param_value('smtp_from')
     smtp_user = self.get_param_value('smtp_user', None)
     smtp_pwd = self.get_param_value('smtp_pwd', None)
-
-    logger.info('smtp_server = {0}'.format(smtp_server))
-    logger.info('smtp_port = {0}'.format(smtp_port))
-    logger.info('smtp_tls = {0}'.format(smtp_tls))
-    logger.info('smtp_from = {0}'.format(smtp_from))
-    logger.info('smtp_user = {0}'.format(smtp_user))
-    logger.info('smtp_pwd = {0}'.format(smtp_pwd))
-    logger.info('mail_to = {0}'.format(mail_to))
 
     ret = send_mail(server=smtp_server, port=smtp_port, user=smtp_user, password=smtp_pwd, from_addr=smtp_from,
                     mailto=mail_to, topic=topic, content=content, tls=smtp_tls)
