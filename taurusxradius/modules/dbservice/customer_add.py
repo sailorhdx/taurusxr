@@ -411,6 +411,7 @@ class CustomerAdd(BaseService):
             suffix_len = int(formdata.get('suffix_len', 4))
             start_num = int(formdata.get('start_num', 1))
             pwd_type = int(formdata.get('pwd_type', 0))
+            password = formdata.get('password', None)
             product_id = self.parse_arg(formdata, 'product_id', rule=rules.not_null)
             expire_date = self.parse_arg(formdata, 'expire_date', rule=rules.is_date)
             node_id = self.parse_arg(formdata, 'node_id', rule=rules.not_null)
@@ -571,7 +572,7 @@ class CustomerAdd(BaseService):
 
 
     @logparams
-    def add_account_from_portal(self, account_number, password, email, **kwargs):
+    def add_account_from_portal(self, account_number='', password='', mobile='', email='', is_smsvcode=0, is_email=0, **kwargs):
         """用户自助开户"""
         try:
 
@@ -592,7 +593,7 @@ class CustomerAdd(BaseService):
             sex = '1'
             age = '0'
             email = email
-            mobile = ''
+            mobile = mobile
             address = ''
             customer_desc = ''
             accept_source = 'console'
@@ -604,12 +605,13 @@ class CustomerAdd(BaseService):
             giftdays = '0'
             charge_code = ''
             builder_name = ''
-            status = '0' #自助注册默认未激活状态
+            status = is_smsvcode and '1' or (is_email and '0' or '1') # 开启邮件验证的，需要点击邮件验证链接后激活帐号
             wechat_oid = ''
             vcard_code = ''
             vcard_pwd = ''
+            active_code=utils.get_uuid()
 
-            token = QXToken('TaurusX', customer_id)
+            token = QXToken('%s-%s-%s' % (customer_id, mobile, email), active_code)
             strToken = token.generate_auth_token()
 
             product = self.db.query(models.TrProduct).get(product_id)
@@ -637,8 +639,8 @@ class CustomerAdd(BaseService):
             customer.create_time = utils.get_currtime()
             customer.update_time = utils.get_currtime()
             customer.email_active = 0
-            customer.mobile_active = 0
-            customer.active_code = utils.get_uuid()
+            customer.mobile_active = is_smsvcode and 1 or 0
+            customer.active_code = active_code
             customer.token = strToken
             customer.customer_desc = customer_desc
             customer.wechat_oid = wechat_oid

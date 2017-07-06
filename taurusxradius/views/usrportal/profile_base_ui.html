@@ -93,13 +93,13 @@ def aclass(req,path):
 
 
 <%def name="page_footer()">
-    <footer class="main-footer">
+    <div class="container">
       ${handler.get_param_value("copy_right")}
       % if handler.get_param_value("support_desc"):
       ${handler.get_param_value("support_desc")}
       % else:
 
       % endif
-    </footer>
+    </div>
 </%def>
 

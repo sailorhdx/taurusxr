@@ -102,6 +102,7 @@ class Form(object):
         self.onsubmit = kw.pop('onsubmit', '')
         self.id = kw.pop('id', str(id(self)))
         self.error = None
+        self.glyphicon = kw.pop('glyphicon', '') # add by TaurusX,用于注册、登录、找回密码类型的小表单
         return
 
     @property
@@ -137,19 +138,36 @@ class Form(object):
         out.append(self.renderdesc(self.desc))
         out.append(self.rendernote(self.note))
         for i in self.inputs:
-            out.append('    <div class="form-group">\n')
             if not i.is_hidden():
-                out.append('        <label class="col-sm-4 control-label" id="lab_%s" for="%s">%s</label>\n' % (i.id, i.id, net.websafe(i.description)))
-            out.append(i.pre)
-            out.append('        <div class="col-sm-%s">\n' % i.iwidth)
-            out.append('        %s\n' % i.render())
-            out.append('        </div>\n')
-            if i.help:
-                out.append('    <a id="%s_help" href="javascript:void(0);" data-container="body" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="%s">\n' % (i.id, i.help))
-                out.append('    <span class="input-help glyphicon glyphicon-question-sign"></span></a>\n')
-            out.append(self.rendernote(i.note))
-            out.append(i.post)
-            out.append('    </div>\n')
+                out.append('    <div class="form-group">\n')
+                if self.glyphicon:# add by TaurusX,用于注册、登录、找回密码类型的小表单
+                    out.append('    <div class="col-sm-12">\n')
+                    if i.render().startswith('<input'):
+                        if not i.is_hidden():
+                            out.append('        <div class="input-group">\n')
+                            out.append('        <span class="input-group-addon"><i class="glyphicon %s"></i></span>\n' % i.glyphicon)
+                            out.append('        %s\n' % i.render())
+                            out.append('        </div>\n')
+                        else:
+                            out.append('        %s\n' % i.render())
+                    else:
+                        out.append('        %s\n' % i.render())
+                    out.append('    </div>\n')
+                else:
+                    if not i.is_hidden():
+                        out.append('        <label class="col-sm-4 control-label" id="lab_%s" for="%s">%s</label>\n' % (i.id, i.id, net.websafe(i.description)))
+                    out.append(i.pre)
+                    out.append('        <div class="col-sm-%s">\n' % i.iwidth)
+                    out.append('        %s\n' % i.render())
+                    out.append('        </div>\n')
+                    if i.help:
+                        out.append('    <a id="%s_help" href="javascript:void(0);" data-container="body" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="%s">\n' % (i.id, i.help))
+                        out.append('    <span class="input-help glyphicon glyphicon-question-sign"></span></a>\n')
+                    out.append(self.rendernote(i.note))
+                    out.append(i.post)
+                out.append('    </div>\n')
+            else:
+                out.append('    %s\n' % i.render())
             if i.hr:
                 out.append('<hr/>\n')
 
@@ -242,7 +260,7 @@ class Input(object):
         attrs['placeholder'] = self.description
         for vd in self.validators:
             attrs['placeholder'] += ', ' + vd.msg
-
+        self.glyphicon = attrs.pop('glyphicon', '')# add by TaurusX,用于注册、登录、找回密码类型的小表单
         return
 
     def is_hidden(self):

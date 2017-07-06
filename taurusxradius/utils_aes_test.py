@@ -207,7 +207,8 @@ if __name__ == '__main__':
     strToken  = token.generate_auth_token(expiration=100)
     print strToken
 
-
+    token = QXToken('0EAC3354609211E78D73000C29152561-handx@neusoft.com', '0EAC3AF2609211E78D73000C29152561')
+    print token.verify_auth_token('eyJhbGciOiJIUzI1NiIsImV4cCI6MTQ5OTE2MDIwOCwiaWF0IjoxNDk5MTU2NjA4fQ.eyJuYW1lIjoiMEVBQzMzNTQ2MDkyMTFFNzhENzMwMDBDMjkxNTI1NjEtaGFuZHhAbmV1c29mdC5jb20ifQ.ZS1hkCAVVS6qByGmCQsN-1NHJIHSEBkP4yABhLqie5Q')
     # 验证token
     token1 = QXToken('zl',key)
     print token1.verify_auth_token('eyJhbGciOiJIUzI1NiIsImV4cCI6MTQ5OTA0NzU4NCwiaWF0IjoxNDk5MDQ3NDg0fQ.eyJuYW1lIjoiemwifQ.VeIKLfIeCZGkZ2bxdrzL9HUBknf-HpeMl-l10HqiXbU')

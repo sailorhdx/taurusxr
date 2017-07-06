@@ -12,8 +12,8 @@ from taurusxradius.modules import models
 class HomeHandler(BaseHandler):
 
     def get(self):
-        self.render('usrportal_index.html')
-
+        self.redirect('/usrportal')
+        return
 
 @permit.route('/usrportal')
 

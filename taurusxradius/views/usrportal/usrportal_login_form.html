@@ -1,0 +1,128 @@
+﻿<%inherit file="usrportal_base.html"/>
+<%def name="head()">
+
+</%def>
+<%def name="body()">
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="col-md-4 col-center-block">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-edit"></i>
+                    <h3 class="box-title">${form.title}</h3>
+                </div>
+                <div class="box-body">
+                    <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
+                        <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;"></div>
+                    </div>
+                    % if msg:
+                    <div class="alert alert-warning"><i class="icon fa fa-warning"></i> ${msg}</div>
+                    % endif
+                    <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
+                          ${xsrf_form_html()|n}
+                          ${form.render_css()|n}
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer">
+                    <div class="col-xs-6"><a href="/usrportal/register">注册新用户</a></div>
+                    <div class="col-xs-6 text-right"><a href="/usrportal/forgot">找回密码</a></div>
+                </div>
+                <!-- /.box-footer-->
+            </div>
+             <!-- /.box -->
+        </div>
+    </section>
+    <!-- /.content -->
+</%def>
+
+<%def name="js()">
+
+<script>
+    $(document).ready(function(){
+        function doLogin() {
+            var username = $("#username").val();
+            var password = $("#password").val();
+            params = {username: username, password: password, _xsrf: '${handler.xsrf_token}'};
+            $.post("/usrportal/login", params, function (data) {
+                if (data.code > 0) {
+                    $("#alertmsgcontent").html(data.msg);
+                    $("#alertmsg").css('display', 'block');
+                    return false;
+                }
+                else {
+                    window.location.href = "/usrportal/profile";
+                }
+            }, "json");
+        }
+
+        $('#form_login').validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+
+            messages: {
+                account_number: {
+                    required: "用户名不能为空."
+                },
+                password: {
+                    required: "登录密码不能为空."
+                }
+            },
+
+            invalidHandler: function(event, validator) { //display error alert on form submit
+                $('.alert-danger', $('#form_login')).show();
+            },
+
+            highlight: function(element) { // hightlight error inputs
+                $(element)
+                    .closest('.form-group').addClass('has-error'); // set error class to the control group
+            },
+
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+                label.remove();
+            },
+
+            errorPlacement: function(error, element) {
+                error.insertAfter(element.closest('.form-group'));
+            },
+
+            submitHandler: function(form) {
+                //form.submit(); // form validation success, call ajax form submit
+                $("#alertmsg").css('display', 'none');
+                $.ajax({
+                    type: "post",
+                    cache: false,
+                    url: $(form).attr("action"),
+                    dataType: "json",
+                    data: $(form).serialize(),
+                    success: function (res) {
+                        if (res.code > 0) {
+                            $("#alertmsgcontent").html(res.msg);
+                            $("#alertmsg").css('display', 'block');
+                            return false;
+                        }
+                        else {
+                            window.location.href = "/usrportal/profile";
+                        }
+                    },
+                    error: function (res, ajaxOptions, thrownError) {
+
+                    }
+                });
+            }
+        });
+
+        $('#form_login input').keypress(function(e) {
+            if (e.which == 13) {
+                if ($('#form_login').validate().form()) {
+                    $('#form_login').submit(); //form validation success, call ajax form submit
+                }
+                return false;
+            }
+        });
+    });
+</script>
+</%def>

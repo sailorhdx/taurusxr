@@ -1,0 +1,194 @@
+﻿<%inherit file="usrportal_base.html"/>
+<%def name="head()">
+
+</%def>
+<%def name="body()">
+    <!-- Main content -->
+    <section class="content">
+        <!-- Default box -->
+        <div class="col-md-4 col-center-block">
+            <div class="box">
+                <div class="box-header with-border">
+                    <i class="fa fa-edit"></i>
+                    <h3 class="box-title">${form.title}</h3>
+                </div>
+                <div class="box-body">
+                    <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
+                        <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;"></div>
+                    </div>
+                    % if msg:
+                    <div class="alert alert-warning"><i class="icon fa fa-warning"></i> ${msg}</div>
+                    % endif
+                    <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
+                          ${xsrf_form_html()|n}
+                          ${form.render_css()|n}
+                    </form>
+                </div>
+                <!-- /.box-body -->
+                <div class="box-footer">
+                    <div class="col-xs-6"><a href="/usrportal/register">注册新用户</a></div>
+                    <div class="col-xs-6 text-right"><a href="/usrportal/login">已有账号？请登录</a></div>
+                </div>
+                <!-- /.box-footer-->
+            </div>
+             <!-- /.box -->
+        </div>
+    </section>
+    <!-- /.content -->
+</%def>
+
+<%def name="js()">
+<script>
+    $(document).ready(function(){
+        function doForgot() {
+            var username = $("#username").val();
+            var email = $("#email").val();
+            params = {username: username, email:email, _xsrf: '${handler.xsrf_token}'};
+            $.post("/usrportal/forgot", params, function (data) {
+                if (data.code > 0) {
+                    $("#alertmsgcontent").html(data.msg);
+                    $("#alertmsg").css('display', 'block');
+                    return false;
+                }
+                else {
+                    $(".panel-body").html(data.msg);
+                }
+            }, "json");
+        }
+
+        $('#form_forgot').validate({
+            errorElement: 'span', //default input error message container
+            errorClass: 'help-block', // default input error message class
+            focusInvalid: false, // do not focus the last invalid input
+            rules: {
+                email: {
+                    email:true
+                }
+            },
+
+            messages: {
+                mobile: {
+                    required: "手机号不能为空."
+                },
+                vcode: {
+                    required: "验证码不能为空."
+                },
+                email: {
+                    required: "电子邮箱地址不能为空.",
+                    email:"请输入有效的电子邮箱地址."
+                }
+            },
+
+            invalidHandler: function(event, validator) { //display error alert on form submit
+                $('.alert-danger', $('#form_forgot')).show();
+            },
+
+            highlight: function(element) { // hightlight error inputs
+                $(element)
+                    .closest('.form-group').addClass('has-error'); // set error class to the control group
+            },
+
+            success: function(label) {
+                label.closest('.form-group').removeClass('has-error');
+                label.remove();
+            },
+
+            errorPlacement: function(error, element) {
+                error.insertAfter(element.closest('.form-group'));
+            },
+
+            submitHandler: function(form) {
+                //form.submit(); // form validation success, call ajax form submit
+                $.ajax({
+                    type: "post",
+                    cache: false,
+                    url: '/usrportal/forgot',//$(form).attr("action"),
+                    dataType: "json",
+                    data: $(form).serialize(),
+                    success: function (res) {
+                        if (res.code > 0) {
+                            $("#alertmsgcontent").html(res.msg);
+                            $("#alertmsg").css('display', 'block');
+                            return false;
+                        }
+                        else {
+                            $(".box-body").html(res.msg);
+                            if (res.is_smsvcode == '1') {
+                                var uuid = res.uuid;
+                                var token = res.token;
+                                window.location.href = "/usrportal/resetpassword?uuid=" + uuid + "&token=" + token;
+
+                            }
+                        }
+                    },
+                    error: function (res, ajaxOptions, thrownError) {
+
+                    }
+                });
+            }
+        });
+
+        $('#form_forgot input').keypress(function(e) {
+            if (e.which == 13) {
+                if ($('#form_forgot').validate().form()) {
+                    $('#form_forgot').submit(); //form validation success, call ajax form submit
+                }
+                return false;
+            }
+        });
+    });
+
+function isMobileMethod(phone){
+    var regPhone = /^(13[0-9]|15[012356789]|18[0123456789]|147|145|17[0-9])\d{8}$/;
+    if(regPhone.test(phone)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function smswait(flag) {
+    if (flag) {
+        $("#smsvcode").attr("disabled", "disabled");
+    } else {
+        $("#smsvcode").removeAttr("disabled");
+    }
+}
+
+var evdelay = 0;
+
+function updateDelay(){
+    evdelay--;
+    if(evdelay > 0){
+        smswait(true);
+        $("#smsvcode").html('发送短信验证码('+evdelay+')');
+        setTimeout("updateDelay()", 1000);
+    }else if(evdelay == 0){
+        smswait(false);
+        $("#smsvcode").html('发送短信验证码');
+    }
+}
+
+function send_vcode(){
+    smswait(true);
+    phone = $("#mobile").val();
+     $("#alertmsg").css('display', 'none');
+    if(!isMobileMethod(phone)){
+        $("#alertmsgcontent").html("无效的手机号码");
+        $("#alertmsg").css('display', 'block');
+        smswait(false);
+        return false;
+    }
+    $.post("/usrportal/sms/sendvcode",{'phone':phone,'_xsrf': '${handler.xsrf_token}'}, function (ev) {
+        console.log(ev);
+        evdelay = 60;
+        updateDelay();
+    }, "json");
+}
+
+$(function () {
+    $('[data-toggle="popover"]').popover()
+})
+
+</script>
+</%def>

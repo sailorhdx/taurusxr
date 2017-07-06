@@ -16,7 +16,9 @@ from taurusxradius.modules import models
 class UsrPortalProfileHandler(BaseHandler):
 
     def get(self):
-        self.render('profile_index.html')
-
-    def post(self):
-        self.render('profile_index.html')
+        if not self.current_user:
+            self.redirect('/usrportal/login')
+            return
+        else:
+            self.render('profile_index.html')
+            return
