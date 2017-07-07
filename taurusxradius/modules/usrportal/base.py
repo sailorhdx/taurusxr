@@ -125,7 +125,7 @@ class BaseHandler(cyclone.web.RequestHandler):
         qdict['page'] = page
         return path + '?' + urllib.urlencode(qdict)
 
-    def set_session_user(self, uid, username, ipaddr, login_time, status, expire_date, create_time):
+    def set_session_user(self, uid, username, ipaddr, login_time, status, expire_date, create_time, product_policy, product_name):
         session_user = ObjectDict()
         session_user.uid = uid
         session_user.username = username
@@ -134,6 +134,8 @@ class BaseHandler(cyclone.web.RequestHandler):
         session_user.status = status
         session_user.expire_date = expire_date
         session_user.create_time = create_time
+        session_user.product_policy = product_policy
+        session_user.product_name = product_name
         self.session['session_user'] = session_user
         self.session.save()
         return

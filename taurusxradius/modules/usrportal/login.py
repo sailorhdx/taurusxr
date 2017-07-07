@@ -42,7 +42,9 @@ class UsrPortalLoginHandler(BaseHandler):
             return self.render_json(code=1, msg=u'账号不存在')
         if self.aes.decrypt(account.password) != password:
             return self.render_json(code=1, msg=u'密码错误')
-        self.set_session_user(account.customer_id, account.account_number, self.request.remote_ip, utils.get_currtime(), account.status, account.expire_date, account.create_time)
+        product = self.db.query(models.TrProduct).get(account.product_id)
+        self.set_session_user(account.customer_id, account.account_number, self.request.remote_ip, utils.get_currtime(), account.status, account.expire_date, account.create_time,
+                              product.product_policy, product.product_name)
         return self.render_json(code=0, msg='ok')
 
 @permit.route('/usrportal/register')

@@ -65,15 +65,15 @@ class BasicOrderHandler(BaseHandler):
         return account_number
 
     def order_calc(self, product_id, old_expire = None):
+
         months = int(self.get_argument('months', 0))
         days = int(self.get_argument('days', 0))
         product = self.db.query(models.TrProduct).get(product_id)
-
         fee_value, expire_date = (None, None)
-        if product.product_policy in (BOTimes, BOFlows):
+        if product.product_policy in (BOTimes, BOFlows): #买断时长，买断流量
             fee_value = utils.fen2yuan(product.fee_price)
             expire_date = MAX_EXPIRE_DATE
-        elif product.product_policy == PPMonth:
+        elif product.product_policy == PPMonth: #预付费包月
             fee = decimal.Decimal(months) * decimal.Decimal(product.fee_price)
             fee_value = utils.fen2yuan(int(fee.to_integral_value()))
             start_expire = datetime.datetime.now()
@@ -81,7 +81,7 @@ class BasicOrderHandler(BaseHandler):
                 start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
             expire_date = utils.add_months(start_expire, int(months), days=0)
             expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == PPDay:
+        elif product.product_policy == PPDay: #预付费包日
             fee = decimal.Decimal(days) * decimal.Decimal(product.fee_price)
             fee_value = utils.fen2yuan(int(fee.to_integral_value()))
             start_expire = datetime.datetime.now()
@@ -89,13 +89,13 @@ class BasicOrderHandler(BaseHandler):
                 start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
             expire_date = start_expire + datetime.timedelta(days=days)
             expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == BOMonth:
+        elif product.product_policy == BOMonth: #买断包月
             start_expire = datetime.datetime.now()
             if old_expire:
                 start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            if months > 0:
+            if months > 0 and months != product.fee_months:
                 mprice = self.get_product_attr(product.id, 'month_price')
-                if mprice:
+                if mprice and int(mprice.attr_value) > 0:
                     mpricefee = utils.yuan2fen(decimal.Decimal(mprice.attr_value))
                 else:
                     mpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_months)
@@ -107,17 +107,16 @@ class BasicOrderHandler(BaseHandler):
                 fee_value = utils.fen2yuan(product.fee_price)
                 expire_date = utils.add_months(start_expire, product.fee_months, days=0)
                 expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == BODay:
+        elif product.product_policy == BODay: #买断包日
             start_expire = datetime.datetime.now()
             if old_expire:
                 start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            if days > 0:
+            if days > 0 and days != product.fee_days:
                 dprice = self.get_product_attr(product.id, 'day_price')
-                if dprice:
+                if dprice and int(dprice.attr_value) > 0:
                     dpricefee = utils.yuan2fen(decimal.Decimal(dprice.attr_value))
                 else:
                     dpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_days)
-                print 'dprice=', dpricefee
                 fee = decimal.Decimal(days) * dpricefee
                 fee_value = utils.fen2yuan(int(fee.to_integral_value()))
                 expire_date = start_expire + datetime.timedelta(days=days)
@@ -242,6 +241,11 @@ class UsrPortalProductOrderHandler(BasicOrderHandler):
 class UsrPortalProductOrderNewHandler(BasicOrderHandler):
     """  支付宝支付第一步：进入订购表单，发起订购支付
     """
+    def get_expire_date(self, expire):
+        if utils.is_expire(expire):
+            return utils.get_currdate()
+        else:
+            return expire
 
     def get_product_name(self, pid):
         return self.db.query(models.TrProduct.product_name).filter_by(id=pid).scalar()
@@ -300,37 +304,44 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
             return self.render('profile_reneworder_form.html', form=form, msg=u'%s' % manager.last_error)
 
     def post(self):
+
+        product_id = self.get_argument('product_id', '')
+        product = self.db.query(models.TrProduct).get(product_id)
+        get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
+        if not product:
+            self.render_error(msg=u'套餐不存在')
+            return
+        form = order_forms.profile_order_form(product.product_policy, get_product_attr_val)
+        if not form.validates(source=self.get_params()):
+            self.render_error(msg=form.errors)
+            return
+
+        account = self.db.query(models.TrAccount).get(form.d.account_number)
+        if not account:
+            self.render_error(msg=u'用户不存在')
+            return
+
+        if get_product_attr_val('product_tag') and form.d.vcard_code and form.d.vcard_pwd:
+            return self.do_vcard(form, product)
+
         try:
-            product_id = self.get_argument('product_id', '')
-            product = self.db.query(models.TrProduct).get(product_id)
-            get_product_attr_val = lambda an: self.db.query(models.TrProductAttr.attr_value).filter_by(product_id=product_id, attr_name=an).scalar()
-            if not product:
-                return self.render('profile_reneworder_form.html', form=form, msg=u'套餐不存在')
-            form = order_forms.profile_order_form(product.product_policy, get_product_attr_val)
-            if not form.validates(source=self.get_params()):
-                return self.render('profile_reneworder_form.html', form=form, msg=form.errors)
-
-            account = self.db.query(models.TrAccount).get(form.d.account_number)
-            if not account:
-                return self.render('profile_reneworder_form.html', form=form, msg=u'用户不存在')
-
-            if get_product_attr_val('product_tag') and form.d.vcard_code and form.d.vcard_pwd:
-                return self.do_vcard(form, product)
-            _feevalue, _expire = self.order_calc(form.d.product_id)
+            _feevalue, _expire = self.order_calc(form.d.product_id, old_expire=self.get_expire_date(account.expire_date))
             order_id = utils.gen_order_id()
             formdata = Storage(form.d)
             formdata.order_id = order_id
-            formdata['node_id'] = self.get_param_value('default_user_node_id', 1)
-            formdata['area_id'] = ''
+            formdata['product_id'] = product_id
+            #formdata['node_id'] = self.get_param_value('default_user_node_id', 1)
+            #formdata['area_id'] = ''
             formdata['fee_value'] = _feevalue
             formdata['expire_date'] = _expire
             formdata['accept_source'] = 'usrportal'
             formdata['giftdays'] = 0
             formdata['giftflows'] = 0
-            formdata['ip_address'] = ''
-            formdata['status'] = 1
+            #formdata['ip_address'] = ''
+            #formdata['status'] = 1
             formdata['customer_desc'] = u'客户自助续费'
-            formdata['product_name'] = product.product_name
+            #formdata['product_name'] = product.product_name
+            formdata['old_expire'] = account.expire_date
             self.paycache.set(order_paycaache_key(order_id), formdata)
             return self.render('profile_renew_alipay.html', formdata=formdata)
         except Exception as err:

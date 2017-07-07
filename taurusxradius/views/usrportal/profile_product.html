@@ -12,12 +12,14 @@
     <div class="box-body">
         <ul class="nav nav-pills nav-stacked">
             % for product in products:
+                % if current_user.product_policy == product.product_policy:
                 <li>
                     <a href="/usrportal/product/reneworder?product_id=${product.id}" class="list-group-item">
                         <h4><i class="fa  fa-hand-o-right"></i>【${policys.get(product.product_policy,'')}】${product.product_name|h}   <small class="label label-danger">￥${utils.fen2yuan(product.fee_price)} 元</small></h4>
                     </a>
                     </span>
                 </li>
+                % endif
             % endfor
         </ul>
     </div>
