@@ -51,3 +51,13 @@ class SendMail:
 def send_mail(server = '127.0.0.1', port = 25, user = None, password = None, from_addr = None, mailto = None, topic = None, content = None, tls = False, **kwargs):
     sender = SendMail(server, port, user, password, from_addr)
     return sender.send_mail(mailto, topic, content, tls=tls, **kwargs)
+
+def send_mail_self(self, mailto = None, topic = None, content = None, **kwargs):
+    server = self.get_param_value('smtp_server', '127.0.0.1')
+    port = self.get_param_value('smtp_port', 25)
+    tls = self.get_param_value('smtp_tls', '0')
+    from_addr = self.get_param_value('smtp_from')
+    user = self.get_param_value('smtp_user', None)
+    password = self.get_param_value('smtp_pwd', None)
+    sender = SendMail(server, port, user, password, from_addr)
+    return sender.send_mail(mailto, topic, content, tls=tls, **kwargs)

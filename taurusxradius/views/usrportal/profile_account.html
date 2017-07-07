@@ -42,98 +42,162 @@ function release_bind(){
 </%def>
 <%def name="body()">
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-          <div class="box">
-            <div class="box-header with-border">
-                <i class="fa fa-user"></i>
-                <h3 class="box-title">基本信息</h3>
-                <div class="bar pull-right">
-                <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
-                </div>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        % if user.status  in (1,4) and user.product_policy  in (0,2,3,5,7,9,10):
-                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号套餐续费</a>
-                        % endif
-                        % if user.status  in (1,4) and user.product_policy  in (3,5) and handler.lictype != 'community':
-                            <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_vcardcharge();">充值卡续费</a>
-                        % endif
-                        % if handler.get_param_value('ssportal_allow_release_bind','0') == '1':
-                            <a class="btn btn-md btn-warning navbar-btn" onclick="javascript:release_bind();">清除绑定</a>
-                        % endif
-                    </div>
-                </div>
-                <div class="row">
-
-                    <div class="col-md-12">
-                        <div class="row itlist">
-                            <div class="col-md-6 itbox">用户姓名: ${customer.realname}</div>
-                            <div class="col-md-6 itbox">联系电话: ${customer.mobile or ''}</div>
-                            <div class="col-md-6 itbox">区域: ${user.node_name or ''}</div>
-                            <div class="col-md-6 itbox">社区: ${user.area_name or ''}</div>
-                            <div class="col-md-6 itbox">Email: ${customer.email or ''}</div>
-                            <div class="col-md-6 itbox">证件号码: ${customer.idcard or ''}</div>
-                            <div class="col-md-12 itbox">地址: ${customer.address}</div>
-                        </div>
-                    </div>
-                    <!-- /.col -->
-                </div>
-              <!-- /.row -->
-            </div>
-
-          </div>
-          <!-- /.box -->
+  <div class="box">
+    <div class="box-header with-border">
+        <i class="fa fa-user"></i>
+        <h3 class="box-title">基本信息</h3>
+        <div class="bar pull-right">
+        <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
         </div>
-        <!-- /.col -->
     </div>
-    <div class="row">
+    <!-- /.box-header -->
+    <div class="box-body">
         <div class="col-md-12">
-          <div class="box">
-            <div class="box-header with-border">
-                <i class="fa fa-ticket"></i>
-                <h3 class="box-title">认证信息</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="row itlist">
-                            <div class="col-md-6 itbox">用户账号: ${user.account_number}</div>
-                            <div class="col-md-6 itbox">资费名称: ${user.product_name|h}</div>
-                            <div class="col-md-6 itbox">用户状态:
-                                % if utils.is_expire(user.expire_date) or user.status == 4:
-                                    <span class="label label-warning">到期</span>
-                                % elif user.status == 1:
-                                    <span class="label label-success">正常</span>
-                                % elif user.status == 0:
-                                    <span class="label label-info">预定</span>
-                                % elif user.status == 2:
-                                    <span class="label label-default">停机</span>
-                                % elif user.status == 3:
-                                    <span class="label label-danger">销户</span>
-                                % endif
-                            </div>
-                            <div class="col-md-6 itbox">过期时间: ${user.expire_date}</div>
-                            <div class="col-md-6 itbox">剩余时长: ${utils.sec2hour(user.time_length)}小时</div>
-                            <div class="col-md-6 itbox">剩余流量: ${utils.kb2gb(user.flow_length)}G </div>
-                            <div class="col-md-6 itbox">开通时间: ${user.create_time}</div>
-                            <div class="col-md-6 itbox">Mac地址: ${user.mac_addr}</div>
-                        </div>
-                    </div>
-                    <!-- /.col -->
-                </div>
-              <!-- /.row -->
-            </div>
-
-          </div>
-          <!-- /.box -->
+            % if user.status  in (1,4) and user.product_policy  in (0,2,3,5,7,9,10):
+                <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号套餐续费</a>
+            % endif
+            % if user.status  in (1,4) and user.product_policy  in (3,5) and handler.lictype != 'community':
+                <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_vcardcharge();">充值卡续费</a>
+            % endif
+            % if handler.get_param_value('ssportal_allow_release_bind','0') == '1':
+                <a class="btn btn-md btn-warning navbar-btn" onclick="javascript:release_bind();">清除绑定</a>
+            % endif
         </div>
-        <!-- /.col -->
+        <div class="col-md-6">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="#">用户姓名
+                    <span class="pull-right text-red">${customer.realname}</span></a>
+                </li>
+                <li><a href="#">联系电话
+                    <span class="pull-right text-yellow">${customer.mobile or ''}
+                        % if customer.mobile:
+                        (${customer.mobile_active == 1 and u'已绑定' or u'未绑定'})
+                        % endif
+                    </span></a>
+                </li>
+                <li><a href="#">区域
+                    <span class="pull-right text-yellow">${user.node_name or ''}</span></a>
+                </li>
+                <li><a href="#">地址
+                    <span class="pull-right text-yellow">${customer.address}</span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="#">证件号码
+                    <span class="pull-right text-yellow">${customer.idcard or ''}</span></a>
+                </li>
+                <li><a href="#">Email
+                    <span class="pull-right text-yellow">${customer.email or ''}
+                        % if customer.email:
+                        (${customer.email_active == 1 and u'已绑定' or u'未绑定'})
+                        % endif
+                    </span></a>
+                </li>
+                <li><a href="#">社区
+                    <span class="pull-right text-yellow">${user.area_name or ''}</span></a>
+                </li>
+                 <li><a href="#">开通时间
+                    <span class="pull-right text-yellow">${customer.create_time}</span></a>
+                </li>
+            </ul>
+        </div>
     </div>
-    <!-- /.row -->
+  </div>
+  <!-- /.box -->
+
+  <div class="box">
+    <div class="box-header with-border">
+        <i class="fa fa-ticket"></i>
+        <h3 class="box-title">认证信息</h3>
+    </div>
+    <!-- /.box-header -->
+    <div class="box-body">
+        <div class="col-md-6">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="#">用户账号
+                    <span class="pull-right text-red">${user.account_number}</span></a>
+                </li>
+                <li><a href="#">资费类型
+                    <span class="pull-right text-yellow">
+                        % if user.product_policy == 2:
+                        买断包月
+                        % elif user.product_policy == 10:
+                        买断包日
+                        % elif user.product_policy == 3:
+                        买断时长
+                        % elif user.product_policy == 5:
+                        买断流量
+                        % endif
+                    </span></a>
+                </li>
+                 <li><a href="#">并发数
+                    <span class="pull-right text-yellow">
+                        % if user.user_concur_number == 0:
+                        不限制
+                        % else:
+                        ${user.user_concur_number}
+                        % endif
+                    </span></a>
+                </li>
+                <li><a href="#">最近停机时间
+                    <span class="pull-right text-yellow">${user.last_pause or ''}</span></a>
+                </li>
+                <li><a href="#">绑定MAC
+                    <span class="pull-right text-yellow">${{0:u"否", 1:u"是"}[user.bind_mac]}</span></a>
+                </li>
+                <li><a href="#">绑定VLAN
+                    <span class="pull-right text-yellow">${{0:u"否", 1:u"是"}[user.bind_vlan]}</span></a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="#">用户状态
+                    <span class="pull-right text-green">
+                         % if utils.is_expire(user.expire_date) or user.status == 4:
+                            <span class="label label-warning">到期</span>
+                        % elif user.status == 1:
+                            <span class="label label-success">正常</span>
+                        % elif user.status == 0:
+                            <span class="label label-info">未激活</span>
+                        % elif user.status == 2:
+                            <span class="label label-default">停机</span>
+                        % elif user.status == 3:
+                            <span class="label label-danger">销户</span>
+                        % endif
+                    </span></a>
+                </li>
+                <li><a href="#">资费名称
+                    <span class="pull-right text-yellow">${user.product_name|h}</span></a>
+                </li>
+                <li><a href="#">开通时间
+                    <span class="pull-right text-yellow">${user.create_time}</span></a>
+                </li>
+                % if user.product_policy == 3:
+                <li><a href="#">剩余时长
+                    <span class="pull-right text-yellow">${utils.sec2hour(user.time_length)}小时</span></a>
+                </li>
+                % elif user.product_policy == 5:
+                <li><a href="#">剩余流量
+                    <span class="pull-right text-yellow">${utils.kb2gb(user.flow_length)}G</span></a>
+                </li>
+                % elif user.product_policy in (2,10):
+                <li><a href="#">过期时间
+                    <span class="pull-right text-yellow">${user.expire_date}</span></a>
+                </li>
+                % endif
+                <li><a href="#">Mac地址
+                    <span class="pull-right text-yellow">${user.mac_addr}</span></a>
+                </li>
+                <li><a href="#">VLANID1/VLANID
+                    <span class="pull-right text-yellow">${user.vlan_id1}/${user.vlan_id2}</span></a>
+                </li>
+            </ul>
+        </div>
+    </div>
+  </div>
+  <!-- /.box -->
 </section>
 </%def>

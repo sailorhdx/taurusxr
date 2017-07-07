@@ -28,8 +28,11 @@ $(function(){
         </div>
         <div class="box-body">
             <div class="container">
+            <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
+                <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;"></div>
+            </div>
             % if msg:
-            <div class="alert alert-warning">${msg}</div>
+            <div class="alert alert-warning"><i class="icon fa fa-warning"></i> ${msg}</div>
             % endif
             <form class="form-horizontal form-well bottom20" role="form" action="${form.action}" method="post">
                     ${xsrf_form_html()|n}

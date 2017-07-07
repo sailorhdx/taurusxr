@@ -84,6 +84,56 @@
 <!-- FastClick -->
 <script src="/static/plugins/fastclick/fastclick.js"></script><!-- AdminLTE App -->
 <script src="/static/js/app.js"></script>
+<script src="/static/js/usrportal_profile.js"></script>
+<script>
+function isMobileMethod(phone){
+    var regPhone = /^(13[0-9]|15[012356789]|18[0123456789]|147|145|17[0-9])\d{8}$/;
+    if(regPhone.test(phone)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function smswait(flag) {
+    if (flag) {
+        $("#smsvcode").attr("disabled", "disabled");
+    } else {
+        $("#smsvcode").removeAttr("disabled");
+    }
+}
+
+var evdelay = 0;
+
+function updateDelay(){
+    evdelay--;
+    if(evdelay > 0){
+        smswait(true);
+        $("#smsvcode").html('发送短信验证码('+evdelay+')');
+        setTimeout("updateDelay()", 1000);
+    }else if(evdelay == 0){
+        smswait(false);
+        $("#smsvcode").html('发送短信验证码');
+    }
+}
+
+function send_vcode(){
+    smswait(true);
+    phone = $("#mobile").val();
+     $("#alertmsg").css('display', 'none');
+    if(!isMobileMethod(phone)){
+        $("#alertmsgcontent").html("无效的手机号码");
+        $("#alertmsg").css('display', 'block');
+        smswait(false);
+        return false;
+    }
+    $.post("/usrportal/sms/sendvcode",{'phone':phone,'_xsrf': '${handler.xsrf_token}'}, function (ev) {
+        console.log(ev);
+        evdelay = 60;
+        updateDelay();
+    }, "json");
+}
+</script>
 </body>
 
 

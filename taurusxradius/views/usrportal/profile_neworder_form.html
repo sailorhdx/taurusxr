@@ -11,36 +11,30 @@ $(function () {
 </%def>
 <%def name="body()">
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-          <div class="box">
-            <div class="box-header with-border">
-                <i class="fa fa-shopping-cart"></i>
-                <h3 class="box-title">套餐订购</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        % if msg:
-                        <div class="alert alert-warning">${msg}</div>
-                        % endif
-                        <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
-                            <div class="alert alert-info">提示：如果使用充值卡，请确定该充值卡适用于该资费，如果不确定，请咨询您的销售服务商。</div>
-                              ${xsrf_form_html()|n}
-                              ${form.render_css()|n}
-                        </form>
-                    </div>
-                    <!-- /.col -->
-                </div>
-              <!-- /.row -->
-            </div>
-
-          </div>
-          <!-- /.box -->
-        </div>
-        <!-- /.col -->
+  <div class="box">
+    <div class="box-header with-border">
+        <i class="fa fa-shopping-cart"></i>
+        <h3 class="box-title">套餐订购</h3>
     </div>
-    <!-- /.row -->
+    <!-- /.box-header -->
+    <div class="box-body">
+        <div class="row">
+            <div class="col-md-12">
+                % if msg:
+                <div class="alert alert-warning">${msg}</div>
+                % endif
+                <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
+                    <div class="alert alert-info">提示：如果使用充值卡，请确定该充值卡适用于该资费，如果不确定，请咨询您的销售服务商。</div>
+                      ${xsrf_form_html()|n}
+                      ${form.render_css()|n}
+                </form>
+            </div>
+            <!-- /.col -->
+        </div>
+      <!-- /.row -->
+    </div>
+
+  </div>
+  <!-- /.box -->
 </section>
 </%def>

@@ -3,46 +3,25 @@
 </%def>
 <%def name="body()">
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-          <div class="box">
-            <div class="box-header with-border">
-                <i class="fa fa-shopping-cart"></i>
-                <h3 class="box-title">套餐选择</h3>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <ul class="todo-list">
-
-                        % for product in products:
-                        <li>
-                            <!-- drag handle -->
-                            <span class="handle">
-                               <i class="fa fa-ellipsis-v"></i>
-                               <i class="fa fa-ellipsis-v"></i>
-                            </span>
-                            <!-- todo text -->
-                            <span class="text">
-                            <a href="/usrportal/product/reneworder?product_id=${product.id}" class="list-group-item">
-                                <h4>【${policys.get(product.product_policy,'')}】${product.product_name|h} -  <small class="label label-danger">￥${utils.fen2yuan(product.fee_price)} 元</small></h4>
-                            </a>
-                            </span>
-                        </li>
-                        % endfor
-                        </ul>
-                    </div>
-                    <!-- /.col -->
-                </div>
-              <!-- /.row -->
-            </div>
-
-          </div>
-          <!-- /.box -->
-        </div>
-        <!-- /.col -->
+  <div class="box">
+    <div class="box-header with-border">
+        <i class="fa fa-shopping-cart"></i>
+        <h3 class="box-title">套餐选择</h3>
     </div>
-    <!-- /.row -->
+    <!-- /.box-header -->
+    <div class="box-body">
+        <ul class="nav nav-pills nav-stacked">
+            % for product in products:
+                <li>
+                    <a href="/usrportal/product/reneworder?product_id=${product.id}" class="list-group-item">
+                        <h4><i class="fa  fa-hand-o-right"></i>【${policys.get(product.product_policy,'')}】${product.product_name|h}   <small class="label label-danger">￥${utils.fen2yuan(product.fee_price)} 元</small></h4>
+                    </a>
+                    </span>
+                </li>
+            % endfor
+        </ul>
+    </div>
+  </div>
+  <!-- /.box -->
 </section>
 </%def>

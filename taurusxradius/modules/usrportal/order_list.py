@@ -30,4 +30,4 @@ class OrderHandler(BaseHandler):
         if query_end_time:
             _query = _query.filter(models.TrCustomerOrder.create_time <= query_end_time + ' 23:59:59')
         _query = _query.order_by(models.TrCustomerOrder.create_time.desc())
-        return self.render('profile_order_list.html', page_data=self.get_page_data(_query, page_size=100), **self.get_params())
+        return self.render('profile_order_list.html', page_data=self.get_page_data(_query, page_size=10), **self.get_params())

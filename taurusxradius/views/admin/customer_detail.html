@@ -167,7 +167,11 @@ $(document).ready(function(){
                                 <td>证件号码</td>
                                 <td>${customer.idcard or ''}</td>              
                                 <td>联系电话</td>
-                                <td>${customer.mobile or ''}</td>
+                                <td>${customer.mobile or ''}
+                                    % if customer.mobile:
+                                    (${customer.mobile_active == 1 and u'已绑定' or u'未绑定'})
+                                    % endif
+                                </td>
                             </tr>
                             <tr>
                                 <td>区域</td>

@@ -13,46 +13,54 @@
 
 <%def name="body()">
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-          <div class="box">
-            <div class="box-header with-border">
-                <i class="fa fa-money"></i>
-                <h3 class="box-title">消费记录</h3>
-                <div class="bar pull-right">
-                <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
-                </div>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="list-group">
-                        % for order,_,_realname,_product_name,_,citem,cvalue in page_data.result:
-                            <div href="#" class="list-group-item">
-                                <div class="col-md-11 ">
-                                    <h4 class="list-group-item-heading">▸ ${order.account_number} - ${_product_name|h} - ￥${utils.fen2yuan(order.actual_fee)} : ${{0:u"未支付",1:u"已支付",2:u"已对账"}[order.pay_status]} </h4>
-                                    <p class="list-group-item-text">${order.order_desc or ''|h} - ${order.create_time}</p>
-                                </div>
-                                <div class="col-md-1 pull-right">
-                                % if order.pay_status == 0:
-                                    <a class="btn btn-info" href="/usrportal/product/order/alipay?order_id=${order.order_id}">付款</a>
-                                % endif
-                                </div>
-                                <div class="clearfix"></div>
-                          </div>
-                        % endfor
-                        </div>
-                    </div>
-                    <!-- /.col -->
-                </div>
-              <!-- /.row -->
-            </div>
-
-          </div>
-          <!-- /.box -->
+  <div class="box">
+    <div class="box-header with-border">
+        <i class="fa fa-money"></i>
+        <h3 class="box-title">消费记录</h3>
+        <div class="bar pull-right">
+        <a href="javascript:history.go(-1);"><i class="fa fa-reply"></i> 返回</a>
         </div>
-        <!-- /.col -->
     </div>
+    <!-- /.box-header -->
+    <div class="box-body">
+        <ul class="timeline">
+% for order,_,_realname,_product_name,_,citem,cvalue in page_data.result:
+
+            <li>
+              <i class="fa fa-list bg-blue"></i>
+
+              <div class="timeline-item">
+                <span class="time"><i class="fa fa-clock-o"></i> ${order.create_time}</span>
+                <h3 class="timeline-header">
+                    ${_product_name|h}
+                    ￥ <span class="text-red">${utils.fen2yuan(order.actual_fee)}</span>
+                    % if order.pay_status == 0:
+                    <a class="btn btn-info btn-xs" href="/usrportal/product/order/alipay?order_id=${order.order_id}">付款</a>
+                    % endif
+                </h3>
+                <div class="timeline-body">
+                 ${order.order_desc or ''|h}
+                </div>
+                <div class="timeline-footer">
+                  支付状态：
+                    % if order.pay_status == 0:
+                    <span class="label label-danger">未支付</span>
+                    <a class="btn btn-info" href="/usrportal/product/order/alipay?order_id=${order.order_id}">付款</a>
+                    % elif order.pay_status == 1:
+                    <span class="label label-success">已支付</span>
+                    % elif order.pay_status == 2:
+                    <span class="label label-primary">已对账</span>
+                    % endif
+                </div>
+              </div>
+            </li>
+            <!-- END timeline item -->
+            % endfor
+        </ul>
+
+        ${page_data.render()|n}
+    </div>
+  </div>
+  <!-- /.box -->
 </section>
 </%def>

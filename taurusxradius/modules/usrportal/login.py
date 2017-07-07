@@ -3,11 +3,10 @@
 from taurusxradius.modules.dbservice.customer_add import CustomerAdd
 from taurusxradius.modules.usrportal import order_forms
 from taurusxradius.modules.usrportal.base import BaseHandler
-from taurusxradius.taurusxlib.mail import send_mail
+from taurusxradius.taurusxlib.mail import send_mail, send_mail_self
 from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.taurusxlib import utils, logger
 from taurusxradius.modules import models
-from taurusxradius.taurusxlib.storage import Storage
 from taurusxradius.taurusxlib.utils import QXToken
 
 
@@ -144,17 +143,17 @@ class UsrPortalRegisterHandler(BaseHandler):
             content = "尊敬的用户：" + str(account_number) + "\n\n\
             您好！\n\n\n\
             感谢您注册TaurusXRadius，请点击以下链接完成注册： \n\
-            http://192.168.206.130:1829/usrportal/regconfirm?uuid=" + str(uuid) + "&token=" + str(strToken) + " \n\
+            http://" + self.request.host + "/usrportal/register/confirm?uuid=" + str(uuid) + "&token=" + str(strToken) + " \n\
             "
 
-            sendEmail(self, email, topic, content)
+            send_mail_self(self, email, topic, content)
 
             msgEmail = str(email[0:1] + 3 * '*' + email[email.find('@'):])
-            return self.render_json(code=0, msg=u'恭喜 %s ，邮箱帐号已成功注册！我们已经将激活邮箱帐号的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，激活您的帐号。' % (msgEmail))
+            return self.render_json(code=0, msg=u'我们已经将激活邮箱帐号的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，激活您的帐号。' % (msgEmail))
         else:
             return self.render_json(code=0, msg=u'恭喜 %s ，用户帐号已成功注册！' % (str(account_number)))
 
-@permit.route('/usrportal/regconfirm')
+@permit.route('/usrportal/register/confirm')
 
 class UsrPortalRegConfirmHandler(BaseHandler):
 
@@ -274,10 +273,10 @@ class UsrPortalForgotHandler(BaseHandler):
             content = "尊敬的用户：" + str(account_number) + "\n\n\
                    您好！\n\n\n\
                    请点击下面的链接修改用户 " + str(account_number) + " 的密码：\n\
-                   http://192.168.206.130:1829/usrportal/resetpassword?uuid=" + str(uuid) + "&token=" + str(strToken) + " \n\n\
+                   http://" + self.request.host + "/usrportal/resetpassword?uuid=" + str(uuid) + "&token=" + str(strToken) + " \n\n\
                    为了保证您帐号的安全性，该链接有效期为24小时，并且点击一次后将失效!\n\
                    "
-            sendEmail(self, email, topic, content)
+            send_mail_self(self, email, topic, content)
             msgEmail = str(email[0:1] + 3 * '*' + email[email.find('@'):])
             #return self.render('info.html', msg='我们已经将修改密码的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，重置您的密码。' % (msgEmail))
             return self.render_json(code=0, msg='我们已经将修改密码的链接发送到你的邮箱(%s)，请前往您的邮箱点击链接，重置您的密码。' % (msgEmail), is_email='1')
@@ -369,15 +368,3 @@ class UsrPortalLogout2Handler(BaseHandler):
             return
         self.clear_session()
         self.redirect('/usrportal/login', permanent=False)
-
-
-def sendEmail(self, mail_to, topic, content):
-    smtp_server = self.get_param_value('smtp_server', '127.0.0.1')
-    smtp_port = self.get_param_value('smtp_port', 25)
-    smtp_tls = int(self.get_param_value('smtp_tls', '0')) == 1
-    smtp_from = self.get_param_value('smtp_from')
-    smtp_user = self.get_param_value('smtp_user', None)
-    smtp_pwd = self.get_param_value('smtp_pwd', None)
-
-    ret = send_mail(server=smtp_server, port=smtp_port, user=smtp_user, password=smtp_pwd, from_addr=smtp_from,
-                    mailto=mail_to, topic=topic, content=content, tls=smtp_tls)

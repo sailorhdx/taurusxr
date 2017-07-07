@@ -2,6 +2,8 @@
 #coding:utf-8
 import decimal
 import datetime
+
+import re
 from Crypto.Cipher import AES
 from Crypto import Random
 import hashlib
@@ -357,6 +359,10 @@ def get_cron_interval(cron_time):
         return _itimes if _itimes > 0 else 86400 
     else:
         return 120
+
+def is_email(email):
+    str = r'^[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+){0,4}@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+){0,4}$'
+    return re.match(str, email)
 
 class QXToken(object):
     def __init__(self, name, key):
