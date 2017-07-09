@@ -40,23 +40,7 @@
 <%def name="js()">
 <script>
     $(document).ready(function(){
-        function doForgot() {
-            var username = $("#username").val();
-            var email = $("#email").val();
-            params = {username: username, email:email, _xsrf: '${handler.xsrf_token}'};
-            $.post("/usrportal/forgot", params, function (data) {
-                if (data.code > 0) {
-                    $("#alertmsgcontent").html(data.msg);
-                    $("#alertmsg").css('display', 'block');
-                    return false;
-                }
-                else {
-                    $(".panel-body").html(data.msg);
-                }
-            }, "json");
-        }
-
-        $('#form_forgot').validate({
+        $('#form_${form.id}').validate({
             errorElement: 'span', //default input error message container
             errorClass: 'help-block', // default input error message class
             focusInvalid: false, // do not focus the last invalid input
@@ -80,7 +64,7 @@
             },
 
             invalidHandler: function(event, validator) { //display error alert on form submit
-                $('.alert-danger', $('#form_forgot')).show();
+                $('.alert-danger', $('#form_${form.id}')).show();
             },
 
             highlight: function(element) { // hightlight error inputs
@@ -99,6 +83,7 @@
 
             submitHandler: function(form) {
                 //form.submit(); // form validation success, call ajax form submit
+                $("#alertmsg").css('display', 'none');
                 $.ajax({
                     type: "post",
                     cache: false,
@@ -117,7 +102,6 @@
                                 var uuid = res.uuid;
                                 var token = res.token;
                                 window.location.href = "/usrportal/resetpassword?uuid=" + uuid + "&token=" + token;
-
                             }
                         }
                     },
@@ -128,10 +112,10 @@
             }
         });
 
-        $('#form_forgot input').keypress(function(e) {
+        $('#form_${form.id} input').keypress(function(e) {
             if (e.which == 13) {
-                if ($('#form_forgot').validate().form()) {
-                    $('#form_forgot').submit(); //form validation success, call ajax form submit
+                if ($('#form_${form.id}').validate().form()) {
+                    $('#form_${form.id}').submit(); //form validation success, call ajax form submit
                 }
                 return false;
             }

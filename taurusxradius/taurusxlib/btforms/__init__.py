@@ -5,6 +5,8 @@ import copy
 import re
 import itertools
 import net
+from taurusxradius.taurusxlib import logger
+
 __version__ = '0.37'
 __author__ = ['Aaron Swartz <me@aaronsw.com>', 'Anand Chitipothu <anandology@gmail.com>']
 __license__ = 'public domain'
@@ -200,6 +202,26 @@ class Form(object):
             self.valid = out
         return out
 
+    def validatesjson(self, source = None, _validate = True, **kw):
+        source = source or kw
+        out = True
+        msg = ""
+        for i in self.inputs:
+            v = attrget(source, i.name)
+            if _validate:
+                if i.validatejson(v):
+                    msg = "%s,%s:%s" % (msg,i.name,i.validatejson(v))
+                    out = False
+            else:
+                i.set_value(v)
+        """
+        if _validate:
+            out = out and self._validate(source)
+            self.valid = out
+        """
+        msg = "{%s}" % msg
+        return (out, msg)
+
     def _validate(self, value):
         self.value = value
         for v in self.validators:
@@ -280,6 +302,14 @@ class Input(object):
                 return False
 
         return True
+
+    def validatejson(self, value):
+        self.set_value(value)
+        for v in self.validators:
+            if not v.valid(value):
+                return v.msg
+
+        return ''
 
     def set_value(self, value):
         self.value = value

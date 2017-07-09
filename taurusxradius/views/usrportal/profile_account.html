@@ -53,6 +53,9 @@ function release_bind(){
     <!-- /.box-header -->
     <div class="box-body">
         <div class="col-md-12">
+            % if user.status  in (1,4) and user.product_policy  in (0,9):
+                <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_charge();">账号充值</a>
+            % endif
             % if user.status  in (1,4) and user.product_policy  in (0,2,3,5,7,9,10):
                 <a class="btn btn-md btn-info navbar-btn" onclick="javascript:commit_renew();">账号套餐续费</a>
             % endif

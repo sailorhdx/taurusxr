@@ -47,7 +47,7 @@ class UsrPortalLoginHandler(BaseHandler):
 
 @permit.route('/usrportal/logout')
 
-class UsrPortalLogout2Handler(BaseHandler):
+class UsrPortalLogoutHandler(BaseHandler):
 
     def get(self):
         if not self.current_user:

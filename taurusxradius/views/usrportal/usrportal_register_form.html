@@ -5,7 +5,6 @@
 <%def name="body()">
     <!-- Main content -->
     <section class="content">
-
         <!-- Default box -->
         <div class="col-md-4 col-center-block">
             <div class="box">
@@ -13,7 +12,6 @@
                     <i class="fa fa-edit"></i>
                     <h3 class="box-title">${form.title}</h3>
                 </div>
-                <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
                 <div class="box-body">
                     <div id="alertmsg" class="alert alert-warning alert-dismissible" style="display:none;">
                         <i class="icon fa fa-warning"></i> <div id="alertmsgcontent" style="display:inline;"></div>
@@ -21,11 +19,11 @@
                     % if msg:
                     <div class="alert alert-warning">${msg}</div>
                     % endif
-
+                    <form class="form-horizontal form-well" id="form_${form.id}" role="form" action="${form.action}" method="post">
                           ${xsrf_form_html()|n}
                           ${form.render_css()|n}
+                    </form>
                 </div>
-                </form>
                 <!-- /.box-body -->
                 <div class="box-footer">
                     <div class="col-xs-6"><a href="/usrportal/login">已有账号？请登录</a></div>
@@ -42,8 +40,7 @@
 <script>
 
     $(document).ready(function(){
-
-        $('#form_register').validate({
+        $('#form_${form.id}').validate({
             errorElement: 'span', //default input error message container
             errorClass: 'help-block', // default input error message class
             focusInvalid: false, // do not focus the last invalid input
@@ -60,6 +57,9 @@
             messages: {
                 account_number: {
                     required: "用户名不能为空."
+                },
+                mobile: {
+                    required: "手机号不能为空."
                 },
                 vcode: {
                     required: "验证码不能为空."
@@ -78,7 +78,7 @@
             },
 
             invalidHandler: function(event, validator) { //display error alert on form submit
-                $('.alert-danger', $('#form_register')).show();
+                $('.alert-danger', $('#form_${form.id}')).show();
             },
 
             highlight: function(element) { // hightlight error inputs
@@ -121,10 +121,10 @@
             }
         });
 
-        $('#form_register input').keypress(function(e) {
+        $('#form_${form.id} input').keypress(function(e) {
             if (e.which == 13) {
-                if ($('#form_register').validate().form()) {
-                    $('#form_register').submit(); //form validation success, call ajax form submit
+                if ($('#form_${form.id}').validate().form()) {
+                    $('#form_${form.id}').submit(); //form validation success, call ajax form submit
                 }
                 return false;
             }

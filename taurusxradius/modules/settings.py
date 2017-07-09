@@ -58,7 +58,7 @@ MENU_ICONS = {u'系统管理': 'fa fa-cog',
  u'代理商管理': 'fa fa-user-md',
  u'维护管理': 'fa fa-wrench',
  u'查询统计': 'fa fa-bar-chart'}
-MAX_EXPIRE_DATE = '3000-12-30'
+MAX_EXPIRE_DATE = '3000-12-31'
 param_cache_key = 'taurusxradius.cache.param.{0}'.format
 tplid_cache_key = 'taurusxradius.cache.sms.tplid.{0}'.format
 wlanattr_cache_key = 'taurusxradius.cache.wlan.domain.attr.{0}'.format
@@ -85,3 +85,4 @@ wlan_template_cache_key = 'taurusxradius.cache.wlanportal.template.{0}'.format
 DEFAULT_RDB = 0
 LOGTRACE_RDB = 1
 SSPORTAL_RDB = 2
+USRPORTAL_RDB = 2

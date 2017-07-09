@@ -13,11 +13,11 @@ def register_form(is_smsvcode=0, is_email=0):
     form = btforms.Form(title=u'用户注册', id="register", action='/usrportal/register', glyphicon='1')
     items = form.inputs = []
     if is_smsvcode: #开启短信验证，使用手机号作为ID
-        items.append(btforms.Textbox('mobile', glyphicon='glyphicon-phone', description=u'用户手机号', required='required', **lg_input_style))
+        items.append(btforms.Textbox('mobile', rules.is_telephone, glyphicon='glyphicon-phone', description=u'用户手机号', required='required', **lg_input_style))
         items.append(btforms.Textbox('vcode', glyphicon='glyphicon-pushpin', description=u'验证码', required='required', **lg_input_style))
         items.append(btforms.Button('smsvcode', id='smsvcode', type='button', html=u'<b>发送短信验证码</b>', onclick='send_vcode()', **lbutton_style))
     elif is_email: #开启邮件验证，使用邮箱地址作为ID
-        items.append(btforms.Textbox('email', glyphicon='glyphicon-envelope', description=u'电子邮箱', required='required', **lg_input_style))
+        items.append(btforms.Textbox('email', rules.is_email, glyphicon='glyphicon-envelope', description=u'电子邮箱', required='required', **lg_input_style))
     else: # 否则用户自定义ID
         items.append(btforms.Textbox('account_number', glyphicon='glyphicon-user', description=u'用户账号',required='required', **lg_input_style))
     items.append(btforms.Password('password', glyphicon='glyphicon-lock', description=u'登录密码', required='required', **lg_input_style))

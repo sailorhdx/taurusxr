@@ -41,23 +41,7 @@
 
 <script>
     $(document).ready(function(){
-        function doLogin() {
-            var username = $("#username").val();
-            var password = $("#password").val();
-            params = {username: username, password: password, _xsrf: '${handler.xsrf_token}'};
-            $.post("/usrportal/login", params, function (data) {
-                if (data.code > 0) {
-                    $("#alertmsgcontent").html(data.msg);
-                    $("#alertmsg").css('display', 'block');
-                    return false;
-                }
-                else {
-                    window.location.href = "/usrportal/profile";
-                }
-            }, "json");
-        }
-
-        $('#form_login').validate({
+         $('#form_${form.id}').validate({
             errorElement: 'span', //default input error message container
             errorClass: 'help-block', // default input error message class
             focusInvalid: false, // do not focus the last invalid input
@@ -72,7 +56,7 @@
             },
 
             invalidHandler: function(event, validator) { //display error alert on form submit
-                $('.alert-danger', $('#form_login')).show();
+                $('.alert-danger', $('#form_${form.id}')).show();
             },
 
             highlight: function(element) { // hightlight error inputs
@@ -115,10 +99,10 @@
             }
         });
 
-        $('#form_login input').keypress(function(e) {
+        $('#form_${form.id} input').keypress(function(e) {
             if (e.which == 13) {
-                if ($('#form_login').validate().form()) {
-                    $('#form_login').submit(); //form validation success, call ajax form submit
+                if ($('#form_${form.id}').validate().form()) {
+                    $('#form_${form.id}').submit(); //form validation success, call ajax form submit
                 }
                 return false;
             }

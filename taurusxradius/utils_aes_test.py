@@ -216,3 +216,4 @@ if __name__ == '__main__':
     print utils.is_expire('2017-07-09')
     print time.strptime('2017-07-09','%Y-%m-%d')
     print datetime.datetime.strptime('2017-07-09','%Y-%m-%d') - datetime.timedelta(days=1)
+    print datetime.datetime.now().strftime('%Y-%m-%d')

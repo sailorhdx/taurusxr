@@ -29,8 +29,10 @@ class UsrPortalRegisterHandler(BaseHandler):
         is_email = int(self.get_param_value('usrportal_email_required', 0))
 
         form = register_forms.register_form(is_smsvcode, is_email)
-        if not form.validates(source=self.get_params()):
-            return self.render('usrportal_register_form.html', form=form)
+        _validates, _msg = form.validatesjson(source=self.get_params())
+        if not _validates:
+            return self.render_json(code=1, msg=_msg)
+
         account_number = ''
         mobile = ''
         email = ''
@@ -69,7 +71,7 @@ class UsrPortalRegisterHandler(BaseHandler):
         if is_smsvcode: #开启短信验证
             customer = self.db.query(models.TrCustomer).filter_by(mobile=mobile).scalar()
             if customer:
-                return self.render_json(code=1, msg=u'手机号码[%s]已经存在于用户资料中，如果不是您正在使用的帐号，请联系管理员进行处理！' % (mobile))
+                return self.render_json(code=1, msg=u'手机号[%s]被其他账号绑定，如果不是您正在使用的帐号，请联系管理员进行处理！' % (mobile))
 
             smsvcode = self.get_argument('vcode', '')
             if account_number and not smsvcode:
@@ -81,7 +83,7 @@ class UsrPortalRegisterHandler(BaseHandler):
         elif is_email: #开启邮件验证
             customer = self.db.query(models.TrCustomer).filter_by(email=email).scalar()
             if customer:
-                return self.render_json(code=1, msg=u'邮箱地址[%s]已经存在于用户资料中，如果不是您正在使用的帐号，请联系管理员进行处理！' % (email))
+                return self.render_json(code=1, msg=u'邮箱[%s]被其他账号绑定，如果不是您正在使用的帐号，请联系管理员进行处理！' % (email))
 
         # 添加帐号信息、用户信息
         cmanager = CustomerAdd(self.db, self.aes)
@@ -98,8 +100,10 @@ class UsrPortalRegisterHandler(BaseHandler):
         form.product_id.set_value(product_id)
         _fee_value, _expire_date = self.order_calc(product_id)
         form.fee_value.set_value(_fee_value)
-        _expire_date = datetime.datetime.strptime(_expire_date, '%Y-%m-%d') - datetime.timedelta(days=1)
-        _expire_date = _expire_date.strftime('%Y-%m-%d')
+        if _expire_date == datetime.datetime.now().strftime('%Y-%m-%d'):
+            """如果有效期与当前日期相等，则将有效期减一天，使帐号立即失效"""
+            _expire_date = datetime.datetime.strptime(_expire_date, '%Y-%m-%d') - datetime.timedelta(days=1)
+            _expire_date = _expire_date.strftime('%Y-%m-%d')
         form.expire_date.set_value(_expire_date)
 
         form.billing_type.set_value('1')
