@@ -151,7 +151,7 @@ class SSportalProductOrderHandler(BasicOrderHandler):
             form = order_forms.smsvcode_form(product_id, account_number)
             self.render('order_smsvcode_form.html', form=form, msg=u'验证码不匹配')
             return
-        is_smsvcode = int(self.get_param_value('ssportal_smsvcode_required', 0))
+        is_smsvcode = int(self.get_param_value('usrportal_smsvcode_required', 0))
         if not account_number and is_smsvcode:
             form = order_forms.smsvcode_form(product_id, '')
             self.render('order_smsvcode_form.html', form=form)

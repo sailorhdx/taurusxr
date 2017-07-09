@@ -102,7 +102,7 @@
                 $.ajax({
                     type: "post",
                     cache: false,
-                    url: '/usrportal/forgot',//$(form).attr("action"),
+                    url: $(form).attr("action"),
                     dataType: "json",
                     data: $(form).serialize(),
                     success: function (res) {

@@ -18,31 +18,109 @@ from hashlib import md5
 import random
 
 def init_db(db):
-    product = models.TrProduct()
-    product.id = '00000000000000000000000000000000'
-    product.product_name = '自助注册时长套餐'
-    product.ispub = 0
-    product.product_policy = 3
-    product.product_status = 0
-    product.fee_days = 0
-    product.fee_months = 0
-    product.fee_times = 0
-    product.fee_flows = 0
-    product.bind_mac = 0
-    product.bind_vlan = 0
-    product.concur_number = 1
-    product.fee_price = 0
-    product.fee_period = ''
-    product.input_max_limit = utils.mbps2bps(100)
-    product.output_max_limit = utils.mbps2bps(100)
-    product.free_auth = 0
-    product.free_auth_uprate = 0
-    product.free_auth_downrate = 0
+
     _datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    product.create_time = _datetime
-    product.update_time = _datetime
-    product.sync_ver = tools.gen_sync_ver()
-    db.add(product)
+
+    product3 = models.TrProduct()
+    product3.id = 'HOLD-000000-03'
+    product3.product_name = '买断时长资费'
+    product3.ispub = 0
+    product3.product_policy = 3 #BOTimes: u'买断时长', #3
+    product3.product_status = 0
+    product3.fee_days = 0
+    product3.fee_months = 0
+    product3.fee_times = 0
+    product3.fee_flows = 0
+    product3.bind_mac = 0
+    product3.bind_vlan = 0
+    product3.concur_number = 1
+    product3.fee_price = 0
+    product3.fee_period = ''
+    product3.input_max_limit = utils.mbps2bps(100)
+    product3.output_max_limit = utils.mbps2bps(100)
+    product3.free_auth = 0
+    product3.free_auth_uprate = 0
+    product3.free_auth_downrate = 0
+    product3.create_time = _datetime
+    product3.update_time = _datetime
+    product3.sync_ver = tools.gen_sync_ver()
+    db.add(product3)
+
+    product5 = models.TrProduct()
+    product5.id = 'HOLD-000000-05'
+    product5.product_name = '买断流量资费'
+    product5.ispub = 0
+    product5.product_policy = 5  # BOFlows: u'买断流量', #5
+    product5.product_status = 0
+    product5.fee_days = 0
+    product5.fee_months = 0
+    product5.fee_times = 0
+    product5.fee_flows = 0
+    product5.bind_mac = 0
+    product5.bind_vlan = 0
+    product5.concur_number = 1
+    product5.fee_price = 0
+    product5.fee_period = ''
+    product5.input_max_limit = utils.mbps2bps(100)
+    product5.output_max_limit = utils.mbps2bps(100)
+    product5.free_auth = 0
+    product5.free_auth_uprate = 0
+    product5.free_auth_downrate = 0
+    product5.create_time = _datetime
+    product5.update_time = _datetime
+    product5.sync_ver = tools.gen_sync_ver()
+    db.add(product5)
+
+    product2 = models.TrProduct()
+    product2.id = 'HOLD-000000-02'
+    product2.product_name = '买断包月资费'
+    product2.ispub = 0
+    product2.product_policy = 2  # BOMonth: u'买断包月', #2
+    product2.product_status = 0
+    product2.fee_days = 0
+    product2.fee_months = 0
+    product2.fee_times = 0
+    product2.fee_flows = 0
+    product2.bind_mac = 0
+    product2.bind_vlan = 0
+    product2.concur_number = 1
+    product2.fee_price = 0
+    product2.fee_period = ''
+    product2.input_max_limit = utils.mbps2bps(100)
+    product2.output_max_limit = utils.mbps2bps(100)
+    product2.free_auth = 0
+    product2.free_auth_uprate = 0
+    product2.free_auth_downrate = 0
+    product2.create_time = _datetime
+    product2.update_time = _datetime
+    product2.sync_ver = tools.gen_sync_ver()
+    db.add(product2)
+
+    product10 = models.TrProduct()
+    product10.id = 'HOLD-000000-10'
+    product10.product_name = '买断包日资费'
+    product10.ispub = 0
+    product10.product_policy = 10  # BODay: u'买断包日' #10
+    product10.product_status = 0
+    product10.fee_days = 0
+    product10.fee_months = 0
+    product10.fee_times = 0
+    product10.fee_flows = 0
+    product10.bind_mac = 0
+    product10.bind_vlan = 0
+    product10.concur_number = 1
+    product10.fee_price = 0
+    product10.fee_period = ''
+    product10.input_max_limit = utils.mbps2bps(100)
+    product10.output_max_limit = utils.mbps2bps(100)
+    product10.free_auth = 0
+    product10.free_auth_uprate = 0
+    product10.free_auth_downrate = 0
+    product10.create_time = _datetime
+    product10.update_time = _datetime
+    product10.sync_ver = tools.gen_sync_ver()
+    db.add(product10)
+
     arule = models.TrAccountRule()
     arule.id = 1
     arule.rule_name = u'默认账号生成规则'

@@ -116,7 +116,7 @@ class WxpayNewOrderHandler(WxBasicOrderHandler):
         if account_number and smsvcode and self.cache.get('ssportal.sms.vcode.{}'.format(account_number)) != smsvcode:
             self.render('error.html', msg=u'验证码不匹配')
             return
-        is_smsvcode = int(self.get_param_value('ssportal_smsvcode_required', 0))
+        is_smsvcode = int(self.get_param_value('usrportal_smsvcode_required', 0))
         if not account_number and is_smsvcode:
             self.render('wxorder_vcode_form.html', product=product)
             return

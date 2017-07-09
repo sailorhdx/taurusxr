@@ -157,6 +157,8 @@ class ProductService(BaseService):
     @logparams
     def delete(self, product_id, **kwargs):
         try:
+            if product_id.startswith('HOLD-000000-'):
+                raise Exception(u'该套餐是系统保留资费套餐，不允许删除')
             if self.db.query(models.TrAccount).filter_by(product_id=product_id).count() > 0:
                 raise Exception(u'该套餐有用户使用，不允许删除')
             self.db.query(models.TrProduct).filter_by(id=product_id).delete()

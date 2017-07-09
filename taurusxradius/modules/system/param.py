@@ -131,14 +131,6 @@ class TestEmailHandler(BaseHandler):
         smtp_pwd = self.get_argument('smtp_pwd')
         mail_to = self.get_argument('mail_to')
 
-        logger.info('smtp_server = {0}'.format(smtp_server))
-        logger.info('smtp_port = {0}'.format(smtp_port))
-        logger.info('smtp_tls = {0}'.format(smtp_tls))
-        logger.info('smtp_from = {0}'.format(smtp_from))
-        logger.info('smtp_user = {0}'.format(smtp_user))
-        logger.info('smtp_pwd = {0}'.format(smtp_pwd))
-        logger.info('mail_to = {0}'.format(mail_to))
-
         topic = '这是来自TaurusXRadius的一封测试邮件！'
         content = '当您收到这封邮件时，恭喜你的邮件配置成功通过！'
         ret = send_mail(server=smtp_server, port=smtp_port, user=smtp_user, password=smtp_pwd, from_addr=smtp_from,

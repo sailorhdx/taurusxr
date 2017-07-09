@@ -116,4 +116,4 @@ class UsrPortalProductRenewHandler(BaseHandler):
         order_id = self.get_argument('order_id')
         formdata = self.paycache.get(order_paycaache_key(order_id))
         product_name = self.get_product_name(formdata.product_id)
-        self.redirect(self.alipay.create_direct_pay_by_user(order_id, u'套餐续费：%s' % product_name, product_name, formdata.fee_value, notify_path='/ssportal/alipay/verify/renew', return_path='/ssportal/alipay/verify/renew'))
+        self.redirect(self.alipay.create_direct_pay_by_user(order_id, u'套餐续费：%s' % product_name, product_name, formdata.fee_value, notify_path='/usrportal/alipay/verify/renew', return_path='/ssportal/alipay/verify/renew'))

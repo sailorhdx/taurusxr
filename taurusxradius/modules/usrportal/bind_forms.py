@@ -3,7 +3,9 @@
 from taurusxradius.taurusxlib import btforms
 from taurusxradius.taurusxlib.btforms import rules
 from taurusxradius.taurusxlib.btforms.rules import button_style, input_style
+
 lbutton_style = {'class': 'btn btn-sm btn-link'}
+
 def bind_email_form(email=''):
     return btforms.Form(
         btforms.Textbox('email', rules.is_email, value=email, description=u'电子邮箱', required='required', **input_style),

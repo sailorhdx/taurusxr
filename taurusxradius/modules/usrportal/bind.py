@@ -2,7 +2,7 @@
 # coding=utf-8
 from taurusxradius.modules.settings import VcodeNotify
 from taurusxradius.modules.usrportal.base import BaseHandler, authenticated
-from taurusxradius.modules.usrportal import bind_form
+from taurusxradius.modules.usrportal import bind_forms
 from taurusxradius.taurusxlib import logger, utils
 from taurusxradius.taurusxlib.mail import send_mail, send_mail_self
 from taurusxradius.taurusxlib.permit import permit
@@ -24,13 +24,13 @@ class UsrPortalBindEmailHandler(BaseHandler):
         if not customer:
             return self.render('info.html', msg=u'用户数据不存在')
 
-        form = bind_form.bind_email_form(customer.email)
+        form = bind_forms.bind_email_form(customer.email)
         self.render('profile_base_form.html', form=form)
 
     @authenticated
     def post(self):
         logger.info('smtp_tls = %s' % self.get_param_value('smtp_tls', '0'))
-        form = bind_form.bind_email_form()
+        form = bind_forms.bind_email_form()
         if not form.validates(source=self.get_params()):
             return self.render('profile_base_form.html', form=form)
         account_number = self.current_user.username
@@ -122,12 +122,12 @@ class UsrPortalBinMobileHandler(BaseHandler):
         if not customer:
             return self.render('info.html', msg=u'用户数据不存在')
 
-        form = bind_form.bind_mobile_form(customer.mobile)
+        form = bind_forms.bind_mobile_form(customer.mobile)
         self.render('profile_base_form.html', form=form)
 
     @authenticated
     def post(self):
-        form = bind_form.bind_mobile_form()
+        form = bind_forms.bind_mobile_form()
         if not form.validates(source=self.get_params()):
             return self.render('profile_base_form.html', form=form)
         account_number = self.current_user.username

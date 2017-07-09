@@ -5,6 +5,8 @@ import urllib
 import cyclone.web
 import functools
 import urlparse
+
+import datetime
 from cyclone.util import ObjectDict
 from twisted.python.failure import Failure
 
@@ -182,6 +184,68 @@ class BaseHandler(cyclone.web.RequestHandler):
 
     def get_tpl_id(self, tpl_type):
         return self.db.query(models.TrContentTemplate.tpl_id).filter_by(tpl_type=tpl_type).scalar()
+
+    def order_calc(self, product_id, old_expire = None):
+        months = int(self.get_argument('months', 0))
+        days = int(self.get_argument('days', 0))
+        product = self.db.query(models.TrProduct).get(product_id)
+        fee_value, expire_date = (None, None)
+        if product.product_policy in (BOTimes, BOFlows): #买断时长，买断流量
+            fee_value = utils.fen2yuan(product.fee_price)
+            expire_date = MAX_EXPIRE_DATE
+        elif product.product_policy == PPMonth: #预付费包月
+            fee = decimal.Decimal(months) * decimal.Decimal(product.fee_price)
+            fee_value = utils.fen2yuan(int(fee.to_integral_value()))
+            start_expire = datetime.datetime.now()
+            if old_expire:
+                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
+            expire_date = utils.add_months(start_expire, int(months), days=0)
+            expire_date = expire_date.strftime('%Y-%m-%d')
+        elif product.product_policy == PPDay: #预付费包日
+            fee = decimal.Decimal(days) * decimal.Decimal(product.fee_price)
+            fee_value = utils.fen2yuan(int(fee.to_integral_value()))
+            start_expire = datetime.datetime.now()
+            if old_expire:
+                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
+            expire_date = start_expire + datetime.timedelta(days=days)
+            expire_date = expire_date.strftime('%Y-%m-%d')
+        elif product.product_policy == BOMonth: #买断包月
+            start_expire = datetime.datetime.now()
+            if old_expire:
+                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
+            if months > 0 and months != product.fee_months:
+                mprice = self.get_product_attr(product.id, 'month_price')
+                if mprice and int(mprice.attr_value) > 0:
+                    mpricefee = utils.yuan2fen(decimal.Decimal(mprice.attr_value))
+                else:
+                    mpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_months)
+                fee = decimal.Decimal(months) * mpricefee
+                fee_value = utils.fen2yuan(int(fee.to_integral_value()))
+                expire_date = utils.add_months(start_expire, int(months), days=0)
+                expire_date = expire_date.strftime('%Y-%m-%d')
+            else:
+                fee_value = utils.fen2yuan(product.fee_price)
+                expire_date = utils.add_months(start_expire, product.fee_months, days=0)
+                expire_date = expire_date.strftime('%Y-%m-%d')
+        elif product.product_policy == BODay: #买断包日
+            start_expire = datetime.datetime.now()
+            if old_expire:
+                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
+            if days > 0 and days != product.fee_days:
+                dprice = self.get_product_attr(product.id, 'day_price')
+                if dprice and int(dprice.attr_value) > 0:
+                    dpricefee = utils.yuan2fen(decimal.Decimal(dprice.attr_value))
+                else:
+                    dpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_days)
+                fee = decimal.Decimal(days) * dpricefee
+                fee_value = utils.fen2yuan(int(fee.to_integral_value()))
+                expire_date = start_expire + datetime.timedelta(days=days)
+                expire_date = expire_date.strftime('%Y-%m-%d')
+            else:
+                fee_value = utils.fen2yuan(product.fee_price)
+                expire_date = start_expire + datetime.timedelta(days=product.fee_days)
+                expire_date = expire_date.strftime('%Y-%m-%d')
+        return (fee_value, expire_date)
 
 def authenticated(method):
 

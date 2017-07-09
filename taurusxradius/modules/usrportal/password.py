@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 from taurusxradius.modules.usrportal.base import BaseHandler, authenticated
-from taurusxradius.modules.usrportal import password_form
+from taurusxradius.modules.usrportal import password_forms
 from taurusxradius.taurusxlib.permit import permit
 from taurusxradius.modules import models
 
@@ -11,12 +11,12 @@ class UsrPortalPasswordHandler(BaseHandler):
 
     @authenticated
     def get(self):
-        form = password_form.password_form()
+        form = password_forms.password_form()
         self.render('profile_base_form.html', form=form)
 
     @authenticated
     def post(self):
-        form = password_form.password_form()
+        form = password_forms.password_form()
         if not form.validates(source=self.get_params()):
             return self.render('profile_base_form.html', form=form)
         account_number = self.current_user.username

@@ -212,3 +212,7 @@ if __name__ == '__main__':
     # 验证token
     token1 = QXToken('zl',key)
     print token1.verify_auth_token('eyJhbGciOiJIUzI1NiIsImV4cCI6MTQ5OTA0NzU4NCwiaWF0IjoxNDk5MDQ3NDg0fQ.eyJuYW1lIjoiemwifQ.VeIKLfIeCZGkZ2bxdrzL9HUBknf-HpeMl-l10HqiXbU')
+
+    print utils.is_expire('2017-07-09')
+    print time.strptime('2017-07-09','%Y-%m-%d')
+    print datetime.datetime.strptime('2017-07-09','%Y-%m-%d') - datetime.timedelta(days=1)

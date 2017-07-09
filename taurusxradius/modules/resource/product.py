@@ -20,12 +20,12 @@ product_add_actions = (#(u'预付费包日', '/admin/product/add?product_policy=
  (u'买断流量', '/admin/product/add?product_policy=5'))
 product_policys = {#PPMonth: u'预付费包月', #0
  #APMonth: u'后付费包月', #8
- #PPTimes: u'预付费时长', #1
+ #PPTimes: u'预付费时长', #1  已移除
  BOMonth: u'买断包月', #2
  BOTimes: u'买断时长', #3
- #PPFlow: u'预付费流量', #4
+ #PPFlow: u'预付费流量', #4  已移除
  BOFlows: u'买断流量', #5
- #PPMFlows: u'预付费流量包月', #7
+ #PPMFlows: u'预付费流量包月', #7  已移除
  #PPDay: u'预付费包日', #9
  BODay: u'买断包日' #10
 }

@@ -32,6 +32,13 @@ themes = {'skin-black': u'黑色风格',
 en_modes = {'normal': u'明文',
  'compatible': u'兼容模式',
  'safe': u'安全模式'}
+default_product_policy = {
+    'HOLD-000000-02': u'买断包月资费',
+    'HOLD-000000-10':u'买断包日资费',
+    'HOLD-000000-03':u'买断时长资费',
+    'HOLD-000000-05':u'买断流量资费'
+}
+
 if not os.environ.get('DEMO_VER'):
     sys_form = btforms.Form(btforms.Textbox('system_name', description=u'管理系统名称', help=u'管理系统名称,可以根据你的实际情况进行定制', **input_style), btforms.Dropdown('system_theme', args=themes.items(), description=u'系统风格样式', **input_style), btforms.Textbox('ssportal_title', description=u'网上营业厅名称', **input_style), btforms.Textbox('support_desc', description=u'技术服务支持声明', help=u'显示在管理登陆和网上营业厅页面底部', **input_style), btforms.Textbox('login_logo', description=u'登陆页面Logo(200x120)', **input_style), btforms.Textbox('login_bgimg', description=u'登陆页面背景图片(1920x600)', **input_style), btforms.Textbox('index_logo', description=u'管理页面Logo(191x36)', **input_style), btforms.Textbox('ssportal_banner_bg', description=u'网上营业厅背景图(1920x300+)', **input_style), btforms.Dropdown('style_nav_fixed', args=booleans.items(), description=u'设置顶部导航栏固定', help=u'顶部导航条固定样式，若需要在小屏幕设备管理，建议设置为否', **input_style), btforms.Dropdown('style_nav_busstat_link', args=booleans.items(), description=u'导航栏显示运营分析链接', **input_style), btforms.Dropdown('style_nav_status_link', args=booleans.items(), description=u'导航栏显示系统状态链接', **input_style), btforms.Button('submit', type='submit', html=u'<b>更新</b>', **button_style), title=u'管理界面设置', action='/admin/param/update?active=syscfg')
 else:
@@ -78,8 +85,9 @@ def adconfig_form(nodes = [], **kwargs):
     items.append(btforms.Dropdown('default_user_node_id', args=nodes, description=u'默认用户区域', help=u'自助开户使用', **input_style))
     items.append(btforms.Textbox('billtask_last_day', rules.is_number, description=u'用户账单任务截止日期(1-28)', **input_style))
     items.append(btforms.Dropdown('billing_fee_precision', args=fee_precisions.items(), description=u'后付费账单金额精度(元/分)', **input_style))
-    items.append(btforms.Dropdown('ssportal_smsvcode_required', args=booleans.items(), description=u'自助注册开户采用短信验证', **input_style))
-    items.append(btforms.Dropdown('ssportal_email_required', args=booleans.items(), description=u'自助注册开户采用邮件验证', **input_style))
+    items.append(btforms.Dropdown('default_product_policy', args=default_product_policy.items(), description=u'自助注册默认资费', **input_style))
+    items.append(btforms.Dropdown('usrportal_smsvcode_required', args=booleans.items(), description=u'自助注册开户采用短信验证', **input_style))
+    items.append(btforms.Dropdown('usrportal_email_required', args=booleans.items(), description=u'自助注册开户采用邮件验证', **input_style))
     items.append(btforms.Dropdown('ssportal_allow_release_bind', args=booleans.items(), description=u'自助服务允许清除Mac绑定', **input_style))
     items.append(btforms.Dropdown('ssportal_allow_online_unlock', args=booleans.items(), description=u'自助服务允许下线操作', **input_style))
     items.append(btforms.Textarea('ssportal_paydone_text', description=u'自助服务支付完成提示信息(支持html)', rows=5, **input_style))

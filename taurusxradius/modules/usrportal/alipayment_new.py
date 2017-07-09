@@ -64,70 +64,6 @@ class BasicOrderHandler(BaseHandler):
         account_number = '%s%s' % (rule.user_prefix, string.rjust(str(rule.user_sn), rule.user_suffix_len, '0'))
         return account_number
 
-    def order_calc(self, product_id, old_expire = None):
-
-        months = int(self.get_argument('months', 0))
-        days = int(self.get_argument('days', 0))
-        product = self.db.query(models.TrProduct).get(product_id)
-        fee_value, expire_date = (None, None)
-        if product.product_policy in (BOTimes, BOFlows): #买断时长，买断流量
-            fee_value = utils.fen2yuan(product.fee_price)
-            expire_date = MAX_EXPIRE_DATE
-        elif product.product_policy == PPMonth: #预付费包月
-            fee = decimal.Decimal(months) * decimal.Decimal(product.fee_price)
-            fee_value = utils.fen2yuan(int(fee.to_integral_value()))
-            start_expire = datetime.datetime.now()
-            if old_expire:
-                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            expire_date = utils.add_months(start_expire, int(months), days=0)
-            expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == PPDay: #预付费包日
-            fee = decimal.Decimal(days) * decimal.Decimal(product.fee_price)
-            fee_value = utils.fen2yuan(int(fee.to_integral_value()))
-            start_expire = datetime.datetime.now()
-            if old_expire:
-                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            expire_date = start_expire + datetime.timedelta(days=days)
-            expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == BOMonth: #买断包月
-            start_expire = datetime.datetime.now()
-            if old_expire:
-                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            if months > 0 and months != product.fee_months:
-                mprice = self.get_product_attr(product.id, 'month_price')
-                if mprice and int(mprice.attr_value) > 0:
-                    mpricefee = utils.yuan2fen(decimal.Decimal(mprice.attr_value))
-                else:
-                    mpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_months)
-                fee = decimal.Decimal(months) * mpricefee
-                fee_value = utils.fen2yuan(int(fee.to_integral_value()))
-                expire_date = utils.add_months(start_expire, int(months), days=0)
-                expire_date = expire_date.strftime('%Y-%m-%d')
-            else:
-                fee_value = utils.fen2yuan(product.fee_price)
-                expire_date = utils.add_months(start_expire, product.fee_months, days=0)
-                expire_date = expire_date.strftime('%Y-%m-%d')
-        elif product.product_policy == BODay: #买断包日
-            start_expire = datetime.datetime.now()
-            if old_expire:
-                start_expire = datetime.datetime.strptime(old_expire, '%Y-%m-%d')
-            if days > 0 and days != product.fee_days:
-                dprice = self.get_product_attr(product.id, 'day_price')
-                if dprice and int(dprice.attr_value) > 0:
-                    dpricefee = utils.yuan2fen(decimal.Decimal(dprice.attr_value))
-                else:
-                    dpricefee = decimal.Decimal(product.fee_price) / decimal.Decimal(product.fee_days)
-                fee = decimal.Decimal(days) * dpricefee
-                fee_value = utils.fen2yuan(int(fee.to_integral_value()))
-                expire_date = start_expire + datetime.timedelta(days=days)
-                expire_date = expire_date.strftime('%Y-%m-%d')
-            else:
-                fee_value = utils.fen2yuan(product.fee_price)
-                expire_date = start_expire + datetime.timedelta(days=product.fee_days)
-                expire_date = expire_date.strftime('%Y-%m-%d')
-        return (fee_value, expire_date)
-
-
 @permit.route('/usrportal/product/order')
 
 class UsrPortalProductOrderHandler(BasicOrderHandler):
@@ -157,7 +93,7 @@ class UsrPortalProductOrderHandler(BasicOrderHandler):
             form = order_forms.smsvcode_form(product_id, account_number)
             self.render('profile_order_smsvcode_form.html', form=form, msg=u'验证码不匹配')
             return
-        is_smsvcode = int(self.get_param_value('ssportal_smsvcode_required', 0))
+        is_smsvcode = int(self.get_param_value('usrportal_smsvcode_required', 0))
         if not account_number and is_smsvcode:
             form = order_forms.smsvcode_form(product_id, '')
             self.render('profile_order_smsvcode_form.html', form=form)
@@ -289,6 +225,7 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
         formdata['expire_date'] = _expire
         formdata['accept_source'] = 'usrportal'
         formdata['giftdays'] = 0
+        formdata['giftflows'] = 0
         formdata['operate_desc'] = u'用户自助续费'
         formdata['old_expire'] = account.expire_date
         formdata['vcard_code'] = vcard_code
@@ -330,17 +267,12 @@ class UsrPortalProductOrderNewHandler(BasicOrderHandler):
             formdata = Storage(form.d)
             formdata.order_id = order_id
             formdata['product_id'] = product_id
-            #formdata['node_id'] = self.get_param_value('default_user_node_id', 1)
-            #formdata['area_id'] = ''
             formdata['fee_value'] = _feevalue
             formdata['expire_date'] = _expire
             formdata['accept_source'] = 'usrportal'
             formdata['giftdays'] = 0
             formdata['giftflows'] = 0
-            #formdata['ip_address'] = ''
-            #formdata['status'] = 1
             formdata['customer_desc'] = u'客户自助续费'
-            #formdata['product_name'] = product.product_name
             formdata['old_expire'] = account.expire_date
             self.paycache.set(order_paycaache_key(order_id), formdata)
             return self.render('profile_renew_alipay.html', formdata=formdata)
@@ -358,7 +290,7 @@ class UsrPortalProductOrderHandler(BaseHandler):
         order_id = self.get_argument('order_id')
         formdata = self.paycache.get(order_paycaache_key(order_id))
         product_name = self.db.query(models.TrProduct.product_name).filter_by(id=formdata.product_id).scalar()
-        self.redirect(self.alipay.create_direct_pay_by_user(order_id, product_name, product_name, formdata.fee_value, notify_path='/ssportal/alipay/verify/new', return_path='/ssportal/alipay/verify/new'))
+        self.redirect(self.alipay.create_direct_pay_by_user(order_id, product_name, product_name, formdata.fee_value, notify_path='/usrportal/alipay/verify/new', return_path='/usrportal/alipay/verify/new'))
 
 
 @permit.route('/usrportal/sms/sendvcode')
