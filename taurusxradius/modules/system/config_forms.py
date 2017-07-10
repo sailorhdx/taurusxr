@@ -16,10 +16,13 @@ loglevels = {'INFO': u'一般',
  'DEBUG': u'调试',
  'WARNING': u'警告',
  'ERROR': u'错误'}
+"""
 if not os.environ.get('DEMO_VER') and os.environ.get('LICENSE_TYPE') != 'community':
     system_form = btforms.Form(btforms.Dropdown('debug', args=boolean.items(), description=u'开启DEBUG', help=u'开启此项，可以获取更多的系统日志纪录', **input_style), btforms.Dropdown('tz', args=timezones.items(), description=u'时区', **input_style), btforms.Textbox('license_upload', description=u'授权文件', type='button', **input_style), btforms.Button('reqlicense', type='button', html=u'<b>申请软件授权</b>', onclick='go_request_license()', **lbutton_style), btforms.Button('submit', type='submit', html=u'<b>更新</b>', **button_style), title=u'系统配置管理', action='/admin/config/system/update')
 else:
     system_form = btforms.Form(btforms.Dropdown('debug', args=boolean.items(), description=u'开启DEBUG', help=u'开启此项，可以获取更多的系统日志纪录', **input_style), btforms.Dropdown('tz', args=timezones.items(), description=u'时区', **input_style), title=u'系统配置管理', action='/admin/config/system/update')
+"""
+system_form = btforms.Form(btforms.Dropdown('debug', args=boolean.items(), description=u'开启DEBUG', help=u'开启此项，可以获取更多的系统日志纪录', **input_style), btforms.Dropdown('tz', args=timezones.items(), description=u'时区', **input_style), btforms.Button('submit', type='submit', html=u'<b>更新</b>', **button_style), title=u'系统配置管理', action='/admin/config/system/update')
 dbtypes = {'mysql': u'mysql',
  'sqlite': u'sqlite'}
 if not os.environ.get('DEMO_VER'):

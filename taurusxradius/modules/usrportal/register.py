@@ -31,7 +31,7 @@ class UsrPortalRegisterHandler(BaseHandler):
         form = register_forms.register_form(is_smsvcode, is_email)
         _validates, _msg = form.validatesjson(source=self.get_params())
         if not _validates:
-            return self.render_json(code=1, msg=_msg)
+            return self.render_json(code=1, json=1, msg=_msg)
 
         account_number = ''
         mobile = ''

@@ -21,8 +21,10 @@ class UsrPortalForgotMobileHandler(BaseHandler):
     def post(self):
 
         form = forgot_forms.forgot_mobile_form()
-        if not form.validates(source=self.get_params()):
-            return self.render('usrportal_forgot_form.html', form=form)
+        _validates, _msg = form.validatesjson(source=self.get_params())
+        if not _validates:
+            return self.render_json(code=1, json=1, msg=_msg)
+
         mobile = form.d.mobile
         if not mobile:
             #return self.render('usrportal_forgot_form.html', form=form, msg=errmsg)

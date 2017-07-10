@@ -1,34 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>error</title>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="/static/media/image/favicon.ico"/>
-    <!-- Bootstrap core CSS -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/css/manage.css" rel="stylesheet">
-</head>
-<body>
+<%inherit file="base.html"/>
+<%def name="head()">
+</%def>
+<%def name="body()">
+    <!-- Main content -->
+    <section class="content">
+      <div class="info-page">
 
-<div id="error_box">
-    <div class="jumbotron">
-        <div class="container">
-        <h3>出错了! </h3>
+        <div class="info-content">
+          <h3><i class="fa fa-warning text-yellow"></i> 信息提示.</h3>
 
-        <p>${msg|h}</p>
-
-        <p><a class="btn btn-default btn-lg" onclick="javascript:history.go(-1);" role="button">返回</a></p>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-    </div>
-</div>
-</div>
-</body>
-</html>
+          <p>
+            ${msg or ''|h}
+          </p>
+          <p><a class="btn btn-default btn-lg" onclick="javascript:history.go(-1);" role="button">返回</a></p>
+        </div>
+        <!-- /.error-content -->
+      </div>
+ </%def>

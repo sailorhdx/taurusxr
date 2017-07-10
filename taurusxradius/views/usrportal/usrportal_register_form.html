@@ -106,8 +106,14 @@
                     data: $(form).serialize(),
                     success: function (res) {
                         if (res.code > 0) {
-                            $("#alertmsgcontent").html(res.msg);
-                            $("#alertmsg").css('display', 'block');
+
+                            if (res.json) {
+                                errorPlace(res.msg)
+
+                            } else {
+                                $("#alertmsgcontent").html(res.msg);
+                                $("#alertmsg").css('display', 'block');
+                            }
                             return false;
                         }
                         else {

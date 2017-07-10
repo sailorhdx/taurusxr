@@ -1,10 +1,17 @@
 <%inherit file="base.html"/>
 <%def name="head()">
-<script src="/static/js/bootstrap-datepicker.js"></script>
-<link rel="stylesheet" href="/static/js/datepicker.css"> 
 <script>
 $(function () {
-    $("#expire_date").datepicker();
+    $("#expire_date").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
 });
 </script>
 

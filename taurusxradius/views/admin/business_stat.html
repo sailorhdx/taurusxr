@@ -1,20 +1,19 @@
 <%inherit file="base.html"/>
 
 <%def name="head()">
-<link rel="stylesheet" href="/static/js/bootstrap-datetimepicker.css"> 
-<script src="/static/js/moment-with-locales.js"></script>
-<script src="/static/js/bootstrap-datetimepicker.js"></script>
-<script src="/static/js/highcharts.js"></script>
-<script src="/static/js/hightchart.darkly.js"></script>
-<script src="/static/js/exporting.js"></script>
+<script src="/static/plugins/highcharts/highcharts.js"></script>
+<script src="/static/plugins/highcharts/themes/dark-blue.js"></script>
+<script src="/static/plugins/highcharts/modules/exporting.js"></script>
 <script>
 
 
 $(document).ready(function(){
     $("#stat_month").datetimepicker({
-        viewMode: 'years',
-        format: "YYYY-MM",
-        locale: 'zh-cn'
+        language: 'zh-CN',
+        autoclose: true,
+        startView: 3,
+        minView: 3,
+        format: "yyyy-mm"
     });
     $("#stat_month").val('${utils.get_currdate()[0:7]}');
     do_update_chart();
@@ -31,7 +30,7 @@ function update_income_trend(stat_month,pay_status,accept_type)
                 chart: {
                     plotBackgroundColor: null,
                     plotBorderWidth: null,
-                    plotShadow: false,                    
+                    plotShadow: false,
                     type: 'areaspline',
                     height:240
                 },
@@ -40,15 +39,15 @@ function update_income_trend(stat_month,pay_status,accept_type)
                 xAxis: {categories: ev.categories},
                 yAxis: {
                     title: {text: '营业额'},
-                    labels: {formatter: function() {return this.value + '元';}}            
+                    labels: {formatter: function() {return this.value + '元';}}
                 },
                 tooltip: {shared: false},
-                legend: {enabled: false},    
+                legend: {enabled: false},
                 plotOptions: {areaspline: {
                     stacking: 'normal',
                     marker: {enabled: false,symbol: 'circle',radius: 2,states: {hover: {enabled: true}}},
                     fillOpacity: 0.5
-                }},           
+                }},
                 series: [{
                     name: '营业收入',
                     data:ev.fee_data
@@ -378,7 +377,7 @@ function do_update_chart()
               </div>
               <button type="button" class="btn btn-default" onclick="do_update_chart();">刷新</button>
             </form>
-        </div>              
+        </div>
     </div>
     <div class="box-body">
         <div class="container">

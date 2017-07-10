@@ -1,12 +1,29 @@
 <%inherit file="profile_base.html"/>
 
 <%def name="head()">
-<script src="/static/js/bootstrap-datepicker.js"></script>
-<link rel="stylesheet" href="/static/js/datepicker.css"> 
+
    <script>
     $(document).ready(function(){
-        $("#query_begin_time").datepicker();
-        $("#query_end_time").datepicker();
+        $("#query_begin_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
+        $("#query_end_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
     });
        </script>
 </%def>
@@ -24,7 +41,7 @@
     <!-- /.box-header -->
     <div class="box-body">
         <ul class="timeline">
-% for order,_,_realname,_product_name,_,citem,cvalue in page_data.result:
+            % for order,_,_realname,_product_name,_,citem,cvalue in page_data.result:
 
             <li>
               <i class="fa fa-list bg-blue"></i>

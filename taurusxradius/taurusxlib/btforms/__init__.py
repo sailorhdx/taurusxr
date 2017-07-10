@@ -210,15 +210,10 @@ class Form(object):
             v = attrget(source, i.name)
             if _validate:
                 if i.validatejson(v):
-                    msg = "%s,%s:%s" % (msg,i.name,i.validatejson(v))
+                    msg = '%s"%s":"%s"' % (msg and '%s,' % msg or '',i.name,i.validatejson(v))
                     out = False
             else:
                 i.set_value(v)
-        """
-        if _validate:
-            out = out and self._validate(source)
-            self.valid = out
-        """
         msg = "{%s}" % msg
         return (out, msg)
 

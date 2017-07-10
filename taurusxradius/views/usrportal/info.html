@@ -1,6 +1,5 @@
 <%inherit file="usrportal_base.html"/>
 <%def name="head()">
-
 </%def>
 <%def name="body()">
     <!-- Main content -->
@@ -13,9 +12,7 @@
           <p>
             ${msg or ''|h}
           </p>
-
-            <!-- /.input-group -->
-          </form>
+          <p><a class="btn btn-default btn-lg" onclick="javascript:history.go(-1);" role="button">返回</a></p>
         </div>
         <!-- /.error-content -->
       </div>

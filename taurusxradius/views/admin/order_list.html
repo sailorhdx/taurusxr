@@ -3,11 +3,9 @@
 <%def name="head()">
 <script src="/static/plugins/datatables/jquery.dataTables.js" type="text/javascript"></script>
 <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
-<script src="/static/js/bootstrap-datepicker.js"></script>
 <link href="/static/plugins/datatables/dataTables.bootstrap.css" rel="stylesheet" type="text/css" />
-<link rel="stylesheet" href="/static/js/datepicker.css"> 
-<link href="/static/js/toastr.min.css" rel="stylesheet" type="text/css"/>
-<script src="/static/js/toastr.min.js"></script>
+<link href="/static/plugins/toastr/toastr.min.css" rel="stylesheet" type="text/css"/>
+<script src="/static/plugins/toastr/toastr.min.js"></script>
 <script>
 var bar_opts =  {
   "closeButton": true,
@@ -44,8 +42,26 @@ function busy(isbusy){
 }
 
 $(document).ready(function(){
-    $("#query_begin_time").datepicker();
-    $("#query_end_time").datepicker();
+    $("#query_begin_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
+    $("#query_end_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
     $('#ordertable').dataTable({
       "bPaginate": false,
       "bLengthChange": false,

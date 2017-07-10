@@ -1,9 +1,9 @@
 <%inherit file="base.html"/>
 <%def name="head()">
-<script src="/static/js/bootstrap-datepicker.js"></script>
-<link href="/static/css/bootstrap-multiselect.css" rel="stylesheet" type="text/css"/>
-<script src="/static/js/bootstrap-multiselect.js"></script>
-<link rel="stylesheet" href="/static/js/datepicker.css"> 
+
+<link href="/static/plugins/bootstrap-multiselect/bootstrap-multiselect.css" rel="stylesheet" type="text/css"/>
+<script src="/static/plugins/bootstrap-multiselect/bootstrap-multiselect.js"></script>
+
 <script>
 
 function productCalc(){
@@ -258,7 +258,16 @@ $(document).ready(function (){
       maxHeight: 270
     });    
     % if int(current_user.opr_type) == 0:
-    $("#expire_date").datepicker();
+    $("#expire_date").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
     % endif
     $('#product_id').change(function() {
         productCalc();

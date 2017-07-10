@@ -1,12 +1,29 @@
 <%inherit file="base.html"/>
 
 <%def name="head()">
-<script src="/static/js/bootstrap-datepicker.js"></script>
-<link rel="stylesheet" href="/static/js/datepicker.css"> 
+
    <script>
     $(document).ready(function(){
-        $("#query_begin_time").datepicker();
-        $("#query_end_time").datepicker();
+        $("#query_begin_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
+        $("#query_end_time").datetimepicker({
+            language: 'zh-CN',
+            startView: 'day',
+            minView: 'day',
+            autoclose: true,
+            startView: 2,
+            minView: 2,
+            todayHighlight: 1,
+            format: "yyyy-mm-dd"
+        });
     });
     function do_submit(){
         $("#query_form").attr("action", "/admin/customer/acceptlog");
