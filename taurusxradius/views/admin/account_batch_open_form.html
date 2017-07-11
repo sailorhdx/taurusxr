@@ -38,15 +38,13 @@ $(document).ready(function (){
       maxHeight: 270
     });    
     $("#expire_date").datetimepicker({
-            language: 'zh-CN',
-            startView: 'day',
-            minView: 'day',
-            autoclose: true,
-            startView: 2,
-            minView: 2,
-            todayHighlight: 1,
-            format: "yyyy-mm-dd"
-        });
+        language: 'zh-CN',
+        startView: 'month',
+        minView: 'month',
+        autoclose: true,
+        todayHighlight: 1,
+        format: "yyyy-mm-dd"
+    });
     $('#node_id').change(function() {
         updateArea();
     });

@@ -10,9 +10,9 @@
 $(document).ready(function(){
     $("#stat_month").datetimepicker({
         language: 'zh-CN',
+        startView: 'year',
+        minView: 'year',
         autoclose: true,
-        startView: 3,
-        minView: 3,
         format: "yyyy-mm"
     });
     $("#stat_month").val('${utils.get_currdate()[0:7]}');

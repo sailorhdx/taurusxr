@@ -37,7 +37,7 @@ class RadiusBilling(RadiusBasic):
             except Exception as err:
                 logger.exception(err, tag='radius_acct_billing_error')
 
-    def bill_botimes(self, online, product):
+    def bill_botimes(self, online, product):#u'买断时长'
         logger.info('%s > Buyout long time billing ' % self.account.account_number)
         time_length = self.get_user_time_length()
         sessiontime = self.request.acct_session_time

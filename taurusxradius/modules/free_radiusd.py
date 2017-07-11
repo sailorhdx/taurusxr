@@ -208,7 +208,7 @@ class RADIUSAuthWorker(TraceMix):
         logger.info('init auth worker pusher : %s ' % self.pusher)
         logger.info('init auth worker puller : %s ' % self.puller)
         logger.info('init auth stat pusher : %s ' % self.stat_pusher)
-        self.license_ulimit = 5000
+        self.license_ulimit = 50000
 
     def get_account_bind_nas_ipaddrs(self, account_number, ip_addr):
         """ 获取用户区域绑定的 bas IP地址信息

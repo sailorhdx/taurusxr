@@ -9,16 +9,16 @@
     $(document).ready(function(){
         $("#query_begin_time").datetimepicker({
             language: 'zh-CN',
+            startView: 'year',
+            minView: 'year',
             autoclose: true,
-            startView: 3,
-            minView: 3,
-           format: "yyyy-mm"
+            format: "yyyy-mm"
         });
         $("#query_end_time").datetimepicker({
             language: 'zh-CN',
+            startView: 'year',
+            minView: 'year',
             autoclose: true,
-            startView: 3,
-            minView: 3,
             format: "yyyy-mm"
         });
         $('#maintable').dataTable({

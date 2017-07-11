@@ -180,7 +180,6 @@ class RadiusBasic:
         return int(tl.to_integral_value())
 
     def add_ticket(self, ticket):
-        print 'add ticket'
         ticket['id'] = utils.get_uuid()
         ticket['sync_ver'] = tools.gen_sync_ver()
         table = models.TrTicket.__table__

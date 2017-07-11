@@ -181,7 +181,6 @@ class RADIUSAuthWorker(TraceMix):
                 sql = '\n                select bas.ip_addr \n                from tr_bas as bas,tr_customer as cus,tr_account as usr,tr_bas_node as bn\n                where cus.customer_id = usr.customer_id\n                    and cus.node_id = bn.node_id\n                    and bn.bas_id = bas.id\n                    and usr.account_number = :account_number\n                '
                 cur = conn.execute(_sql(sql), account_number=account_number)
                 ipaddrs = [ addr['ip_addr'] for addr in cur ]
-                print ipaddrs
                 return ipaddrs
 
         return self.mcache.aget(account_bind_basip_key(account_number), fetch_result, expire=600)
